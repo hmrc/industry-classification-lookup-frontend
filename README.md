@@ -1,4 +1,4 @@
-# industry-code-lookup-frontend
+# industry-classification-lookup-frontend
 
 [![Build Status](https://travis-ci.org/hmrc/industry-code-lookup-frontend.svg)](https://travis-ci.org/hmrc/industry-code-lookup-frontend) [ ![Download](https://api.bintray.com/packages/hmrc/releases/industry-code-lookup-frontend/images/download.svg) ](https://bintray.com/hmrc/releases/industry-code-lookup-frontend/_latestVersion)
 
