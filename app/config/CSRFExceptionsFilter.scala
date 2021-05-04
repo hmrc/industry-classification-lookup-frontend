@@ -34,9 +34,9 @@ class CSRFExceptionsFilter @Inject()(appConfig: AppConfig, implicit val mat: Mat
     }
   }
 
-  private def applyHeaders(rh: RequestHeader): RequestHeader = rh.copy(headers = rh.headers.add("Csrf-Bypass" -> appConfig.csrfBypassValue))
+  private def applyHeaders(rh: RequestHeader): RequestHeader = rh.withHeaders(rh.headers.add("Csrf-Bypass" -> appConfig.csrfBypassValue))
 
-  private def removeHeaders(rh: RequestHeader): RequestHeader = rh.copy(headers = rh.headers.remove("Csrf-Bypass"))
+  private def removeHeaders(rh: RequestHeader): RequestHeader = rh.withHeaders(rh.headers.remove("Csrf-Bypass"))
 
   override def apply(f: RequestHeader => Future[Result])(rh: RequestHeader): Future[Result] = {
     f(internalRoutesBypass(rh))

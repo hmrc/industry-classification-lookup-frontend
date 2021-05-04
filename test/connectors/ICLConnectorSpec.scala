@@ -24,6 +24,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.http.{HttpException, HttpResponse, NotFoundException}
 
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class ICLConnectorSpec extends UnitTestSpec with MockAppConfig {
 

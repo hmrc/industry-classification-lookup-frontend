@@ -23,7 +23,6 @@ import models.setup.JourneyData
 import play.api.Logger
 import repositories.SicStoreRepository
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,7 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class SicSearchService @Inject()(val iCLConnector: ICLConnector,
                                  sicStoreRepository: SicStoreRepository) {
 
-  def search(journeyData: JourneyData, query: String, sector: Option[String] = None)(implicit hc: HeaderCarrier): Future[Int] = {
+  def search(journeyData: JourneyData, query: String, sector: Option[String] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
     if (isLookup(query)) {
       lookupSicCodes(journeyData, List(SicCode(query, "")))
     } else {
@@ -54,7 +53,7 @@ class SicSearchService @Inject()(val iCLConnector: ICLConnector,
     sicStoreRepository.removeChoice(journeyId, sicCodeToRemove)
   }
 
-  def lookupSicCodes(journeyData: JourneyData, selectedCodes: List[SicCode])(implicit hc: HeaderCarrier): Future[Int] = {
+  def lookupSicCodes(journeyData: JourneyData, selectedCodes: List[SicCode])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
     def fiteredListOfSicCodeChoice(sicCodesUnfiltered: List[SicCode], groups: Map[String, List[SicCode]]): List[SicCodeChoice] = {
       sicCodesUnfiltered map { sic =>
         SicCodeChoice(sic, groups.get(sic.sicCode).fold(List.empty[String])(nSicCodes =>
@@ -83,7 +82,7 @@ class SicSearchService @Inject()(val iCLConnector: ICLConnector,
     sicCodes.groupBy(_.sicCode).keys.mkString(",")
   }
 
-  private[services] def searchQuery(journeyData: JourneyData, query: String, sector: Option[String] = None)(implicit hc: HeaderCarrier): Future[Int] = {
+  private[services] def searchQuery(journeyData: JourneyData, query: String, sector: Option[String] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
     (for {
       oSearchResults <- iCLConnector.search(query, journeyData.journeySetupDetails, sector)
       sectorObject = sector.flatMap(sicCode => oSearchResults.sectors.find(_.code == sicCode))
