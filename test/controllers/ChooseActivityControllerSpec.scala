@@ -16,9 +16,6 @@
 
 package controllers
 
-import config.AppConfig
-
-import java.time.LocalDateTime
 import helpers.UnitTestSpec
 import helpers.auth.AuthHelpers
 import helpers.mocks.{MockAppConfig, MockMessages}
@@ -33,6 +30,7 @@ import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AuthConnector
 
+import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -167,7 +165,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
   "Submit a search" should {
     "return a 303 with the search results page" in new Setup {
 
-      when(mockSicSearchService.search(any(), eqTo(query), any())(any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any())(any(), any()))
         .thenReturn(Future.successful(multipleSearchResults.numFound))
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
@@ -185,7 +183,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
     "return a 303 with the choices list page for an authorised user when the search returns only 1 result" in new Setup {
 
-      when(mockSicSearchService.search(any(), eqTo(query), any())(any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any())(any(), any()))
         .thenReturn(Future.successful(searchResults.numFound))
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
@@ -230,7 +228,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(ArgumentMatchers.anyString())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Some(searchResults)))
 
-      when(mockSicSearchService.lookupSicCodes(any(), any())(any()))
+      when(mockSicSearchService.lookupSicCodes(any(), any())(any(), any()))
         .thenReturn(Future.successful(1))
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
@@ -269,7 +267,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(eqTo(journeyId))(any()))
         .thenReturn(Future.successful(Some(searchResults)))
 
-      when(mockSicSearchService.search(any(), eqTo(query), any())(any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any())(any(), any()))
         .thenReturn(Future.successful(1))
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
@@ -285,7 +283,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(eqTo(journeyId))(any()))
         .thenReturn(Future.successful(Some(noSearchResults)))
 
-      when(mockSicSearchService.search(any(), eqTo(query), any())(any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any())(any(), any()))
         .thenReturn(Future.successful(0))
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
@@ -303,7 +301,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(eqTo(journeyId))(any()))
         .thenReturn(Future.successful(Some(searchResults)))
 
-      when(mockSicSearchService.search(any(), eqTo(query), any())(any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any())(any(), any()))
         .thenReturn(Future.successful(1))
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)

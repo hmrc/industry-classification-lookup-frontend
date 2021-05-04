@@ -16,7 +16,6 @@
 
 package repositories
 
-import javax.inject.{Inject, Singleton}
 import models.{SearchResults, SicCodeChoice, SicStore}
 import org.joda.time.{DateTime, DateTimeZone}
 import play.api.Configuration
@@ -28,6 +27,7 @@ import reactivemongo.play.json.ImplicitBSONHandlers.BSONDocumentWrites
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 
+import javax.inject.{Inject, Singleton}
 import scala.collection.Seq
 import scala.concurrent.{ExecutionContext, Future}
 

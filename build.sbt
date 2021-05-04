@@ -38,10 +38,10 @@ lazy val microservice = Project(appName, file("."))
     scalaVersion                                  := "2.12.12",
     libraryDependencies                           ++= AppDependencies(),
     retrieveManaged                               := true,
-    evictionWarningOptions     in update          := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     cancelable                 in Global          := true,
-    resolvers                                     += Resolver.bintrayRepo("hmrc", "releases"),
     resolvers                                     += Resolver.jcenterRepo,
     addTestReportOption(IntegrationTest, "int-test-reports")
   )
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
+
+javaOptions in IntegrationTest += "-Dlogger.resource=logback-test.xml"

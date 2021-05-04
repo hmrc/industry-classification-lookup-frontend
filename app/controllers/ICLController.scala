@@ -17,7 +17,6 @@
 package controllers
 
 import auth.SicSearchExternalURLs
-import config.AppConfig
 import models.SicCodeChoice
 import models.setup.{Identifiers, JourneyData}
 import play.api.Logger
@@ -27,14 +26,14 @@ import play.api.mvc.{MessagesControllerComponents, Request, Result}
 import services.{JourneyService, SicSearchService}
 import uk.gov.hmrc.auth.core.{AuthorisationException, AuthorisedFunctions, NoActiveSession}
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 abstract class ICLController @Inject()(mcc: MessagesControllerComponents
-                                      )(implicit ec: ExecutionContext, appConfig: AppConfig)
+                                      )(implicit ec: ExecutionContext)
   extends FrontendController(mcc) with AuthorisedFunctions with I18nSupport with SicSearchExternalURLs {
 
   implicit lazy val lang: Lang = Lang("en")
@@ -45,7 +44,7 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
   def userAuthorised(api: Boolean = false)(body: => Future[Result])(implicit request: Request[_], hc: HeaderCarrier): Future[Result] = {
     authorised() {
       body
-    }(hc, implicitly).recover(if (api) apiAuthErrorHandling() else authErrorHandling)
+    }(hc, implicitly).recover(if (api) apiAuthErrorHandling() else authErrorHandling())
   }
 
   def authErrorHandling()(implicit request: Request[_]): PartialFunction[Throwable, Result] = {

@@ -17,17 +17,16 @@
 package connectors
 
 import config.AppConfig
+
 import javax.inject.{Inject, Singleton}
 import models.setup.JourneySetup
 import models.{SearchResults, SicCode}
 import play.api.Logger
 import play.api.http.Status.NO_CONTENT
 import play.api.libs.json.{Json, Reads}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpResponse}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ICLConnector @Inject()(appConfig: AppConfig,
@@ -35,7 +34,7 @@ class ICLConnector @Inject()(appConfig: AppConfig,
 
   lazy val ICLUrl: String = appConfig.industryClassificationLookupBackend
 
-  def lookup(sicCode: String)(implicit hc: HeaderCarrier): Future[List[SicCode]] = {
+  def lookup(sicCode: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[List[SicCode]] = {
     http.GET[HttpResponse](s"$ICLUrl/industry-classification-lookup/lookup/$sicCode") map { resp =>
       if (resp.status == NO_CONTENT) List.empty[SicCode] else Json.fromJson[List[SicCode]](resp.json).getOrElse(List.empty[SicCode])
     } recover {
@@ -48,7 +47,7 @@ class ICLConnector @Inject()(appConfig: AppConfig,
     }
   }
 
-  def search(query: String, journeySetup: JourneySetup, sector: Option[String] = None)(implicit hc: HeaderCarrier): Future[SearchResults] = {
+  def search(query: String, journeySetup: JourneySetup, sector: Option[String] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SearchResults] = {
     implicit val reads: Reads[SearchResults] = SearchResults.readsWithQuery(query)
     val sectorFilter = sector.fold("")(s => s"&sector=$s")
     val constructUrlParameters = s"query=$query" +

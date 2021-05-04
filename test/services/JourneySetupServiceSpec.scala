@@ -55,7 +55,7 @@ class JourneySetupServiceSpec extends UnitTestSpec with MockJourneyDataRepo {
   "initialiseJourney" should {
     "return Json containing the start and fetch uri's" in new Setup {
       mockInitialiseJourney(testJourneyData)
-      when(mockSicSearchService.lookupSicCodes(any(), any())(any())).thenReturn(Future.successful(0))
+      when(mockSicSearchService.lookupSicCodes(any(), any())(any(), any())).thenReturn(Future.successful(0))
 
       assertAndAwait(testService.initialiseJourney(testJourneyData)) {
         _ mustBe Json.obj(
