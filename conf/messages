@@ -1,4 +1,4 @@
-app.title                                       = Register your company
+app.title                                       = Register for VAT
 getHelp.linkText                                = Is this page not working properly? (opens in new tab)
 
 app.common.continue                             = Continue
@@ -11,7 +11,7 @@ app.common.search                               = Search
 app.common.includes                             = This includes:
 app.common.remove                               = Remove
 
-errors.invalid.sic.noEntry                      = Enter one or two keywords for what the company does
+errors.invalid.sic.noEntry                      = Enter one or two keywords for what the business does
 errors.invalid.sic.noSelection                  = Choose a business activity
 errors.invalid.sic.confirm                      = Tell us if you want to add another business activity
 errors.invalid.sic.remove                       = Tell us if you want to remove ''{0}''
@@ -21,25 +21,25 @@ common.feedbackSecond                           = feedback
 common.feedbackThird                            = will help us to improve it.
 
 page.icl.sicsearch.title                        = Search for a business activity
-page.icl.sicsearch.heading                      = Search for a thing that the company does
+page.icl.sicsearch.heading                      = Search for a thing that the business does
 page.icl.sicsearch.form.label                   = Enter one or two keywords (or the numerical SIC code, if you know it)
 page.icl.sicsearch.form.hint                    = For example, ''plumbing'', ''property management''
 
 page.icl.chooseactivity.title                   = Standard Industry Classifications (SIC) codes
 page.icl.chooseactivity.heading                 = Standard Industry Classifications (SIC) codes
-page.icl.chooseactivity.subheading              = Search for a thing that the company does
+page.icl.chooseactivity.subheading              = Search for a thing that the business does
 page.icl.chooseactivity.enteredkeyword          = You searched for
 page.icl.chooseactivity.resultsfound            = results
 page.icl.chooseactivity.removeFilter            = Remove filter
 page.icl.chooseactivity.insector                = in <b class="bold">{0}</b>
 page.icl.chooseactivity.searchagain             = Please try searching again using different words
 page.icl.chooseactivity.changehidden            = Change sic code used to search
-page.icl.chooseactivity.selection-heading       = Choose some things that the company does
+page.icl.chooseactivity.selection-heading       = Choose some things that the business does
 page.icl.chooseactivity.selection-hint          = Select as many as you want. You can refine them later.
 page.icl.chooseactivity.filter-heading          = Filter results by industry
 
-page.icl.confirmation.title                     = Check and confirm the company''s Standard Industry Classification (SIC) codes
-page.icl.confirmation.heading                   = Check and confirm the company''s Standard Industry Classification (SIC) codes
+page.icl.confirmation.title                     = Check and confirm the business''s Standard Industry Classification (SIC) codes
+page.icl.confirmation.heading                   = Check and confirm the business''s Standard Industry Classification (SIC) codes
 page.icl.confirmation.choice.text               = You have chosen:
 page.icl.confirmation.addAnother                = Do you want to add another business activity?
 page.icl.confirmation.activities                = Companies can only have 4 SIC codes.
