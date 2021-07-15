@@ -66,7 +66,7 @@ class ConfirmationViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with Mo
         dynamicDocument.getElementById("page-hint-text").text() mustBe pageHintText
       }
       "no content is passed in" in {
-        defaultDocument.getElementById("page-title").text mustBe "Check and confirm the company's Standard Industry Classification (SIC) codes"
+        defaultDocument.getElementById("page-title").text mustBe "Check and confirm the business's Standard Industry Classification (SIC) codes"
         defaultDocument.getElementById("back").text mustBe "Back"
         Option(defaultDocument.getElementById("page-lead-text")) mustBe None
         Option(defaultDocument.getElementById("page-hint-text")) mustBe None
