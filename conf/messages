@@ -42,10 +42,10 @@ page.icl.confirmation.title                     = Check and confirm the business
 page.icl.confirmation.heading                   = Check and confirm the business''s Standard Industry Classification (SIC) codes
 page.icl.confirmation.choice.text               = You have chosen:
 page.icl.confirmation.addAnother                = Do you want to add another business activity?
-page.icl.confirmation.activities                = Companies can only have 4 SIC codes.
+page.icl.confirmation.activities                = Businesses can only have 4 SIC codes.
 page.icl.confirmation.addMoreSicCodes           = Add more SIC codes
 page.icl.confirmation.errorSummaryLabel         = Too many Standard Industry Classification (SIC) codes
-page.icl.confirmation.errorSummarySubHeading    = Companies can only have 4 SIC codes
+page.icl.confirmation.errorSummarySubHeading    = Businesses can only have 4 SIC codes
 errors.confirmation.moreThanFour                = Remove {0} SIC code(s)
 
 page.icl.confirmremoval.title                   = Do you want to remove ''{0}''?
