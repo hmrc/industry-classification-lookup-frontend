@@ -20,7 +20,7 @@ import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.when
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatestplus.mockito.MockitoSugar
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.HttpClient
 
 import scala.concurrent.Future
 
@@ -29,7 +29,7 @@ trait WSHTTPMock {
 
   val mockWSHttp: HttpClient
 
-  def mockHttpGet[T]: OngoingStubbing[Future[T]] = when(mockWSHttp.GET[T](any())(any(), any(), any()))
-
-  def mockHttpGet[T](url: String): OngoingStubbing[Future[T]] = when(mockWSHttp.GET[T](eqTo(url))(any(), any(), any()))
+  def mockHttpGet[T](url: String): OngoingStubbing[Future[T]] = when(
+    mockWSHttp.GET[T](eqTo(url), any(), any())(any(), any(), any())
+  )
 }

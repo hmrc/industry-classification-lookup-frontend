@@ -2,13 +2,12 @@ import sbt._
 
 private object AppDependencies {
   val compile = Seq(
-    "uk.gov.hmrc" %% "bootstrap-frontend-play-26" % "3.4.0",
+    "uk.gov.hmrc" %% "bootstrap-frontend-play-26" % "5.12.0",
     "uk.gov.hmrc" %% "govuk-template" % "5.65.0-play-26",
-    "uk.gov.hmrc" %% "play-ui" % "9.2.0-play-26",
-    "uk.gov.hmrc" %% "auth-client" % "3.2.0-play-26",
+    "uk.gov.hmrc" %% "play-ui" % "9.6.0-play-26",
     "uk.gov.hmrc" %% "play-allowlist-filter" % "1.0.0-play-26",
     "uk.gov.hmrc" %% "simple-reactivemongo" % "8.0.0-play-26",
-    "uk.gov.hmrc" %% "play-conditional-form-mapping" % "1.6.0-play-26"
+    "uk.gov.hmrc" %% "play-conditional-form-mapping" % "1.9.0-play-26"
   )
 
   def test(scope: String = "test,it") = Seq(
