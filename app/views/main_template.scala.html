@@ -15,8 +15,10 @@
  *@
 
 @import config.AppConfig
-@import controllers.routes.SignInOutController
 @import play.twirl.api.HtmlFormat
+@import uk.gov.hmrc.play.views.html.layouts.{Article, Sidebar}
+
+@this(article: Article, layoutSidebar: Sidebar, govuk_wrapper: govuk_wrapper)
 
 @(title: String,
   sidebarLinks: Option[Html] = None,
@@ -24,16 +26,13 @@
   bodyClasses: Option[String] = None,
   mainClass: Option[String] = None,
   scriptElem: Option[Html] = None,
-  enableTimeout: Boolean = true)(mainContent: Html)(implicit request : Request[_], messages: Messages, appConfiguration: AppConfig)
-
-@import uk.gov.hmrc.play.views.html.layouts
-
+  enableTimeout: Boolean = true)(mainContent: Html)(implicit request : Request[_], messages: Messages, appConfig: AppConfig)
 
 @serviceInfoContent = {}
 
 @sidebar = {
     @if(sidebarLinks.isDefined) {
-        @layouts.sidebar(sidebarLinks.get, Some("sidebar"))
+        @layoutSidebar(sidebarLinks.get, Some("sidebar"))
     }
 }
 
@@ -41,22 +40,22 @@
     @if(enableTimeout) {
         <script id="timeoutScript" role="dialog" tabindex="-1">
             window.GOVUK.timeoutDialog({
-            timeout: @appConfiguration.timeoutLength,
-            countdown: @appConfiguration.countdownLength,
+            timeout: @appConfig.timeoutLength,
+            countdown: @appConfig.countdownLength,
             keepAliveUrl: '#',
-            signOutUrl: '@SignInOutController.signOut.url'
+            signOutUrl: '@routes.SignInOutController.signOut.url'
             });
         </script>
     }
     @scriptElem.getOrElse(HtmlFormat.empty)
 }
 
-@govuk_wrapper(appConfig          = appConfiguration,
+@govuk_wrapper(appConfig          = appConfig,
                title              = title,
                mainClass          = mainClass,
                bodyClasses        = bodyClasses,
                sidebar            = sidebar,
                contentHeader      = contentHeader,
-               mainContent        = layouts.article(mainContent),
+               mainContent        = article(mainContent),
                serviceInfoContent = serviceInfoContent,
                scriptElem         = Some(defaultScriptElem))

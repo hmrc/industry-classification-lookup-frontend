@@ -41,14 +41,15 @@ class ConfirmationViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with Mo
   val pageHintText = "MyPageHint"
 
   "The choose activity screen" should {
-    lazy val dynamicView = ConfirmationPage(
+    lazy val view = app.injector.instanceOf[ConfirmationPage]
+    lazy val dynamicView = view(
       "testJourneyId",
       sicCodeChoices,
       None,
       Summary(Some(pageHeading), Some(pageLeadParagraph), Some(pageHintText))
     )
 
-    lazy val defaultView = ConfirmationPage(
+    lazy val defaultView = view(
       "testJourneyId",
       sicCodeChoices,
       None,

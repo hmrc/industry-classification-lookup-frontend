@@ -26,6 +26,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
 import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded}
 import play.api.test.FakeRequest
+import views.html.test.SetupJourneyView
 
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -34,11 +35,15 @@ import scala.concurrent.Future
 class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with MockAppConfig with MockMessages {
 
   class Setup {
+
+    lazy val testView = app.injector.instanceOf[SetupJourneyView]
+
     val controller: TestSetupController = new TestSetupController(
       mcc = mockMessasgesControllerComponents,
       authConnector = mockAuthConnector,
       journeyService = mockJourneyService,
-      sicSearchService = mockSicSearchService
+      sicSearchService = mockSicSearchService,
+      view = testView
     )(
       ec = global,
       appConfig = mockConfig

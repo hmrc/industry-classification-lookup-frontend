@@ -19,7 +19,8 @@ package forms
 import forms.chooseactivity.ChooseMultipleActivitiesForm
 import models.SicCode
 import org.scalatestplus.play.PlaySpec
-import play.api.data.FormError
+import play.api.data.FormBinding.Implicits.formBinding
+import play.api.data.{FormBinding, FormError}
 import play.api.mvc.AnyContentAsFormUrlEncoded
 import play.api.test.FakeRequest
 
@@ -83,7 +84,7 @@ class ChooseMultipleActivityFormSpec extends PlaySpec {
       )
 
       "nothing is the request" in {
-        ChooseMultipleActivitiesForm.form.bindFromRequest()(FakeRequest()).errors mustBe emptyErrors
+        ChooseMultipleActivitiesForm.form.bindFromRequest()(FakeRequest(), formBinding).errors mustBe emptyErrors
       }
 
       "the map is empty" in {

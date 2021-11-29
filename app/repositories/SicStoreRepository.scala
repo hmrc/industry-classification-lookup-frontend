@@ -47,7 +47,7 @@ class SicStoreRepository @Inject()(config: Configuration,
 
   private def journeyIdSelector(journeyId: String) = BSONDocument("journeyId" -> journeyId)
 
-  override val ttl: Long = config.getLong("mongodb.timeToLiveInSeconds").get
+  override val ttl: Long = config.get[Long]("mongodb.timeToLiveInSeconds")
 
   private[repositories] def now = DateTime.now(DateTimeZone.UTC)
 

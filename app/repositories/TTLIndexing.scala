@@ -16,12 +16,11 @@
 
 package repositories
 
-import play.api.Logger
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.bson.{BSONDocument, BSONLong}
 import uk.gov.hmrc.mongo.ReactiveRepository
 
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
 
 trait TTLIndexing[A, ID] {
   self: ReactiveRepository[A, ID] =>
@@ -38,13 +37,13 @@ trait TTLIndexing[A, ID] {
 
       ttlIndex match {
         case Some(index) if hasSameTTL(index) =>
-          Logger.info(s"[TTLIndex] document expiration value for collection : $collectionName has not been changed")
+          logger.info(s"[TTLIndex] document expiration value for collection : $collectionName has not been changed")
           doNothing
         case Some(index) =>
-          Logger.info(s"[TTLIndex] document expiration value for collection : $collectionName has been changed. Updating ttl index to : $ttl")
+          logger.info(s"[TTLIndex] document expiration value for collection : $collectionName has been changed. Updating ttl index to : $ttl")
           deleteIndex(index) flatMap (_ => ensureLastUpdated)
         case _ =>
-          Logger.info(s"[TTLIndex] TTL Index for collection : $collectionName does not exist. Creating TTL index")
+          logger.info(s"[TTLIndex] TTL Index for collection : $collectionName does not exist. Creating TTL index")
           ensureLastUpdated
       }
     }
@@ -59,7 +58,7 @@ trait TTLIndexing[A, ID] {
 
   private def errorHandler: PartialFunction[Throwable, Future[Seq[Boolean]]] = {
     case ex =>
-      Logger.error(s"[TTLIndex] Exception thrown in TTLIndexing", ex)
+      logger.error(s"[TTLIndex] Exception thrown in TTLIndexing", ex)
       throw ex
   }
 
@@ -71,7 +70,7 @@ trait TTLIndexing[A, ID] {
         options = BSONDocument(EXPIRE_AFTER_SECONDS -> BSONLong(ttl))
       )
     ))).map { ensured =>
-      Logger.info(s"[TTLIndex] Ensuring ttl index on field : $LAST_UPDATED_INDEX in collection : ${collection.name} is set to $ttl")
+      logger.info(s"[TTLIndex] Ensuring ttl index on field : $LAST_UPDATED_INDEX in collection : ${collection.name} is set to $ttl")
       ensured
     }
   }

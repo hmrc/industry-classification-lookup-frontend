@@ -29,6 +29,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, Result}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AuthConnector
+import views.html.pages.chooseactivity
 
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -36,15 +37,17 @@ import scala.concurrent.Future
 
 class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with MockAppConfig with MockMessages {
 
-
   class Setup extends CodeMocks with AuthHelpers {
     override val authConnector: AuthConnector = mockAuthConnector
+
+    lazy val testView = app.injector.instanceOf[chooseactivity]
 
     val controller: ChooseActivityController = new ChooseActivityController(
       mcc = mockMessasgesControllerComponents,
       authConnector = mockAuthConnector,
       journeyService = mockJourneyService,
-      sicSearchService = mockSicSearchService
+      sicSearchService = mockSicSearchService,
+      view = testView
     )(
       ec = global,
       appConfig = mockConfig

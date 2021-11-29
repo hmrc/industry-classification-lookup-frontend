@@ -17,11 +17,17 @@
 @import config.AppConfig
 @import models.setup.messages.Summary
 @import helpers.templates._
-@import uk.gov.hmrc.play.views.html.{helpers => govHelpers}
+@import uk.gov.hmrc.play.views.html.helpers._
+
+@this(main_template: main_template,
+        textErrorSummary: textErrorSummary,
+        formWithCSRF: FormWithCSRF,
+        errorInline: ErrorInline,
+        includesHelper: includesHelper)
 
 @(journeyId: String, listOfChoices: List[SicCodeChoice], errorArgs: Option[Seq[String]] = None, summaryContent: Summary = Summary(None, None, None))(implicit request: Request[_], messages: Messages, appConfiguration: AppConfig)
 
-@views.html.main_template(title = summaryContent.heading.getOrElse(messages("page.icl.confirmation.title")), bodyClasses = None) {
+@main_template(title = summaryContent.heading.getOrElse(messages("page.icl.confirmation.title")), bodyClasses = None) {
 
   <a id="back" class="link-back" href="javascript:history.back()">@Messages("app.common.back")</a>
 
@@ -44,7 +50,7 @@
 
   <div id="selected-sic-codes-table" class="form-group @if(errorArgs.nonEmpty){ form-group-error }">
       @errorArgs.map { args =>
-        @govHelpers.errorInline("confirmation", messages("errors.confirmation.moreThanFour", args: _*))
+        @errorInline("confirmation", messages("errors.confirmation.moreThanFour", args: _*))
       }
     <table class="check-your-answers multiple-sections">
         <tbody>
@@ -78,7 +84,7 @@
         <a href="@controllers.routes.ChooseActivityController.show(journeyId)" id="add-more-sic-codes-link">@messages("page.icl.confirmation.addMoreSicCodes")</a>
     </div>
 
-    @govHelpers.form(action = controllers.routes.ConfirmationController.submit(journeyId)) {
+    @formWithCSRF(action = controllers.routes.ConfirmationController.submit(journeyId)) {
         <div class="form-group">
           <button class="button" type="submit" id="continue" >@messages("app.common.confirmAndContinue")</button>
         </div>

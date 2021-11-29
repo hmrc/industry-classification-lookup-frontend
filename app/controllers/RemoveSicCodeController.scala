@@ -23,6 +23,7 @@ import play.api.data.Form
 import play.api.mvc._
 import services.{JourneyService, SicSearchService}
 import uk.gov.hmrc.auth.core.AuthConnector
+import views.html.pages.removeActivityConfirmation
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -31,10 +32,10 @@ import scala.concurrent.{ExecutionContext, Future}
 class RemoveSicCodeController @Inject()(mcc: MessagesControllerComponents,
                                         val sicSearchService: SicSearchService,
                                         val journeyService: JourneyService,
-                                        val authConnector: AuthConnector
+                                        val authConnector: AuthConnector,
+                                        view: removeActivityConfirmation
                                        )(implicit ec: ExecutionContext,
-                                         val appConfig: AppConfig)
-  extends ICLController(mcc) {
+                                         val appConfig: AppConfig) extends ICLController(mcc) {
 
   def confirmationForm(description: String): Form[String] = RemoveSicCodeForm.form(description)
 
@@ -49,7 +50,7 @@ class RemoveSicCodeController @Inject()(mcc: MessagesControllerComponents,
         withJourney(journeyId) { journey =>
           withCurrentUsersChoices(journey.identifiers) { codes =>
             withSicCodeChoice(journeyId, codes, sicCode) { code =>
-              Future.successful(Ok(views.html.pages.removeActivityConfirmation(journeyId, confirmationForm(code.desc), code)))
+              Future.successful(Ok(view(journeyId, confirmationForm(code.desc), code)))
             }
           }
         }
@@ -63,7 +64,7 @@ class RemoveSicCodeController @Inject()(mcc: MessagesControllerComponents,
           withCurrentUsersChoices(journeyData.identifiers) { codes =>
             withSicCodeChoice(journeyId, codes, sicCode) { code =>
               confirmationForm(code.desc).bindFromRequest().fold(
-                errors => Future.successful(BadRequest(views.html.pages.removeActivityConfirmation(journeyId, errors, code))),
+                errors => Future.successful(BadRequest(view(journeyId, errors, code))),
                 {
                   case "yes" => sicSearchService.removeChoice(journeyData.identifiers.journeyId, sicCode) map { _ =>
                     Redirect(controllers.routes.ConfirmationController.show(journeyId))

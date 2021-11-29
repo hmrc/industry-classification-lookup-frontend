@@ -16,21 +16,18 @@
 
 package connectors
 
-import config.AppConfig
-
-import javax.inject.{Inject, Singleton}
+import config.{AppConfig, Logging}
 import models.setup.JourneySetup
 import models.{SearchResults, SicCode}
-import play.api.Logger
 import play.api.http.Status.NO_CONTENT
 import play.api.libs.json.{Json, Reads}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse}
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ICLConnector @Inject()(appConfig: AppConfig,
-                             http: HttpClient) {
+class ICLConnector @Inject()(appConfig: AppConfig, http: HttpClient) extends Logging {
 
   lazy val ICLUrl: String = appConfig.industryClassificationLookupBackend
 
@@ -39,10 +36,10 @@ class ICLConnector @Inject()(appConfig: AppConfig,
       if (resp.status == NO_CONTENT) List.empty[SicCode] else Json.fromJson[List[SicCode]](resp.json).getOrElse(List.empty[SicCode])
     } recover {
       case e: HttpException =>
-        Logger.error(s"[Lookup] Looking up sic code : $sicCode returned a ${e.responseCode}")
+        logger.error(s"[Lookup] Looking up sic code : $sicCode returned a ${e.responseCode}")
         throw e
       case e: Throwable =>
-        Logger.error(s"[Lookup] Looking up sic code : $sicCode has thrown a non-http exception")
+        logger.error(s"[Lookup] Looking up sic code : $sicCode has thrown a non-http exception")
         throw e
     }
   }
@@ -58,11 +55,11 @@ class ICLConnector @Inject()(appConfig: AppConfig,
 
     http.GET[SearchResults](s"$ICLUrl/industry-classification-lookup/search?$constructUrlParameters") recover {
       case e: HttpException =>
-        Logger.error(s"[Search] Searching using query : $query returned a ${e.responseCode}")
+        logger.error(s"[Search] Searching using query : $query returned a ${e.responseCode}")
         SearchResults(
           query, 0, List(), List())
       case e =>
-        Logger.error(s"[Search] Searching using query : $query has thrown a non-http exception")
+        logger.error(s"[Search] Searching using query : $query has thrown a non-http exception")
         throw e
     }
   }

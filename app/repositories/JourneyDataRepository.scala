@@ -40,7 +40,7 @@ class JourneyDataRepository @Inject()(config: Configuration,
     JourneyData.format
   ) with TTLIndexing[JourneyData, BSONObjectID] {
 
-  override val ttl: Long = config.getLong("mongodb.timeToLiveInSeconds").get
+  override val ttl: Long = config.get[Long]("mongodb.timeToLiveInSeconds")
 
   override def ensureIndexes(implicit ec: ExecutionContext): Future[Seq[Boolean]] = {
     super.ensureIndexes flatMap { l =>

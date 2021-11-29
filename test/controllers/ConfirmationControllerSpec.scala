@@ -24,6 +24,7 @@ import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito._
 import play.api.mvc._
 import play.api.test.FakeRequest
+import views.html.pages.confirmation
 
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -32,11 +33,15 @@ import scala.concurrent.Future
 class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with MockMessages {
 
   class Setup {
+
+    lazy val testView = app.injector.instanceOf[confirmation]
+
     val controller: ConfirmationController = new ConfirmationController(
       mcc = mockMessasgesControllerComponents,
       authConnector = mockAuthConnector,
       journeyService = mockJourneyService,
-      sicSearchService = mockSicSearchService
+      sicSearchService = mockSicSearchService,
+      view = testView
     )(
       ec = global,
       appConfig = mockConfig

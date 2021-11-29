@@ -16,7 +16,9 @@
 
 package services
 
+import config.Logging
 import connectors.ICLConnector
+
 import javax.inject.{Inject, Singleton}
 import models._
 import models.setup.JourneyData
@@ -28,7 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class SicSearchService @Inject()(val iCLConnector: ICLConnector,
-                                 sicStoreRepository: SicStoreRepository) {
+                                 sicStoreRepository: SicStoreRepository) extends Logging {
 
   def search(journeyData: JourneyData, query: String, sector: Option[String] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
     if (isLookup(query)) {
@@ -92,7 +94,7 @@ class SicSearchService @Inject()(val iCLConnector: ICLConnector,
       }
     } yield searchResults.numFound) recover {
       case e =>
-        Logger.error(s"[SicSearchService] [searchQuery] Exception encountered when attempting to fetch results from ICL ${e.getMessage}")
+        logger.error(s"[SicSearchService] [searchQuery] Exception encountered when attempting to fetch results from ICL ${e.getMessage}")
         0
     }
   }

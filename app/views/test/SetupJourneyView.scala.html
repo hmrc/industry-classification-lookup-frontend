@@ -15,9 +15,11 @@
  *@
 
 @import config.AppConfig
-@import uk.gov.hmrc.play.views.html.helpers.form
-@import helpers.templates.{inputRadioGroup, inputRadioHidden, input}
-@import models.setup.{JourneySetup, JourneyData}
+@import helpers.templates.{input, inputRadioGroup, inputRadioHidden}
+@import models.setup.{JourneyData, JourneySetup}
+@import uk.gov.hmrc.play.views.html.helpers._
+
+@this(inputRadioGroup: inputRadioGroup, main_template: main_template, inputRadioHidden: inputRadioHidden, input: input, formWithCSRF: FormWithCSRF)
 
 @(journeyId: String, journeyForm: Form[JourneySetup])(implicit lang: play.api.i18n.Lang, request: Request[_], messages: Messages, appConfiguration: AppConfig)
 
@@ -35,14 +37,14 @@
 </div>
 }
 
-@views.html.main_template(title = messages("page.test.setup-journey.title"), bodyClasses = None) {
+@main_template(title = messages("page.test.setup-journey.title"), bodyClasses = None) {
 
   <a id="back" class="link-back" href="javascript:history.back()">@Messages("app.common.back")</a>
 
 
   <h1 class="form-title heading-xlarge" id="page-title">@messages("page.test.setup-journey.title")</h1>
 
-    @form(action = controllers.test.routes.TestSetupController.submit(journeyId)) {
+    @formWithCSRF(action = controllers.test.routes.TestSetupController.submit(journeyId)) {
         <p>@messages("page.test.setup-journey.radio.alg.title")</p>
         @inputRadioHidden(
             field = journeyForm("queryParser"),

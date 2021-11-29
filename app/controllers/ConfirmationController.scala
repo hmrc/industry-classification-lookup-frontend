@@ -21,6 +21,7 @@ import models.setup.messages.Summary
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.{JourneyService, SicSearchService}
 import uk.gov.hmrc.auth.core.AuthConnector
+import views.html.pages.confirmation
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -29,7 +30,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class ConfirmationController @Inject()(mcc: MessagesControllerComponents,
                                        val sicSearchService: SicSearchService,
                                        val journeyService: JourneyService,
-                                       val authConnector: AuthConnector
+                                       val authConnector: AuthConnector,
+                                       view: confirmation
                                       )(implicit ec: ExecutionContext,
                                         val appConfig: AppConfig) extends ICLController(mcc) {
 
@@ -39,7 +41,7 @@ class ConfirmationController @Inject()(mcc: MessagesControllerComponents,
         withJourney(journeyId) { journeyData =>
           withCurrentUsersChoices(journeyData.identifiers) { choices =>
             val summary = journeyData.journeySetupDetails.customMessages.flatMap(_.summary).getOrElse(Summary(None, None, None))
-            Future.successful(Ok(views.html.pages.confirmation(journeyId, choices, summaryContent = summary)))
+            Future.successful(Ok(view(journeyId, choices, summaryContent = summary)))
           }
         }
       }
@@ -56,7 +58,7 @@ class ConfirmationController @Inject()(mcc: MessagesControllerComponents,
               }
             } else {
               val amountToRemove = (choices.size - 4).toString
-              Future.successful(BadRequest(views.html.pages.confirmation(journeyId, choices, Some(Seq(amountToRemove)))))
+              Future.successful(BadRequest(view(journeyId, choices, Some(Seq(amountToRemove)))))
             }
           }
         }
