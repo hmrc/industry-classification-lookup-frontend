@@ -26,6 +26,7 @@ import play.api.mvc._
 import services.{JourneyService, SicSearchService}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
+import views.html.pages.chooseactivity
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,7 +35,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class ChooseActivityController @Inject()(mcc: MessagesControllerComponents,
                                          val sicSearchService: SicSearchService,
                                          val journeyService: JourneyService,
-                                         val authConnector: AuthConnector
+                                         val authConnector: AuthConnector,
+                                         view: chooseactivity
                                         )(implicit ec: ExecutionContext,
                                           val appConfig: AppConfig) extends ICLController(mcc) {
 
@@ -46,10 +48,10 @@ class ChooseActivityController @Inject()(mcc: MessagesControllerComponents,
         withJourney(journeyId) { journeyData =>
           if (doSearch.contains(true)) {
             withSearchResults(journeyData.identifiers) { searchResults =>
-              Future.successful(Ok(views.html.pages.chooseactivity(journeyId, SicSearchForm.form.fill(SicSearch(searchResults.query)), chooseActivityForm, Some(searchResults))))
+              Future.successful(Ok(view(journeyId, SicSearchForm.form.fill(SicSearch(searchResults.query)), chooseActivityForm, Some(searchResults))))
             }
           } else {
-            Future.successful(Ok(views.html.pages.chooseactivity(journeyId, SicSearchForm.form, chooseActivityForm, None)))
+            Future.successful(Ok(view(journeyId, SicSearchForm.form, chooseActivityForm, None)))
           }
         }
       }
@@ -90,7 +92,7 @@ class ChooseActivityController @Inject()(mcc: MessagesControllerComponents,
 
   private[controllers] def performSearch(journeyId: String, journeyData: JourneyData)(implicit request: Request[_]): Future[Result] = {
     SicSearchForm.form.bindFromRequest.fold(
-      errors => Future.successful(BadRequest(views.html.pages.chooseactivity(journeyId, errors, chooseActivityForm, None))),
+      errors => Future.successful(BadRequest(view(journeyId, errors, chooseActivityForm, None))),
       form => sicSearchService.search(
         journeyData,
         form.sicSearch,
@@ -104,7 +106,7 @@ class ChooseActivityController @Inject()(mcc: MessagesControllerComponents,
   private[controllers] def performActivity(journeyId: String, journeyData: JourneyData)(implicit request: Request[_]): Future[Result] = {
     withSearchResults(journeyData.identifiers) { searchResults =>
       chooseActivityForm.bindFromRequest().fold(
-        errors => Future.successful(BadRequest(views.html.pages.chooseactivity(journeyId, SicSearchForm.form.fill(SicSearch(searchResults.query)), errors, Some(searchResults)))),
+        errors => Future.successful(BadRequest(view(journeyId, SicSearchForm.form.fill(SicSearch(searchResults.query)), errors, Some(searchResults)))),
         codes => sicSearchService.lookupSicCodes(journeyData, codes) map { _ =>
           Redirect(routes.ConfirmationController.show(journeyId))
         }
@@ -115,7 +117,7 @@ class ChooseActivityController @Inject()(mcc: MessagesControllerComponents,
   private[controllers] def withSearchResults(identifiers: Identifiers)(f: => SearchResults => Future[Result])(implicit request: Request[_]): Future[Result] = {
     sicSearchService.retrieveSearchResults(identifiers.journeyId) flatMap {
       case Some(searchResults) => f(searchResults)
-      case None => Future.successful(Ok(views.html.pages.chooseactivity(identifiers.journeyId, SicSearchForm.form, chooseActivityForm, None)))
+      case None => Future.successful(Ok(view(identifiers.journeyId, SicSearchForm.form, chooseActivityForm, None)))
     }
   }
 }

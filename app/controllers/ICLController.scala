@@ -17,9 +17,9 @@
 package controllers
 
 import auth.SicSearchExternalURLs
+import config.Logging
 import models.SicCodeChoice
 import models.setup.{Identifiers, JourneyData}
-import play.api.Logger
 import play.api.i18n.{I18nSupport, Lang}
 import play.api.libs.json._
 import play.api.mvc.{MessagesControllerComponents, Request, Result}
@@ -34,7 +34,7 @@ import scala.util.{Failure, Success, Try}
 
 abstract class ICLController @Inject()(mcc: MessagesControllerComponents
                                       )(implicit ec: ExecutionContext)
-  extends FrontendController(mcc) with AuthorisedFunctions with I18nSupport with SicSearchExternalURLs {
+  extends FrontendController(mcc) with AuthorisedFunctions with I18nSupport with SicSearchExternalURLs with Logging {
 
   implicit lazy val lang: Lang = Lang("en")
 
@@ -50,7 +50,7 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
   def authErrorHandling()(implicit request: Request[_]): PartialFunction[Throwable, Result] = {
     case _: NoActiveSession => Redirect(loginURL)
     case e: AuthorisationException =>
-      Logger.error("Unexpected auth exception ", e)
+      logger.error("Unexpected auth exception ", e)
       InternalServerError
   }
 
@@ -58,7 +58,7 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
     case _: NoActiveSession => Forbidden
     case _: NotFoundException => Forbidden
     case e: AuthorisationException =>
-      Logger.error("Unexpected auth exception ", e)
+      logger.error("Unexpected auth exception ", e)
       InternalServerError
   }
 
@@ -79,7 +79,7 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
       f(journeyData)
     } recoverWith {
       case err =>
-        Logger.error(s"[hasJourney] - msg: $err ${err.getMessage}", err)
+        logger.error(s"[hasJourney] - msg: $err ${err.getMessage}", err)
         throw err
     }
   }

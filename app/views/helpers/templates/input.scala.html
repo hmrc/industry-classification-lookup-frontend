@@ -14,6 +14,8 @@
  * limitations under the License.
  *@
 
+@this()
+
 @(field: play.api.data.Field, args: (Symbol,Any)*)(implicit messages: Messages)
 
 @import play.api.i18n._
@@ -24,8 +26,8 @@
 @parentField = @{args.toMap.get('parentField).asInstanceOf[Option[Field]]}
 @parentElements = @{parentField.map(pf => new FieldElements(pf.id, pf, null, Map(), messages) )}
 @value = @{ field.value match { case Some(x) => x case None => "" case x => x }}
-@labelAfter = @{ elements.args.get('_labelAfter).getOrElse(false).asInstanceOf[Boolean] }
-@labelHighlight = @{ elements.args.get('_labelHighlight).getOrElse(false).asInstanceOf[Boolean] }
+@labelAfter = @{ elements.args.getOrElse('_labelAfter, false).asInstanceOf[Boolean] }
+@labelHighlight = @{ elements.args.getOrElse('_labelHighlight, false).asInstanceOf[Boolean] }
 
 
 <label for="@elements.field.name" class="@elements.args.get('_divClass) @if( elements.args.get('_labelClass) ){ @elements.args.get('_labelClass) } @if(elements.hasErrors || (parentElements.isDefined && parentElements.get.hasErrors)) {form-group-error}" @if(elements.args.contains('_labelDataAttributes)){@elements.args.get('_labelDataAttributes)}>
@@ -38,14 +40,14 @@
                   }
                   role="tooltip"
                   data-journey="search-page:error:@elements.field.name">
-                  @Messages(error)
+                  @messages(error.toString)
               </span>
         }
     }
 
 
     @if(parentElements.isDefined) {
-        @parentElements.get.errors.map { error => <span class="error-notification">@Messages(error)</span>}
+        @parentElements.get.errors.map { error => <span class="error-notification">@messages(error.toString)</span>}
     }
 
     @if(!labelAfter && elements.args.contains('_label)) {
@@ -72,14 +74,14 @@
            name="@elements.field.name"
            id="@elements.field.name"
            value="@value"
-        @if(elements.args.get('_error_id).isDefined) { aria-labeledby="@elements.args.get('_error_id)" }
-        @if(elements.args.get('_hintId).isDefined) { aria-describedby="@elements.args.get('_hintId)" }
-        @if(elements.args.get('_maxlength).isDefined) { maxlength="@elements.args.get('_maxlength)" }
-        @if(elements.args.get('_min).isDefined) { min="@elements.args.get('_min)" }
-        @if(elements.args.get('_max).isDefined) { max="@elements.args.get('_max)" }
-        @if(elements.args.get('_pattern).isDefined) { pattern="@elements.args.get('_pattern)" }
-        @if(elements.args.get('_title).isDefined) { title="@elements.args.get('_title)" }
-        @if(elements.args.get('_required).isDefined) { required }
+        @if(elements.args.contains('_error_id)) { aria-labeledby="@elements.args.get('_error_id)" }
+        @if(elements.args.contains('_hintId)) { aria-describedby="@elements.args.get('_hintId)" }
+        @if(elements.args.contains('_maxlength)) { maxlength="@elements.args.get('_maxlength)" }
+        @if(elements.args.contains('_min)) { min="@elements.args.get('_min)" }
+        @if(elements.args.contains('_max)) { max="@elements.args.get('_max)" }
+        @if(elements.args.contains('_pattern)) { pattern="@elements.args.get('_pattern)" }
+        @if(elements.args.contains('_title)) { title="@elements.args.get('_title)" }
+        @if(elements.args.contains('_required)) { required }
            />
 
     @if(labelAfter && elements.args.contains('_label)) {

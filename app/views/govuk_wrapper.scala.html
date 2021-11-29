@@ -15,9 +15,17 @@
  *@
 
 @import config.AppConfig
-@import layouts.{govuk_template => hmrcGovUkTemplate}
-@import uk.gov.hmrc.play.views.html.{layouts => uiLayouts}
 @import play.twirl.api.HtmlFormat
+@import uk.gov.hmrc.play.views.html.layouts._
+@import views.html.layouts.GovUkTemplate
+
+@this(govUkTemplate: GovUkTemplate,
+        layoutHead: Head,
+        headerNav: HeaderNav,
+        footer: Footer,
+        footerLinks: FooterLinks,
+        layoutMainContent: MainContent,
+        layoutServiceInfo: ServiceInfo)
 
 @(appConfig: AppConfig,
   title: String,
@@ -33,7 +41,7 @@
 )(implicit request: Request[_], messages: Messages)
 
 @head = {
-    @uiLayouts.head(
+    @layoutHead(
       linkElem = None,
       headScripts = None)
     <meta name="format-detection" content="telephone=no" />
@@ -42,12 +50,12 @@
 
 @headerNavLinks = {
     <li>
-        <a id="signOutNavHref" href="@controllers.routes.SignInOutController.signOut()" data-journey-click="primary-navigation:Click:SignOut">Sign out</a>
+        <a id="signOutNavHref" href="@controllers.routes.SignInOutController.signOut" data-journey-click="primary-navigation:Click:SignOut">Sign out</a>
     </li>
 }
 
 @insideHeader = {
-    @uiLayouts.header_nav(
+    @headerNav(
       navTitle = Some(messages("app.title")),
       navTitleLink = None,
       showBetaLink = false,
@@ -57,7 +65,7 @@
 @afterHeader = {}
 
 @bodyEnd = {
-    @uiLayouts.footer(
+    @footer(
       analyticsToken = Some(appConfig.analyticsToken),
       analyticsHost = appConfig.analyticsHost,
       ssoUrl = None,
@@ -66,10 +74,9 @@
 }
 
 @footerTop = {}
-@footerLinks = {}
 
 @serviceInfo = {
-    @uiLayouts.serviceInfo(
+    @layoutServiceInfo(
       betaBanner = betaBanner,
       includeGridWrapper = false,
       serviceInfoContent = Some(serviceInfoContent),
@@ -102,7 +109,7 @@
 }
 
 @content = {
-    @uiLayouts.main_content(
+    @layoutMainContent(
       article = mainContent,
       mainClass = mainClass,
       mainDataAttributes = mainDataAttributes,
@@ -112,4 +119,4 @@
       sidebar = sidebar)
 }
 
-@hmrcGovUkTemplate(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiLayouts.footer_links()), nav = true)(content)
+@govUkTemplate(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(footerLinks()), nav = true)(content)

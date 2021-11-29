@@ -26,6 +26,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.{JourneyService, SicSearchService}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.voa.play.form.ConditionalMappings.{isEqual, mandatoryIf}
+import views.html.test.SetupJourneyView
 
 import java.time.LocalDateTime
 import javax.inject.{Inject, Singleton}
@@ -35,10 +36,10 @@ import scala.concurrent.{ExecutionContext, Future}
 class TestSetupController @Inject()(mcc: MessagesControllerComponents,
                                     val journeyService: JourneyService,
                                     val sicSearchService: SicSearchService,
-                                    val authConnector: AuthConnector
+                                    val authConnector: AuthConnector,
+                                    view: SetupJourneyView
                                    )(implicit ec: ExecutionContext,
-                                     val appConfig: AppConfig)
-  extends ICLController(mcc) {
+                                     val appConfig: AppConfig) extends ICLController(mcc) {
 
   val journeySetupForm: Form[JourneySetup] = {
     def journeySetupApply(dataSet: String = JourneyData.ONS,
@@ -63,7 +64,7 @@ class TestSetupController @Inject()(mcc: MessagesControllerComponents,
       userAuthorised() {
         withSessionId { sessionId =>
           hasJourney(Identifiers(journeyId, sessionId)) { journeyData =>
-            Future.successful(Ok(views.html.test.SetupJourneyView(journeyId, journeySetupForm.fill(journeyData.journeySetupDetails))))
+            Future.successful(Ok(view(journeyId, journeySetupForm.fill(journeyData.journeySetupDetails))))
           }
         }
       }
@@ -76,7 +77,7 @@ class TestSetupController @Inject()(mcc: MessagesControllerComponents,
           hasJourney(Identifiers(journeyId, sessionId)) { journeyData =>
             journeySetupForm.bindFromRequest.fold(
               errors =>
-                Future.successful(BadRequest(views.html.test.SetupJourneyView(journeyId, errors))),
+                Future.successful(BadRequest(view(journeyId, errors))),
               validJourney => {
                 journeyService.updateJourneyWithJourneySetup(journeyData.identifiers, validJourney).map(_ => Redirect(controllers.routes.ChooseActivityController.show(journeyId)))
               }
