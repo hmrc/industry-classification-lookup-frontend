@@ -16,17 +16,14 @@
 
 package config
 
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
 import java.nio.charset.Charset
 import java.util.Base64
-
 import javax.inject.{Inject, Singleton}
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.play.config.{AssetsConfig, OptimizelyConfig}
 
 @Singleton
-class AppConfig @Inject()(configuration: ServicesConfig,
-                          assetsConfig: AssetsConfig,
-                          optimizelyConfig: OptimizelyConfig) {
+class AppConfig @Inject()(configuration: ServicesConfig) {
 
   def loadConfig(key: String): String = configuration.getString(key)
 
@@ -39,23 +36,14 @@ class AppConfig @Inject()(configuration: ServicesConfig,
   lazy val analyticsHost: String = loadConfig(s"google-analytics.host")
   lazy val reportAProblemPartialUrl = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
   lazy val reportAProblemNonJSUrl = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
+  lazy val betaFeedbackUrl = s"$contactHost/contact/beta-feedback?service=$contactFormServiceIdentifier"
 
   lazy val feedbackFrontendUrl = loadConfig("microservice.services.feedback-frontend.url")
   lazy val signOutUrl = s"$feedbackFrontendUrl/feedback/vat-registration"
 
-  private def allowlistConfig(key: String): Seq[String] =
-    Some(new String(Base64.getDecoder.decode(loadConfig(key)), "UTF-8")).map(_.split(",")).getOrElse(Array.empty).toSeq
+  lazy val countdownLength: Int = configuration.getInt("timeout.countdown")
+  lazy val timeoutLength: Int = configuration.getInt("timeout.length")
 
-  private def loadStringConfigBase64(key: String): String = {
-    new String(Base64.getDecoder.decode(configuration.getString(key)), Charset.forName("UTF-8"))
-  }
-
-  lazy val allowlist: Seq[String] = allowlistConfig("allowlist")
-  lazy val allowlistExcluded: Seq[String] = allowlistConfig("allowlist-excluded")
-
-  lazy val csrfBypassValue: String = loadStringConfigBase64("Csrf-Bypass-value")
-  lazy val uriAllowList: Set[String] = configuration.getString("csrfexceptions.allowlist").split(",").toSet
-
-  lazy val countdownLength: String = configuration.getString("timeout.countdown")
-  lazy val timeoutLength: String = configuration.getString("timeout.length")
+  lazy val accessibilityStatementUrl: String = configuration.getString("accessibility-statement.host") +
+    "/accessibility-statement" + configuration.getString("accessibility-statement.service-path")
 }

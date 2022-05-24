@@ -14,45 +14,41 @@
  * limitations under the License.
  *@
 
-@import helpers.templates._
-@import uk.gov.hmrc.play.views.html.helpers._
 @import config.AppConfig
+@import helpers.templates._
 
-@this(main_template: main_template,
-        errorSummary: ErrorSummary,
+@this(
+        layout: layouts.layout,
+        errorSummary: components.errorSummary,
         includesHelper: includesHelper,
         formWithCSRF: FormWithCSRF,
-        inputRadioGroup: InputRadioGroup)
+        yesNoRadio: components.yesNoRadio,
+        button: components.button,
+        h1: components.h1
+)
 
-@(journeyId: String, removeSicCodeForm: Form[String], sicCodeChoice: SicCodeChoice)(implicit lang: play.api.i18n.Lang, request: Request[_], messages: Messages, appConfiguration: AppConfig)
+@(journeyId: String, removeSicCodeForm: Form[String], sicCodeChoice: SicCodeChoice)(implicit lang: play.api.i18n.Lang, request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@main_template(title = messages("page.icl.confirmremoval.title",  sicCodeChoice.desc), bodyClasses = None) {
-    <a id="back" class="link-back" href="javascript:history.back()">@messages("app.common.back")</a>
+@layout(pageTitle = Some(title(removeSicCodeForm, messages("page.icl.confirmremoval.title", sicCodeChoice.desc))), backLink = true) {
 
-    @errorSummary(
-        messages("app.common.errorSummaryLabel"), removeSicCodeForm
-    )
+    @errorSummary(removeSicCodeForm.errors)
 
-    <h1 class="form-title heading-large" id="page-title">@messages("page.icl.confirmremoval.heading", sicCodeChoice.desc)</h1>
+    @h1(messages("page.icl.confirmremoval.heading", sicCodeChoice.desc))
 
     @includesHelper(sicCodeChoice.indexes)
 
     @formWithCSRF(action = controllers.routes.RemoveSicCodeController.submit(journeyId, sicCodeChoice.code)) {
-     <div class="form-group">
-        @inputRadioGroup(
-            field = removeSicCodeForm("removeCode"),
-            Seq(("yes", "Yes"), ("no", "No")),
-            '_labelBefore -> "ss",
-            '_labelAfter -> true,
-            '_legend -> messages("page.icl.confirmremoval.title",  sicCodeChoice.desc),
-            '_legendClass -> "hidden",
-            '_labelClass -> "block-label",
-            '_groupClass -> "inline"
+        @yesNoRadio(
+            form = removeSicCodeForm,
+            fieldName = "removeCode",
+            yesValue = "yes",
+            noValue = "no",
+            headingKey = messages("page.icl.confirmremoval.title", sicCodeChoice.desc),
+            isPageHeading = false,
+            classes = "govuk-visually-hidden",
+            inline = true
         )
-     </div>
 
-     <div class="form-group">
-         <button class="button" type="submit" id="continue" >@messages("app.common.confirmAndContinue")</button>
-     </div>
+        @button("app.common.confirmAndContinue", id = Some("continue"))
     }
 }

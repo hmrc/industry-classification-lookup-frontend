@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,27 +12,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package config
+@this()
 
-import akka.stream.Materializer
-import javax.inject.{Inject, Singleton}
-import play.api.mvc.Call
-import uk.gov.hmrc.allowlist.AkamaiAllowlistFilter
+@(itemMsgKeys: String*)(implicit messages: Messages)
 
-@Singleton
-class AllowlistFilter @Inject()(val mat: Materializer,
-                                appConfig: AppConfig)
-  extends AkamaiAllowlistFilter {
-
-  override def allowlist: Seq[String] = appConfig.allowlist
-
-  override def excludedPaths: Seq[Call] = {
-    appConfig.allowlistExcluded.map { path =>
-      Call("GET", path)
+<ul class="govuk-list govuk-list--bullet">
+    @itemMsgKeys.map { msgKey =>
+        <li>@messages(msgKey)</li>
     }
-  }
-
-  override def destination: Call = Call("GET", "https://www.tax.service.gov.uk/outage-sic-search")
-}
+</ul>

@@ -1,3 +1,5 @@
 # JOURNEY API ROUTES
+
++nocsrf
 POST        /initialise-journey                     controllers.internal.ApiController.journeyInitialisation()
 GET         /:jId/fetch-results                     controllers.internal.ApiController.fetchResults(jId)

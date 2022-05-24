@@ -14,22 +14,12 @@
  * limitations under the License.
  *@
 
-@import config.AppConfig
+@this()
 
-@this(
-        layout: layouts.layout,
-        h1: components.h1,
-        p: components.p
-)
+@(classes: String = "govuk-body", id: Option[String] = None)(content: Html)(implicit messages: Messages)
 
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
-
-@layout(pageTitle = Some(titleNoForm(pageTitle)), backLink = true) {
-
-    @h1(heading)
-
-    @p() {
-        @message
-    }
-
+@if(id.isDefined){
+    <p class="@classes" id="@id">@content</p>
+} else {
+    <p class="@classes">@content</p>
 }
