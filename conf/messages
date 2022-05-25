@@ -31,18 +31,18 @@ page.icl.sicsearch.heading                      = Search for a thing that the bu
 page.icl.sicsearch.form.label                   = Enter one or two keywords (or the numerical SIC code, if you know it)
 page.icl.sicsearch.form.hint                    = For example, ''plumbing'', ''property management''
 
-page.icl.chooseactivity.title                   = Standard Industry Classifications (SIC) codes
-page.icl.chooseactivity.heading                 = Standard Industry Classifications (SIC) codes
-page.icl.chooseactivity.subheading              = Search for a thing that the business does
-page.icl.chooseactivity.enteredkeyword          = You searched for
-page.icl.chooseactivity.resultsfound            = results
-page.icl.chooseactivity.removeFilter            = Remove filter
-page.icl.chooseactivity.insector                = in <b class="bold">{0}</b>
-page.icl.chooseactivity.searchagain             = Please try searching again using different words
-page.icl.chooseactivity.changehidden            = Change sic code used to search
-page.icl.chooseactivity.selection-heading       = Choose some things that the business does
-page.icl.chooseactivity.selection-hint          = Select as many as you want. You can refine them later.
-page.icl.chooseactivity.filter-heading          = Filter results by industry
+page.icl.chooseActivity.title                   = Standard Industry Classifications (SIC) codes
+page.icl.chooseActivity.heading                 = Standard Industry Classifications (SIC) codes
+page.icl.chooseActivity.subheading              = Search for a thing that the business does
+page.icl.chooseActivity.enteredkeyword          = You searched for
+page.icl.chooseActivity.resultsfound            = results
+page.icl.chooseActivity.removeFilter            = Remove filter
+page.icl.chooseActivity.insector                = in <b class="bold">{0}</b>
+page.icl.chooseActivity.searchagain             = Please try searching again using different words
+page.icl.chooseActivity.changehidden            = Change sic code used to search
+page.icl.chooseActivity.selection-heading       = Choose some things that the business does
+page.icl.chooseActivity.selection-hint          = Select as many as you want. You can refine them later.
+page.icl.chooseActivity.filter-heading          = Filter results by industry
 
 page.icl.confirmation.title                     = Check and confirm the business''s Standard Industry Classification (SIC) codes
 page.icl.confirmation.heading                   = Check and confirm the business''s Standard Industry Classification (SIC) codes

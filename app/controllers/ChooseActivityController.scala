@@ -26,7 +26,7 @@ import play.api.mvc._
 import services.{JourneyService, SicSearchService}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import views.html.pages.chooseactivity
+import views.html.pages.chooseActivity
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,7 +36,7 @@ class ChooseActivityController @Inject()(mcc: MessagesControllerComponents,
                                          val sicSearchService: SicSearchService,
                                          val journeyService: JourneyService,
                                          val authConnector: AuthConnector,
-                                         view: chooseactivity
+                                         view: chooseActivity
                                         )(implicit ec: ExecutionContext,
                                           val appConfig: AppConfig) extends ICLController(mcc) {
 

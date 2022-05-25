@@ -23,7 +23,7 @@
 
 @if(searchResults.sectors.size > 1) {
     <div class="govuk-grid-column-one-third">
-        @h3("page.icl.chooseactivity.filter-heading")
+        @h3("page.icl.chooseActivity.filter-heading")
         <ol class="govuk-list">
             @searchResults.sectors.map { sector =>
                 <li>
@@ -31,7 +31,7 @@
                         link = controllers.routes.ChooseActivityController.filter(journeyId, sector.code).url,
                         messageKey = s"${sector.name} (${sector.count})",
                         id = Some(sector.code),
-                        additionalClasses = if(SearchResults.isCurrentSector(searchResults, sector)) "bold" else ""
+                        additionalClasses = if(SearchResults.isCurrentSector(searchResults, sector)) "govuk-!-font-weight-bold" else ""
                     )
                 </li>
             }

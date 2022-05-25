@@ -25,7 +25,7 @@ import org.jsoup.Jsoup
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.i18n.{I18nSupport, Lang, MessagesApi}
 import play.api.test.FakeRequest
-import views.html.pages.chooseactivity
+import views.html.pages.chooseActivity
 
 class ChooseActivityViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with MockAppConfig with MockMessages with I18nSupport {
   implicit val request: FakeRequest[_] = FakeRequest()
@@ -45,7 +45,7 @@ class ChooseActivityViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with 
   val back = "Back"
 
   "The choose activity screen" should {
-    lazy val view = app.injector.instanceOf[chooseactivity].apply(journeyId, SicSearchForm.form.fill(SicSearch(query)), ChooseMultipleActivitiesForm.form, Some(searchResults))
+    lazy val view = app.injector.instanceOf[chooseActivity].apply(journeyId, SicSearchForm.form.fill(SicSearch(query)), ChooseMultipleActivitiesForm.form, Some(searchResults))
     lazy val document = Jsoup.parse(view.body)
 
     "have the correct title" in {

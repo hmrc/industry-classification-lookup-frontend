@@ -13,10 +13,10 @@ private object AppDependencies {
 
   def test(scope: String = "test,it") = Seq(
     "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % scope,
-    "com.github.tomakehurst" % "wiremock-jre8-standalone" % "2.31.0" % scope,
-    "org.jsoup" % "jsoup" % "1.14.3" % scope,
-    "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % scope,
-    "org.mockito" % "mockito-core" % "4.1.0" % scope,
+    "com.github.tomakehurst" % "wiremock-jre8" % "2.27.2" % scope,
+    "org.jsoup" % "jsoup" % "1.13.1" % scope,
+    "org.scalatestplus" %% "mockito-3-4" % "3.2.9.0" % scope,
+    "org.mockito" % "mockito-core" % "3.3.0" % scope,
     "uk.gov.hmrc" %% "reactivemongo-test" % "5.0.0-play-28" % scope,
     "com.vladsch.flexmark" % "flexmark-all" % "0.36.8" % scope
   )
