@@ -1,5 +1,5 @@
 @*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,107 +16,79 @@
 
 @import config.AppConfig
 @import helpers.templates._
-@import uk.gov.hmrc.play.views.html.helpers._
 
-@this(main_template: main_template,
-        errorSummary: helpers.templates.errorSummary,
+@this(
+        layout: layouts.layout,
+        errorSummary: components.errorSummary,
         searchBar: searchBar,
         formWithCSRF: FormWithCSRF,
         sectorFilter: sectorFilter,
-        inputCheckboxGroup: inputCheckboxGroup)
+        searchResultCount: searchResultCount,
+        inputCheckboxes: components.inputCheckboxes,
+        h1: components.h1,
+        h2: components.h2,
+        p: components.p,
+        strong: components.strong,
+        button: components.button,
+        link: components.link
+)
 
-@(journeyId: String, sicSearchForm: Form[SicSearch], chooseActForm: Form[List[SicCode]], oSearchResults: Option[SearchResults])(implicit lang: play.api.i18n.Lang, request: Request[_], messages: Messages, appConfiguration: AppConfig)
+@(journeyId: String, sicSearchForm: Form[SicSearch], chooseActForm: Form[List[SicCode]], oSearchResults: Option[SearchResults])(implicit lang: play.api.i18n.Lang, request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@main_template(title = messages("page.icl.chooseactivity.title"), bodyClasses = Some("full-width")) {
+@layout(pageTitle = Some(title(sicSearchForm, messages("page.icl.chooseactivity.title"))), fullWidth = true, backLink = true) {
 
-    <div class="form-group-compound">
-        <a id="back" class="link-back" href="javascript:history.back()">@messages("app.common.back")</a>
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            @errorSummary(sicSearchForm.errors)
+
+            @errorSummary(chooseActForm.errors)
+
+            @h1(messages("page.icl.chooseactivity.heading"))
+
+            @h2(messages("page.icl.chooseactivity.subheading"))
+
+            @searchBar(messages("page.icl.chooseactivity.subheading"), sicSearchForm, controllers.routes.ChooseActivityController.submit(journeyId, Some("invalid-search")))
+        </div>
     </div>
-
-    @errorSummary(
-        messages("app.common.errorSummaryLabel"), sicSearchForm, dataJourney=Some("sicSearch")
-    )
-
-    @errorSummary(
-        messages("app.common.errorSummaryLabel"), chooseActForm, dataJourney=Some("sicSearch")
-    )
-
-    <h1 class="form-title heading-large" id="page-title">@messages("page.icl.chooseactivity.heading")</h1>
-
-    <h2 class="heading-medium" id="page-sub-heading">@messages("page.icl.chooseactivity.subheading")</h2>
-
-
-    @searchBar(messages("page.icl.chooseactivity.subheading"), sicSearchForm, controllers.routes.ChooseActivityController.submit(journeyId, Some("invalid-search")))
-
 
     @oSearchResults.map { searchResults =>
         @if(searchResults.numFound == 0) {
-            <div class="column-two-thirds">
-                <table>
-                    <tr>
-                        <td>
-                            <p class=“result-info”>
-                                <span id="no-result" class=“result-count” style="font-size: -webkit-xxx-large; font-weight: 700; font-family: 'nta', Arial, sans-serif; margin-right:5px;">0</span>
-                                @messages("page.icl.chooseactivity.resultsfound")
-                            </p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                        @messages("page.icl.chooseactivity.searchagain")
-                        </td>
-                    </tr>
-                </table>
-            </div>
+            @p() {
+                @strong("no-result")(Html("0"))
+                @messages("page.icl.chooseactivity.resultsfound")
+            }
+            @p() {
+                @messages("page.icl.chooseactivity.searchagain")
+            }
         } else {
-            <h2 class="heading-medium">@messages("page.icl.chooseactivity.selection-heading")</h2>
-            <p>@messages("page.icl.chooseactivity.selection-hint")</p>
+            @h2("page.icl.chooseactivity.selection-heading")
+            @p() {
+                @messages("page.icl.chooseactivity.selection-hint")
+            }
 
             @formWithCSRF(action = controllers.routes.ChooseActivityController.submit(journeyId)) {
-              <div class="grid-row">
-                @sectorFilter(journeyId, searchResults)
-                <div class="column-two-thirds">
-                    <div class="form-group">
-                        <table>
-                            <tr>
-                                <td class=“result-info”>
-                                    <span id="result-count" class="bold">
-                                        @searchResults.numFound
-                                    </span>
-                                    @messages("page.icl.chooseactivity.resultsfound")
-                                    @searchResults.currentSector.map { sector =>
-                                        @Html(messages("page.icl.chooseactivity.insector", sector.name))
-                                    }
-                                </td>
-                                @searchResults.currentSector.map { filterApplied =>
-                                    <td>
-                                        <a id="remove-filter" href="@controllers.routes.ChooseActivityController.clearFilter(journeyId)">
-                                            @messages("page.icl.chooseactivity.removeFilter")
-                                        </a>
-                                    </td>
-                                }
-                            </tr>
-                        </table>
-                    </div>
+                <div class="govuk-grid-row">
+                    @sectorFilter(journeyId, searchResults)
 
-                    <div class="form-group">
+                    <div class="govuk-grid-column-two-thirds">
+                        @searchResultCount(journeyId, searchResults)
 
-                    @inputCheckboxGroup(
-                        field = chooseActForm("code"),
-                        searchResults.results.map(sicCode => (sicCode.sicCode, sicCode.description)),
-                        '_labelAfter -> true,
-                        '_legend -> messages("page.icl.chooseactivity.title"),
-                        '_legendClass -> "hidden",
-                        '_labelClass -> "block-label"
-                    )
+                        @inputCheckboxes(
+                            form = chooseActForm,
+                            name = "code",
+                            idPrefix = "code",
+                            legend = messages("page.icl.chooseactivity.title"),
+                            items = searchResults.results.map(sicCode => CheckboxItem(
+                                content = Text(sicCode.description),
+                                value = sicCode.sicCode
+                            )),
+                            legendAsHeading = false,
+                            classes = "govuk-visually-hidden"
+                        )
 
-                    </div>
-
-                    <div class="form-group">
-                        <button class="btn button" role="button" type="submit" id="continue" >@messages("app.common.choose-activity")</button>
+                        @button("app.common.choose-activity", id = Some("continue"))
                     </div>
                 </div>
-               </div>
             }
         }
     }

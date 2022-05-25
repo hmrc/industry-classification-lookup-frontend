@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ class ConfirmationViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with Mo
   )
 
   val pageHeading = "MyPageHeading"
+  val pageTitle = s"$pageHeading - Register for VAT - GOV.UK"
   val pageLeadParagraph = "MyPageLead"
   val pageHintText = "MyPageHint"
 
@@ -61,14 +62,14 @@ class ConfirmationViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with Mo
 
     "have the correct content" when {
       "dynamic content is passed in" in {
-        dynamicDocument.getElementById("page-title").text mustBe pageHeading
-        dynamicDocument.getElementById("back").text mustBe "Back"
+        dynamicDocument.getElementsByTag("title").first().text mustBe pageTitle
+        dynamicDocument.select(".govuk-back-link").first().text mustBe "Back"
         dynamicDocument.getElementById("page-lead-text").text() mustBe pageLeadParagraph
         dynamicDocument.getElementById("page-hint-text").text() mustBe pageHintText
       }
       "no content is passed in" in {
-        defaultDocument.getElementById("page-title").text mustBe "Check and confirm the business's Standard Industry Classification (SIC) codes"
-        defaultDocument.getElementById("back").text mustBe "Back"
+        defaultDocument.getElementsByTag("title").first().text mustBe "Check and confirm the business's Standard Industry Classification (SIC) codes - Register for VAT - GOV.UK"
+        defaultDocument.select(".govuk-back-link").first().text mustBe "Back"
         Option(defaultDocument.getElementById("page-lead-text")) mustBe None
         Option(defaultDocument.getElementById("page-hint-text")) mustBe None
       }

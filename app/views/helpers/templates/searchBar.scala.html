@@ -1,5 +1,5 @@
 @*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,36 +14,26 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.play.views.html.helpers._
+@import config.AppConfig
 
-@this(formWithCSRF: FormWithCSRF,
-        input: Input)
+@this(
+        formWithCSRF: FormWithCSRF,
+        inputText: components.inputText,
+        button: components.button
+)
 
-@(legend: String, form: Form[SicSearch], actionCall: Call)(implicit request: Request[_], messages: Messages)
+@(legend: String, form: Form[SicSearch], actionCall: Call)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @formWithCSRF(action = actionCall) {
+    @inputText(
+        form = form,
+        id = "sicSearch",
+        name = "sicSearch",
+        hint = Some(Html(messages("page.icl.sicsearch.form.hint"))),
+        label = messages("page.icl.sicsearch.form.label"),
+        isPageHeading = false,
+        classes = Some("govuk-input--width-20")
+    )
 
-    <div class="govuk-header">
-        <div class="searchfield">
-
-            <fieldset class="govuk-input">
-                <legend style="display: none">
-                    @legend
-                </legend>
-                @input(
-                form("sicSearch"),
-                '_divClass -> "form-group",
-                '_inputClass -> "form-control",
-                '_labelClass -> "form-label",
-                '_inputHint -> messages("page.icl.sicsearch.form.hint"),
-                '_label -> messages("page.icl.sicsearch.form.label")
-                )
-            </fieldset>
-            <fieldset class="govuk-submit">
-                <div class="form-group">
-                    <button type="submit" class="button" id="search">@messages("app.common.search")</button>
-                </div>
-            </fieldset>
-        </div>
-    </div>
+    @button("app.common.search", id = Some("search"))
 }

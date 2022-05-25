@@ -1,4 +1,6 @@
 app.title                                       = Register for VAT
+site.govuk                                      = GOV.UK
+service.name                                    = Register for VAT
 getHelp.linkText                                = Is this page not working properly? (opens in new tab)
 
 app.common.continue                             = Continue
@@ -10,6 +12,10 @@ app.common.change                               = Change
 app.common.search                               = Search
 app.common.includes                             = This includes:
 app.common.remove                               = Remove
+app.common.yes                                  = Yes
+app.common.no                                   = No
+
+error.browser.title.prefix                      = Error:
 
 errors.invalid.sic.noEntry                      = Enter one or two keywords for what the business does
 errors.invalid.sic.noSelection                  = Choose a business activity

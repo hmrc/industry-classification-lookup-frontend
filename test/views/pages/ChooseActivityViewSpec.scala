@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,16 +40,20 @@ class ChooseActivityViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with 
 
   val journeyId = "testJourneyId"
 
+  val pageHeading = "Standard Industry Classifications (SIC) codes"
+  val pageTitle = s"$pageHeading - Register for VAT - GOV.UK"
+  val back = "Back"
+
   "The choose activity screen" should {
     lazy val view = app.injector.instanceOf[chooseactivity].apply(journeyId, SicSearchForm.form.fill(SicSearch(query)), ChooseMultipleActivitiesForm.form, Some(searchResults))
     lazy val document = Jsoup.parse(view.body)
 
     "have the correct title" in {
-      document.getElementById("page-title").text mustBe messagesApi("page.icl.chooseactivity.heading")
+      document.getElementsByTag("title").first().text mustBe pageTitle
     }
 
     "have a back link" in {
-      document.getElementById("back").text mustBe messagesApi("app.common.back")
+      document.select(".govuk-back-link").first().text mustBe back
     }
 
     "have the correct search terms displayed in the search bar" in {

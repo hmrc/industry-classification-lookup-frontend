@@ -1,5 +1,5 @@
 @*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,27 @@
  * limitations under the License.
  *@
 
-@this()
+@this(
+        link: components.link,
+        h3: components.h3
+)
 
 @(journeyId: String, searchResults: SearchResults)(implicit request: Request[_], messages: Messages)
 
-@if(searchResults.sectors.size > 1){
-    <div class="column-one-third">
-        <h3 id="option-select-title-case-type">@messages("page.icl.chooseactivity.filter-heading")</h3>
-        <div role="group" aria-labelledby="option-select-title-case-type">
-        <ul class="list">
+@if(searchResults.sectors.size > 1) {
+    <div class="govuk-grid-column-one-third">
+        @h3("page.icl.chooseactivity.filter-heading")
+        <ol class="govuk-list">
             @searchResults.sectors.map { sector =>
-                <li><a href="@controllers.routes.ChooseActivityController.filter(journeyId, sector.code)" id="@{sector.code}" @if(SearchResults.isCurrentSector(searchResults, sector)){class="bold"}>@{sector.name} (@{sector.count})</a></li>
+                <li>
+                    @link(
+                        link = controllers.routes.ChooseActivityController.filter(journeyId, sector.code).url,
+                        messageKey = s"${sector.name} (${sector.count})",
+                        id = Some(sector.code),
+                        additionalClasses = if(SearchResults.isCurrentSector(searchResults, sector)) "bold" else ""
+                    )
+                </li>
             }
-        </ul>
-        </div>
+        </ol>
     </div>
 }

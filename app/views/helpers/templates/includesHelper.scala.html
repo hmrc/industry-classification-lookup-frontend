@@ -1,5 +1,5 @@
 @*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,16 @@
  * limitations under the License.
  *@
 
-@this()
+@this(
+        p: components.p,
+        bullets: components.bullets
+)
 
 @(list: List[String])(implicit messages: Messages)
 
-@if(list.nonEmpty){
-<p class="font-small">@messages("app.common.includes")</p>
-<ul class="list-bullet">
-    @list.map{ index =>
-     <li>@index</li>
+@if(list.nonEmpty) {
+    @p() {
+        @messages("app.common.includes")
     }
-</ul>
+    @bullets(list: _*)
 }

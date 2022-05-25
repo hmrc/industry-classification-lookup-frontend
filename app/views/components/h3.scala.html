@@ -1,5 +1,5 @@
-/*
- * Copyright 2021 HM Revenue & Customs
+@*
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,14 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package config
+@this()
 
-import javax.inject.{Inject, Singleton}
-import play.api.http.DefaultHttpFilters
-import uk.gov.hmrc.play.bootstrap.frontend.filters.FrontendFilters
+@(msg: String, classes: String = "govuk-heading-s", optId: Option[String] = None)(implicit messages: Messages)
 
-@Singleton
-class DevelopmentFilters @Inject()(defaultFilters: FrontendFilters, csrfExceptionsFilter: CSRFExceptionsFilter)
-  extends DefaultHttpFilters(Seq(csrfExceptionsFilter) ++ defaultFilters.filters: _*)
+<h3 @optId.map(value => s"id=$value") class="@classes">@messages(msg)</h3>

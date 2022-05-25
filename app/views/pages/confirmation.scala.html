@@ -1,5 +1,5 @@
 @*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,79 +15,89 @@
  *@
 
 @import config.AppConfig
-@import models.setup.messages.Summary
 @import helpers.templates._
-@import uk.gov.hmrc.play.views.html.helpers._
+@import models.setup.messages.Summary
 
-@this(main_template: main_template,
-        textErrorSummary: textErrorSummary,
+@this(
+        layout: layouts.layout,
+        errorSummary: components.errorSummary,
+        errorMessage: GovukErrorMessage,
         formWithCSRF: FormWithCSRF,
-        errorInline: ErrorInline,
-        includesHelper: includesHelper)
+        includesHelper: includesHelper,
+        h1: components.h1,
+        p: components.p,
+        link: components.link,
+        button: components.button,
+        table: GovukTable
+)
 
 @(journeyId: String, listOfChoices: List[SicCodeChoice], errorArgs: Option[Seq[String]] = None, summaryContent: Summary = Summary(None, None, None))(implicit request: Request[_], messages: Messages, appConfiguration: AppConfig)
 
-@main_template(title = summaryContent.heading.getOrElse(messages("page.icl.confirmation.title")), bodyClasses = None) {
 
-  <a id="back" class="link-back" href="javascript:history.back()">@Messages("app.common.back")</a>
+@layout(pageTitle = Some(titleNoForm(summaryContent.heading.getOrElse(messages("page.icl.confirmation.title")))), backLink = true) {
 
-  @errorArgs.map{ args =>
-    @textErrorSummary(
-        messages("page.icl.confirmation.errorSummaryLabel"),
-        Some(messages("page.icl.confirmation.errorSummarySubHeading")),
-        "errors.confirmation.moreThanFour",
-        "selected-sic-codes-table",
-        args
+    @errorSummary(
+        errorArgs.map { args =>
+            FormError("selected-sic-codes-table", Seq("errors.confirmation.moreThanFour"), args)
+        }.toSeq,
+        titleMessageKey = "page.icl.confirmation.errorSummaryLabel",
+        descriptionKey = Some("page.icl.confirmation.errorSummarySubHeading")
     )
-  }
 
-  <h1 class="form-title heading-large" id="page-title">@summaryContent.heading.getOrElse(messages("page.icl.confirmation.heading"))</h1>
+    @h1(summaryContent.heading.getOrElse(messages("page.icl.confirmation.heading")))
 
-  @summaryContent.lead.map { leadText =>
-    <p id="page-lead-text">@leadText</p>
-  }
+    @summaryContent.lead.map { leadText =>
+        @p(id = Some("page-lead-text")) {
+            @leadText
+        }
+    }
 
-
-  <div id="selected-sic-codes-table" class="form-group @if(errorArgs.nonEmpty){ form-group-error }">
-      @errorArgs.map { args =>
-        @errorInline("confirmation", messages("errors.confirmation.moreThanFour", args: _*))
-      }
-    <table class="check-your-answers multiple-sections">
-        <tbody>
-            @listOfChoices.map { sicCodeChoice =>
-                <tr>
-                    <td id="applicant" class="answer">
-                        <p class="font-small">@sicCodeChoice.code - @sicCodeChoice.desc</p>
-                        @includesHelper(sicCodeChoice.indexes)
-                    </td>
-                    <td class="change">
-                        <a href="@controllers.routes.RemoveSicCodeController.show(journeyId, sicCodeChoice.code)" id="remove-code-@sicCodeChoice.code">
-                            @messages("app.common.remove")
-                            <!--TODO Talk to Russell-->
-                            <!--<span class="visuallyhidden">@messages("app.common.remove")</span>-->
-                        </a>
-                    </td>
-                </tr>
-
-            }
-        </tbody>
-    </table>
-  </div>
-
-  @summaryContent.hint.map { hintText =>
-    <div class="panel panel-border-narrow">
-      <p id="page-hint-text">@hintText</p>
+    <div id="selected-sic-codes-table" class="govuk-form-group @if(errorArgs.nonEmpty) { govuk-form-group--error }">
+        @errorArgs.map { args =>
+            @errorMessage(ErrorMessage(
+                id = Some("confirmation"),
+                content = Text(messages("errors.confirmation.moreThanFour", args: _*))
+            ))
+        }
+        @table(Table(listOfChoices.map { sicCodeChoice =>
+            Seq(
+                TableRow(HtmlContent(
+                    tableContent(sicCodeChoice)
+                )),
+                TableRow(HtmlContent(
+                    link(
+                        link = controllers.routes.RemoveSicCodeController.show(journeyId, sicCodeChoice.code).url,
+                        messageKey = "app.common.remove",
+                        id = Some(s"remove-code-${sicCodeChoice.code}")
+                    )
+                ))
+            )
+        }))
     </div>
-  }
 
-    <div class="form-group">
-        <a href="@controllers.routes.ChooseActivityController.show(journeyId)" id="add-more-sic-codes-link">@messages("page.icl.confirmation.addMoreSicCodes")</a>
+    @summaryContent.hint.map { hintText =>
+        @p(id = Some("page-hint-text")) {
+            @hintText
+        }
+    }
+
+    <div class="govuk-!-margin-bottom-6">
+        @link(
+            link = controllers.routes.ChooseActivityController.show(journeyId).url,
+            messageKey = "page.icl.confirmation.addMoreSicCodes",
+            id = Some("add-more-sic-codes-link")
+        )
     </div>
 
     @formWithCSRF(action = controllers.routes.ConfirmationController.submit(journeyId)) {
-        <div class="form-group">
-          <button class="button" type="submit" id="continue" >@messages("app.common.confirmAndContinue")</button>
-        </div>
+        @button("app.common.confirmAndContinue", id = Some("continue"))
     }
 
+}
+
+@tableContent(sicCodeChoice: SicCodeChoice) = {
+    @p() {
+        @sicCodeChoice.code - @sicCodeChoice.desc
+    }
+    @includesHelper(sicCodeChoice.indexes)
 }

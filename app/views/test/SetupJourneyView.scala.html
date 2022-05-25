@@ -1,5 +1,5 @@
 @*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,70 +15,109 @@
  *@
 
 @import config.AppConfig
-@import helpers.templates.{input, inputRadioGroup, inputRadioHidden}
 @import models.setup.{JourneyData, JourneySetup}
-@import uk.gov.hmrc.play.views.html.helpers._
 
-@this(inputRadioGroup: inputRadioGroup, main_template: main_template, inputRadioHidden: inputRadioHidden, input: input, formWithCSRF: FormWithCSRF)
+@this(
+        layout: layouts.layout,
+        inputRadio: components.inputRadio,
+        inputNumber: components.inputNumber,
+        h1: components.h1,
+        p: components.p,
+        button: components.button,
+        formWithCSRF: FormWithCSRF
+)
 
 @(journeyId: String, journeyForm: Form[JourneySetup])(implicit lang: play.api.i18n.Lang, request: Request[_], messages: Messages, appConfiguration: AppConfig)
 
-@hiddenYesContent = {
-<div class="additional-option-block panel panel-border-narrow">
-    @inputRadioGroup(
-        field = journeyForm("booster"),
-        Seq(
-            "false"   -> messages("page.test.setup-journey.radio.query-booster-no"),
-            "true"    -> messages("page.test.setup-journey.radio.query-booster")
+@hiddenContent = {
+    @inputRadio(
+        form = journeyForm,
+        fieldName = "booster",
+        legend = "",
+        items = Seq(
+            RadioItem(
+                id = Some("booster-false"),
+                value = Some("false"),
+                content = Text(messages("page.test.setup-journey.radio.query-booster-no"))
+            ),
+            RadioItem(
+                id = Some("booster-true"),
+                value = Some("true"),
+                content = Text(messages("page.test.setup-journey.radio.query-booster"))
+            )
         ),
-        '_legendClass -> "hidden",
-        '_labelClass -> "block-label"
+        legendAsHeading = false,
+        classes = "govuk-visually-hidden"
     )
-</div>
 }
 
-@main_template(title = messages("page.test.setup-journey.title"), bodyClasses = None) {
+@layout(pageTitle = Some(title(journeyForm, messages("page.test.setup-journey.title"))), backLink = true) {
 
-  <a id="back" class="link-back" href="javascript:history.back()">@Messages("app.common.back")</a>
-
-
-  <h1 class="form-title heading-xlarge" id="page-title">@messages("page.test.setup-journey.title")</h1>
+    @h1("page.test.setup-journey.title")
 
     @formWithCSRF(action = controllers.test.routes.TestSetupController.submit(journeyId)) {
-        <p>@messages("page.test.setup-journey.radio.alg.title")</p>
-        @inputRadioHidden(
-            field = journeyForm("queryParser"),
-            radioOptions = Seq(
-                "false"   -> messages("page.test.setup-journey.radio.query-builder"),
-                "true"    -> messages("page.test.setup-journey.radio.query-parser")
-            ),
-            radioAdditionalInfo = Map(
-                "false" -> hiddenYesContent
-            ),
-            '_labelClass -> "block-label",
-            '_legendClass -> "visually-hidden"
-        )
-        <br>
+        @p() {
+            @messages("page.test.setup-journey.radio.alg.title")
+        }
 
-        <p>@messages("page.test.setup-journey.radio.data-set.title")</p>
-        @inputRadioGroup(
-            field = journeyForm("dataSet"),
-            Seq(
-                JourneyData.GDS        -> messages("page.test.setup-journey.radio.gds"),
-                JourneyData.ONS        -> messages("page.test.setup-journey.radio.ons")
+        @inputRadio(
+            form = journeyForm,
+            fieldName = "queryParser",
+            legend = "",
+            items = Seq(
+                RadioItem(
+                    id = Some("queryParser-false"),
+                    value = Some("false"),
+                    content = Text(messages("page.test.setup-journey.radio.query-builder")),
+                    conditionalHtml = Some(hiddenContent)
+                ),
+                RadioItem(
+                    id = Some("queryParser-true"),
+                    value = Some("true"),
+                    content = Text(messages("page.test.setup-journey.radio.query-parser"))
+                )
             ),
-            '_legendClass -> "hidden",
-            '_labelClass -> "block-label"
+            legendAsHeading = false,
+            classes = "govuk-visually-hidden"
         )
-        <br>
-        <p>@messages("page.test.setup-journey.amount-of-results.title")</p>
-        @input(
-            field = journeyForm("amountOfResults")
-        )
-        <br>
 
-        <div class="form-group">
-          <button class="btn button" id="continue" >@messages("app.common.continue")</button>
-        </div>
+        @p() {
+            @messages("page.test.setup-journey.radio.data-set.title")
+        }
+
+        @inputRadio(
+            form = journeyForm,
+            fieldName = "dataSet",
+            legend = "",
+            items = Seq(
+                RadioItem(
+                    id = Some(s"dataSet-${JourneyData.GDS}"),
+                    value = Some(JourneyData.GDS),
+                    content = Text(messages("page.test.setup-journey.radio.gds")),
+                ),
+                RadioItem(
+                    id = Some(s"dataSet-${JourneyData.ONS}"),
+                    value = Some(JourneyData.ONS),
+                    content = Text(messages("page.test.setup-journey.radio.ons"))
+                )
+            ),
+            legendAsHeading = false,
+            classes = "govuk-visually-hidden"
+        )
+
+        @p() {
+            @messages("page.test.setup-journey.amount-of-results.title")
+        }
+
+        @inputNumber(
+            form = journeyForm,
+            id = "amountOfResults",
+            name = "amountOfResults",
+            label = "",
+            isPageHeading = false,
+            classes = Some("govuk-input--width-10")
+        )
+
+        @button("app.common.continue", id = Some("continue"))
     }
 }
