@@ -31,7 +31,7 @@
             TableRow(HtmlContent(
                 link(
                     link = controllers.routes.ChooseActivityController.clearFilter(journeyId).url,
-                    messageKey = messages("page.icl.chooseactivity.removeFilter"),
+                    messageKey = messages("page.icl.chooseActivity.removeFilter"),
                     id = Some("remove-filter")
                 )
             ))
@@ -43,8 +43,8 @@
     @strong("result-count") {
         @searchResults.numFound.toString
     }
-    @messages("page.icl.chooseactivity.resultsfound")
+    @messages("page.icl.chooseActivity.resultsfound")
     @searchResults.currentSector.map { sector =>
-        @Html(messages("page.icl.chooseactivity.insector", sector.name))
+        @Html(messages("page.icl.chooseActivity.insector", sector.name))
     }
 }
