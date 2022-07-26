@@ -58,8 +58,10 @@ class SicSearchService @Inject()(val iCLConnector: ICLConnector,
   def lookupSicCodes(journeyData: JourneyData, selectedCodes: List[SicCode])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
     def fiteredListOfSicCodeChoice(sicCodesUnfiltered: List[SicCode], groups: Map[String, List[SicCode]]): List[SicCodeChoice] = {
       sicCodesUnfiltered map { sic =>
-        SicCodeChoice(sic, groups.get(sic.sicCode).fold(List.empty[String])(nSicCodes =>
-          nSicCodes.filterNot(sicCode => sicCode == sic || sicCode.description.isEmpty).map(_.description))
+        SicCodeChoice(
+          sicCode = sic,
+          indexes = groups.get(sic.sicCode)
+            .fold(List.empty[String])(nSicCodes => nSicCodes.filterNot(sicCode => sicCode == sic || sicCode.description.isEmpty).map(_.description))
         )
       }
     }
@@ -68,10 +70,10 @@ class SicSearchService @Inject()(val iCLConnector: ICLConnector,
       Future.successful(0)
     } else {
       for {
-        oSicCode <- iCLConnector.lookup(getCommaSeparatedCodes(selectedCodes))
-        groups = selectedCodes.groupBy(_.sicCode)
-        filteredCodes = fiteredListOfSicCodeChoice(oSicCode, groups)
-        res <- if (oSicCode.nonEmpty) {
+        foundSicCodes <- iCLConnector.lookup(getCommaSeparatedCodes(selectedCodes))
+        groups = foundSicCodes.groupBy(_.sicCode)
+        filteredCodes = fiteredListOfSicCodeChoice(foundSicCodes, groups)
+        res <- if (foundSicCodes.nonEmpty) {
           insertChoices(journeyData.identifiers.journeyId, filteredCodes) map (_ => 1)
         } else {
           Future.successful(0)
