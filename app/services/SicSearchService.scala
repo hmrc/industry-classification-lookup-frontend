@@ -18,14 +18,12 @@ package services
 
 import config.Logging
 import connectors.ICLConnector
-
-import javax.inject.{Inject, Singleton}
 import models._
 import models.setup.JourneyData
-import play.api.Logger
 import repositories.SicStoreRepository
 import uk.gov.hmrc.http.HeaderCarrier
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -34,7 +32,10 @@ class SicSearchService @Inject()(val iCLConnector: ICLConnector,
 
   def search(journeyData: JourneyData, query: String, sector: Option[String] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
     if (isLookup(query)) {
-      lookupSicCodes(journeyData, List(SicCode(query, "")))
+      lookupSicCodes(journeyData, List(SicCode(query, ""))).flatMap {
+        case 0 => searchQuery(journeyData, query, sector)
+        case res => Future.successful(res)
+      }
     } else {
       searchQuery(journeyData, query, sector)
     }
