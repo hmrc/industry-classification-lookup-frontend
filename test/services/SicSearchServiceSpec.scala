@@ -64,7 +64,6 @@ class SicSearchServiceSpec extends UnitTestSpec {
 
 
   "lookupSicCodes" should {
-
     "return true when a sic code is found in ICL and successfully saved" in new Setup {
       when(mockICLConnector.lookup(eqTo(sicCodeCode))(any(), any()))
         .thenReturn(Future.successful(List(sicCode)))
@@ -198,6 +197,28 @@ class SicSearchServiceSpec extends UnitTestSpec {
 
       when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any())(any()))
         .thenReturn(Future.successful(true))
+
+      awaitAndAssert(service.search(testJourneyData, query)) {
+        _ mustBe 1
+      }
+    }
+
+    "lookup a sic code and fallback to normal search if nothing is found" in new Setup {
+      val query = "12345"
+
+      when(mockICLConnector.lookup(any())(any(), any()))
+        .thenReturn(Future.successful(Nil))
+
+      when(mockICLConnector.search(eqTo(query), any(), any())(any(), any()))
+        .thenReturn(Future.successful(oneSearchResult))
+      when(mockSicStoreRepository.upsertSearchResults(any(), any())(any()))
+        .thenReturn(Future.successful(true))
+
+      when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any())(any()))
+        .thenReturn(Future.successful(true))
+
+      when(mockICLConnector.lookup(any())(any(), any()))
+        .thenReturn(Future.successful(List(SicCode("", ""))))
 
       awaitAndAssert(service.search(testJourneyData, query)) {
         _ mustBe 1
