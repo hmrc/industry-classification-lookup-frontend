@@ -18,8 +18,6 @@ package config
 
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-import java.nio.charset.Charset
-import java.util.Base64
 import javax.inject.{Inject, Singleton}
 
 @Singleton
@@ -28,22 +26,14 @@ class AppConfig @Inject()(configuration: ServicesConfig) {
   def loadConfig(key: String): String = configuration.getString(key)
 
   lazy val industryClassificationLookupBackend: String = configuration.baseUrl("industry-classification-lookup")
-
-  private lazy val contactHost = configuration.getString(s"contact-frontend.host")
+  private lazy val contactHost = configuration.getString(s"microservice.services.contact-frontend.host")
   private val contactFormServiceIdentifier = "vrs"
-
-  lazy val analyticsToken: String = loadConfig(s"google-analytics.token")
-  lazy val analyticsHost: String = loadConfig(s"google-analytics.host")
-  lazy val reportAProblemPartialUrl = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
-  lazy val reportAProblemNonJSUrl = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
   lazy val betaFeedbackUrl = s"$contactHost/contact/beta-feedback?service=$contactFormServiceIdentifier"
-
   lazy val feedbackFrontendUrl = loadConfig("microservice.services.feedback-frontend.url")
   lazy val signOutUrl = s"$feedbackFrontendUrl/feedback/vat-registration"
-
   lazy val countdownLength: Int = configuration.getInt("timeout.countdown")
   lazy val timeoutLength: Int = configuration.getInt("timeout.length")
-
   lazy val accessibilityStatementUrl: String = configuration.getString("accessibility-statement.host") +
     "/accessibility-statement" + configuration.getString("accessibility-statement.service-path")
+
 }
