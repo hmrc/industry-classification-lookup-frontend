@@ -25,6 +25,14 @@ class AppConfig @Inject()(configuration: ServicesConfig) {
 
   def loadConfig(key: String): String = configuration.getString(key)
 
+  lazy val baseUrl = {
+    val localFrontendService = "microservice.services.industry-classification-lookup-frontend"
+    val host = configuration.getString(s"$localFrontendService.internal.host")
+    val port = configuration.getString(s"$localFrontendService.internal.port")
+    val protocol = configuration.getString(s"$localFrontendService.internal.protocol")
+
+    s"$protocol://$host:$port"
+  }
   lazy val industryClassificationLookupBackend: String = configuration.baseUrl("industry-classification-lookup")
   private lazy val contactHost = configuration.getString(s"microservice.services.contact-frontend.host")
   private val contactFormServiceIdentifier = "vrs"
