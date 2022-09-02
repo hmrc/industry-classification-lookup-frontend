@@ -4,3 +4,9 @@ POST       /:jId/setup-journey                           controllers.test.TestSe
 
 GET        /test-setup                                   controllers.test.TestSetupController.testSetup
 GET        /:jId/end-of-journey                          controllers.test.TestSetupController.endOfJourney(jId)
+
+GET        /feature-switches                             featureswitch.frontend.controllers.FeatureSwitchFrontendController.show
+POST       /feature-switches                             featureswitch.frontend.controllers.FeatureSwitchFrontendController.submit
+
+GET        /api/feature-switches                         featureswitch.api.controllers.FeatureSwitchApiController.getFeatureSwitches
+POST       /api/feature-switches                         featureswitch.api.controllers.FeatureSwitchApiController.updateFeatureSwitches

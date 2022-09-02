@@ -8,8 +8,8 @@ val appName: String = "industry-classification-lookup-frontend"
 val silencerVersion = "1.7.0"
 
 lazy val scoverageSettings: Seq[Setting[_]] = Seq(
-  ScoverageKeys.coverageExcludedPackages  := "<empty>;Reverse.*;models.*;models/.data/..*;view.*;config.*;.*(AuthService|BuildInfo|Routes).*",
-  ScoverageKeys.coverageMinimum           := 80,
+  ScoverageKeys.coverageExcludedPackages  := "<empty>;Reverse.*;models.*;models/.data/..*;view.*;featureswitch.*;config.*;.*(AuthService|BuildInfo|Routes).*",
+  ScoverageKeys.coverageMinimumStmtTotal  := 80,
   ScoverageKeys.coverageFailOnMinimum     := false,
   ScoverageKeys.coverageHighlighting      := true
 )
