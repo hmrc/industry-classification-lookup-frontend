@@ -16,12 +16,13 @@
 
 package config
 
+import featureswitch.core.config.FeatureSwitching
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class AppConfig @Inject()(configuration: ServicesConfig) {
+class AppConfig @Inject()(configuration: ServicesConfig) extends FeatureSwitching {
 
   def loadConfig(key: String): String = configuration.getString(key)
 

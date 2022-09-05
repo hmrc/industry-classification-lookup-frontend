@@ -21,6 +21,7 @@
 @import uk.gov.hmrc.hmrcfrontend.views.html.components._
 @import views.html.helper.CSPNonce
 @import views.html.layouts.fullWidthContentLayout
+@import featureswitch.core.config.WelshLanguage
 
 @this(
         hmrcTimeoutDialog: HmrcTimeoutDialog,
@@ -71,6 +72,7 @@
     nonce = CSPNonce.get,
     accessibilityStatementUrl = Some(appConfig.accessibilityStatementUrl),
     additionalScriptsBlock = Some(scripts),
-    mainContentLayout = if(fullWidth) Some(fullWidthContentLayout()) else Some(twoThirdsMainContent(_))
+    mainContentLayout = if(fullWidth) Some(fullWidthContentLayout()) else Some(twoThirdsMainContent(_)),
+    isWelshTranslationAvailable = appConfig.isEnabled(WelshLanguage)
 )(content)
 
