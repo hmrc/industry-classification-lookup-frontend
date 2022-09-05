@@ -18,9 +18,10 @@ package controllers
 
 import auth.SicSearchExternalURLs
 import config.Logging
+import controllers.action.ICLLanguageSupport
+import featureswitch.core.config.FeatureSwitching
 import models.SicCodeChoice
 import models.setup.{Identifiers, JourneyData}
-import play.api.i18n.{I18nSupport, Lang}
 import play.api.libs.json._
 import play.api.mvc.{MessagesControllerComponents, Request, Result}
 import services.{JourneyService, SicSearchService}
@@ -34,9 +35,7 @@ import scala.util.{Failure, Success, Try}
 
 abstract class ICLController @Inject()(mcc: MessagesControllerComponents
                                       )(implicit ec: ExecutionContext)
-  extends FrontendController(mcc) with AuthorisedFunctions with I18nSupport with SicSearchExternalURLs with Logging {
-
-  implicit lazy val lang: Lang = Lang("en")
+  extends FrontendController(mcc) with AuthorisedFunctions with ICLLanguageSupport with SicSearchExternalURLs with FeatureSwitching with Logging {
 
   val journeyService: JourneyService
   val sicSearchService: SicSearchService
