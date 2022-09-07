@@ -72,7 +72,8 @@ class JourneyDataSpec extends PlaySpec {
 
         result.redirectUrl mustBe "/test/uri"
         result.journeySetupDetails.customMessages mustBe Some(CustomMessages(
-          summary = Some(Summary(heading = Some("testMessage"), lead = Some("testMessage"), hint = None))
+          summary = Some(Summary(heading = Some("testMessage"), lead = Some("testMessage"), hint = None)),
+          summaryCy = None
         ))
       }
 
@@ -150,7 +151,10 @@ class JourneyDataSpec extends PlaySpec {
         queryParser = Some(true),
         queryBooster = Some(true),
         amountOfResults = 200,
-        customMessages = Some(CustomMessages(summary = Some(Summary(heading = Some("heading text"), lead = Some("lead text"), hint = Some("hint text"))))),
+        customMessages = Some(CustomMessages(
+          summary = Some(Summary(heading = Some("heading text"), lead = Some("lead text"), hint = Some("hint text"))),
+          summaryCy = None
+        )),
         sicCodes = Seq("12345", "67890")
       )
       val expectedJson = Json.parse(

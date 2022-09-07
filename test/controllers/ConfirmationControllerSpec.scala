@@ -16,21 +16,26 @@
 
 package controllers
 
+import akka.stream.scaladsl.Sink
+import featureswitch.core.config.{FeatureSwitching, WelshLanguage}
 import helpers.UnitTestSpec
 import helpers.mocks.{MockAppConfig, MockMessages}
 import models._
+import models.setup.messages.{CustomMessages, Summary}
 import models.setup.{Identifiers, JourneyData, JourneySetup}
+import org.jsoup.Jsoup
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito._
 import play.api.mvc._
-import play.api.test.FakeRequest
+import play.api.test.{FakeRequest, Helpers}
+import play.api.test.Helpers.await
 import views.html.pages.confirmation
 
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with MockMessages {
+class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with MockMessages with FeatureSwitching {
 
   class Setup {
 
@@ -55,6 +60,14 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
   val identifiers = Identifiers(journeyId, sessionId)
   val journeyData = JourneyData(identifiers, "redirectUrl", JourneySetup(), LocalDateTime.now())
 
+  val englishSummary: Summary = Summary(Some("En heading"), Some("En lead"), Some("En hint"))
+  val welshSummary: Summary = Summary(Some("Cy heading"), Some("Cy lead"), Some("Cy hint"))
+  val journeyDataWithCustomMessages = JourneyData(
+    identifiers, "redirectUrl",
+    JourneySetup(customMessages = Some(CustomMessages(summary = Some(englishSummary), summaryCy = Some(welshSummary)))),
+    LocalDateTime.now()
+  )
+
   val requestWithSessionId: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId)
 
   val sicCodeCode = "12345"
@@ -75,6 +88,52 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
       AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), requestWithSessionId) {
         result =>
           status(result) mustBe 200
+      }
+    }
+
+    "return a 200 with EN heading when no language cookie set and both en/cy custom messages available in journey data" in new Setup {
+      when(mockSicSearchService.retrieveChoices(any())(any()))
+        .thenReturn(Future.successful(Some(List(sicCodeChoice))))
+
+      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyDataWithCustomMessages)
+
+      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), requestWithSessionId) {
+        result =>
+          status(result) mustBe 200
+          Jsoup.parse(Helpers.contentAsString(result))
+            .select("h1").text() mustBe englishSummary.heading.get
+      }
+    }
+
+    "return a 200 and CY heading welsh language cookie is set and FS is enabled" in new Setup {
+      enable(WelshLanguage)
+      when(mockSicSearchService.retrieveChoices(any())(any()))
+        .thenReturn(Future.successful(Some(List(sicCodeChoice))))
+
+      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyDataWithCustomMessages)
+
+      val requestWithWelshLangCookie = requestWithSessionId.withCookies(Cookie("PLAY_LANG", "cy"))
+      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), requestWithWelshLangCookie) {
+        result =>
+          status(result) mustBe 200
+          Jsoup.parse(Helpers.contentAsString(result))
+            .select("h1").text() mustBe welshSummary.heading.get
+      }
+      disable(WelshLanguage)
+    }
+
+    "return a 200 and EN heading when welsh lang cookie set but FS is disabled" in new Setup {
+      when(mockSicSearchService.retrieveChoices(any())(any()))
+        .thenReturn(Future.successful(Some(List(sicCodeChoice))))
+
+      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyDataWithCustomMessages)
+
+      val requestWithWelshLangCookie = requestWithSessionId.withCookies(Cookie("PLAY_LANG", "cy"))
+      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), requestWithWelshLangCookie) {
+        maybeResult =>
+          status(maybeResult) mustBe 200
+          Jsoup.parse(Helpers.contentAsString(maybeResult))
+            .select("h1").text() mustBe englishSummary.heading.get
       }
     }
 

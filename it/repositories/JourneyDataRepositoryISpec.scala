@@ -54,7 +54,8 @@ class JourneyDataRepositoryISpec extends PlaySpec with Awaiting with BeforeAndAf
       heading = Some("testMessage1"),
       lead = Some("testMessage2"),
       hint = Some("testHint")
-    ))
+    )),
+    summaryCy = None
   )
 
   val journeyData = JourneyData(

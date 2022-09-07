@@ -9,4 +9,5 @@ GET        /feature-switches                             featureswitch.frontend.
 POST       /feature-switches                             featureswitch.frontend.controllers.FeatureSwitchFrontendController.submit
 
 GET        /api/feature-switches                         featureswitch.api.controllers.FeatureSwitchApiController.getFeatureSwitches
++ nocsrf
 POST       /api/feature-switches                         featureswitch.api.controllers.FeatureSwitchApiController.updateFeatureSwitches
