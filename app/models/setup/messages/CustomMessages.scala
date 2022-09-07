@@ -18,7 +18,7 @@ package models.setup.messages
 
 import play.api.libs.json.{Format, Json}
 
-case class CustomMessages(summary: Option[Summary])
+case class CustomMessages(summary: Option[Summary], summaryCy: Option[Summary])
 
 object CustomMessages {
   implicit val format: Format[CustomMessages] = Json.format[CustomMessages]

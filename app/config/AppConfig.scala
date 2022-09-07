@@ -28,9 +28,9 @@ class AppConfig @Inject()(configuration: ServicesConfig) extends FeatureSwitchin
 
   lazy val baseUrl = {
     val localFrontendService = "microservice.services.industry-classification-lookup-frontend"
-    val host = configuration.getString(s"$localFrontendService.internal.host")
-    val port = configuration.getString(s"$localFrontendService.internal.port")
-    val protocol = configuration.getString(s"$localFrontendService.internal.protocol")
+    val host = configuration.getString(s"$localFrontendService.host")
+    val port = configuration.getString(s"$localFrontendService.port")
+    val protocol = configuration.getString(s"$localFrontendService.protocol")
 
     s"$protocol://$host:$port"
   }

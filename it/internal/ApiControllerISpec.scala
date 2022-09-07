@@ -126,6 +126,11 @@ class ApiControllerISpec extends ClientSpec {
             |         "heading": "Some heading",
             |         "lead": "Some lead",
             |         "hint": "Some hint"
+            |       },
+            |       "summaryCy": {
+            |         "heading": "Welsh heading",
+            |         "lead": "Welsh lead",
+            |         "hint": "Welsh hint"
             |       }
             |     },
             |     "sicCodes": ["12345", "67890"]
@@ -156,7 +161,10 @@ class ApiControllerISpec extends ClientSpec {
           data.journeySetupDetails.queryParser mustBe None
           data.journeySetupDetails.queryBooster mustBe Some(true)
           data.journeySetupDetails.amountOfResults mustBe 200
-          data.journeySetupDetails.customMessages mustBe Some(CustomMessages(Some(Summary(heading = Some("Some heading"), lead = Some("Some lead"), hint = Some("Some hint")))))
+          data.journeySetupDetails.customMessages mustBe Some(CustomMessages(
+            Some(Summary(heading = Some("Some heading"), lead = Some("Some lead"), hint = Some("Some hint"))),
+            Some(Summary(heading = Some("Welsh heading"), lead = Some("Welsh lead"), hint = Some("Welsh hint")))
+          ))
           data.journeySetupDetails.sicCodes mustBe Seq("12345", "67890")
           await(sicStoreRepo.count) mustBe 1
         }
