@@ -17,9 +17,9 @@
 @import config.AppConfig
 
 @this(
-        strong: components.strong,
         link: components.link,
-        table: GovukTable
+        table: GovukTable,
+        h3: components.h3Html
 )
 
 @(journeyId: String, searchResults: SearchResults)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
@@ -40,10 +40,11 @@
 ))
 
 @resultCount = {
-    @strong("result-count") {
-        @searchResults.numFound.toString
-    }
-    @messages("page.icl.chooseActivity.resultsfound")
+    @h3("govuk-heading-s govuk-!-margin-bottom-0", Some("result-count"))(resultMessage)
+}
+
+@resultMessage = {
+    @messages("page.icl.chooseActivity.resultsfound", searchResults.numFound.toString)
     @searchResults.currentSector.map { sector =>
         @Html(messages("page.icl.chooseActivity.insector", sector.name))
     }

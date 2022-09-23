@@ -28,9 +28,9 @@
         h1: components.h1,
         h2: components.h2,
         p: components.p,
-        strong: components.strong,
         button: components.button,
-        link: components.link
+        link: components.link,
+        h3: components.h3
 )
 
 @(journeyId: String, sicSearchForm: Form[SicSearch], chooseActForm: Form[List[SicCode]], oSearchResults: Option[SearchResults])(implicit lang: play.api.i18n.Lang, request: Request[_], messages: Messages, appConfig: AppConfig)
@@ -54,8 +54,7 @@
     @oSearchResults.map { searchResults =>
         @if(searchResults.numFound == 0) {
             @p() {
-                @strong("no-result")(Html("0"))
-                @messages("page.icl.chooseActivity.resultsfound")
+                @h3(messages("page.icl.chooseActivity.resultsfound", 0), optId = Some("no-result"))
             }
             @p() {
                 @messages("page.icl.chooseActivity.searchagain")
