@@ -143,7 +143,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
           document.getElementById("sicSearch").attr("name") mustBe "sicSearch"
           document.getElementById("sicSearch").attr("value") mustBe multipleSearchResults.query
           an[Exception] mustBe thrownBy(document.getElementById("no-result").text)
-          document.getElementById("result-count").text mustBe multipleSearchResults.numFound.toString
+          document.getElementById("result-count").text mustBe s"${multipleSearchResults.numFound.toString} results"
       }
     }
 
@@ -159,7 +159,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
         val document = Jsoup.parse(contentAsString(result))
         document.getElementById("sicSearch").attr("name") mustBe "sicSearch"
         document.getElementById("sicSearch").attr("value") mustBe noSearchResults.query
-        document.getElementById("no-result").text mustBe "0"
+        document.getElementById("no-result").text mustBe "0 results"
         an[Exception] mustBe thrownBy(document.getElementById("result-count").text)
       }
     }

@@ -35,9 +35,9 @@ page.icl.chooseActivity.title                   = Standard Industry Classificati
 page.icl.chooseActivity.heading                 = Standard Industry Classifications (SIC) codes
 page.icl.chooseActivity.subheading              = Search for a thing that the business does
 page.icl.chooseActivity.enteredkeyword          = You searched for
-page.icl.chooseActivity.resultsfound            = results
+page.icl.chooseActivity.resultsfound            = {0} results
 page.icl.chooseActivity.removeFilter            = Remove filter
-page.icl.chooseActivity.insector                = in <b class="bold">{0}</b>
+page.icl.chooseActivity.insector                = in {0}
 page.icl.chooseActivity.searchagain             = Please try searching again using different words
 page.icl.chooseActivity.changehidden            = Change sic code used to search
 page.icl.chooseActivity.selection-heading       = Choose some things that the business does
