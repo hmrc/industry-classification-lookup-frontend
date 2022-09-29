@@ -22,7 +22,7 @@
 @(journeyId: String, searchResults: SearchResults)(implicit request: Request[_], messages: Messages)
 
 @if(searchResults.sectors.size > 1) {
-    <div class="govuk-grid-column-one-third">
+    <div class="govuk-grid-column-one-third" role="region" aria-label="search filters">
         @h3("page.icl.chooseActivity.filter-heading")
         <ol class="govuk-list">
             @searchResults.sectors.map { sector =>

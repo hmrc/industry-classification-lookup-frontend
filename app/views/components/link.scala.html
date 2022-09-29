@@ -27,4 +27,11 @@
         additionalClasses: String = ""
 )(implicit messages: Messages)
 
-<a href="@link" class="@govukToClasses("govuk-body", if(isButton)"govuk-button" else "govuk-link", additionalClasses)" @id.map(x => s"id=$x") @if(isExternal) { target="_blank" } @if(isButton){ role="button" data-module="govuk-button" }>@messages(messageKey)@if(isExternal)(" " + messages("app.common.openInNewTab"))</a>
+<a
+ href="@link"
+ class="@govukToClasses("govuk-body", if(isButton)"govuk-button" else "govuk-link", additionalClasses)"
+ @id.map(x => s"id=$x")
+ @if(isExternal) { target="_blank" }
+ @if(isButton){ role="button" data-module="govuk-button" }
+>
+ @messages(messageKey)@if(isExternal)(" " + messages("app.common.openInNewTab"))</a>

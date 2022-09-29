@@ -29,7 +29,9 @@ import views.html.pages.chooseActivity
 
 class ChooseActivityViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with MockAppConfig with MockMessages with I18nSupport {
   implicit val request: FakeRequest[_] = FakeRequest()
+
   override def messagesApi: MessagesApi = mockMessagesApi
+
   implicit val lang: Lang = Lang.defaultLang
 
   val query = "test query"
@@ -49,7 +51,18 @@ class ChooseActivityViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with 
     lazy val document = Jsoup.parse(view.body)
 
     "have the correct title" in {
-      document.getElementsByTag("title").first().text mustBe pageTitle
+      document.getElementsByTag("title").first().text mustBe s"1 results - $pageTitle"
+    }
+
+    "have the correct title when result is empty" in {
+      val viewWithNoResult =
+        app.injector.instanceOf[chooseActivity].apply(
+          journeyId,
+          SicSearchForm.form.fill(SicSearch(query)),
+          ChooseMultipleActivitiesForm.form,
+          Some(searchResults.copy(numFound = 0))
+        )
+      Jsoup.parse(viewWithNoResult.body).getElementsByTag("title").first().text mustBe s"0 results - $pageTitle"
     }
 
     "have a back link" in {

@@ -35,10 +35,13 @@
 
 @(journeyId: String, sicSearchForm: Form[SicSearch], chooseActForm: Form[List[SicCode]], oSearchResults: Option[SearchResults])(implicit lang: play.api.i18n.Lang, request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@layout(pageTitle = Some(title(sicSearchForm, messages("page.icl.chooseActivity.title"))), fullWidth = true, backLink = true) {
+@titlePrefix ={ @oSearchResults.map { searchResults =>
+      @messages("page.icl.chooseActivity.resultsfound", searchResults.numFound)@searchResults.currentSector.map { sector => @messages("page.icl.chooseActivity.insector", sector.name)}@Html(" - ")}}
+
+@layout(pageTitle = Some(title(sicSearchForm, titlePrefix + messages("page.icl.chooseActivity.title"))), fullWidth = true, backLink = true) {
 
     <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-grid-column-two-thirds" role="search">
             @errorSummary(sicSearchForm.errors)
 
             @errorSummary(chooseActForm.errors)
@@ -69,7 +72,7 @@
                 <div class="govuk-grid-row">
                     @sectorFilter(journeyId, searchResults)
 
-                    <div class="govuk-grid-column-two-thirds">
+                    <div class="govuk-grid-column-two-thirds" role="region" aria-label="search results">
                         @searchResultCount(journeyId, searchResults)
 
                         @inputCheckboxes(

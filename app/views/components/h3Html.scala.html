@@ -17,4 +17,4 @@
 @this()
 
 @(classes: String = "govuk-heading-s", id: Option[String] = None)(content: Html)(implicit messages: Messages)
-<h3 @id.map(value => s"id=$value") class="@classes">@content</h3>
+<h3 @id.map(value => s"id=${value}") class="@classes">@content</h3>
