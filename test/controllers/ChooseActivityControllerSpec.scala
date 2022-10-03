@@ -69,9 +69,9 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
   val sicCode = SicCode("12345", "Test Description")
   val sicCode2 = SicCode("12345", "Test Description2")
 
-  val searchResults = SearchResults(query, 1, List(sicCode), List(Sector(SECTOR_A, "Fake Sector", 1)))
+  val searchResults = SearchResults(query, 1, List(sicCode), List(Sector(SECTOR_A, "Fake Sector", "Cy business sector", 1)))
   val noSearchResults = SearchResults(query, 0, List(), List())
-  val multipleSearchResults = SearchResults(query, 2, List(sicCode, sicCode2), List(Sector("A", "Fake Sector", 1), Sector("B", "Faker sector", 1)))
+  val multipleSearchResults = SearchResults(query, 2, List(sicCode, sicCode2), List(Sector("A", "Fake Sector", "Cy business sector", 1), Sector("B", "Faker sector", "Cy business sector", 1)))
 
   "show without results" should {
     "return a 303 for an unauthorised user" in new Setup {

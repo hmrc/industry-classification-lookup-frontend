@@ -38,7 +38,7 @@ class ChooseActivityViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with 
 
   val testSicCode = SicCode("12345", "Testing")
 
-  val searchResults = SearchResults(query, 1, List(testSicCode), List(Sector("A", "Fake Sector", 1)))
+  val searchResults = SearchResults(query, 1, List(testSicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
 
   val journeyId = "testJourneyId"
 

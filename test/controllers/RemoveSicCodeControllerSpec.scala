@@ -64,7 +64,7 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
   val sicCodeDescription = "some description"
   val sicCode = SicCode(sicCodeCode, sicCodeDescription)
   val sicCodeChoice = SicCodeChoice(sicCode, List("fake item"))
-  val searchResults = SearchResults("testQuery", 1, List(sicCode), List(Sector("A", "Fake Sector", 1)))
+  val searchResults = SearchResults("testQuery", 1, List(sicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
 
   "show" should {
     "return a 200 when the page is rendered" in new Setup {

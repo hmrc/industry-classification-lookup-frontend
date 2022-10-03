@@ -46,6 +46,6 @@
 @resultMessage = {
     @messages("page.icl.chooseActivity.resultsfound", searchResults.numFound.toString)
     @searchResults.currentSector.map { sector =>
-        @Html(messages("page.icl.chooseActivity.insector", sector.name))
+        @Html(messages("page.icl.chooseActivity.insector", sector.nameLabel))
     }
 }

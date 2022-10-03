@@ -55,8 +55,8 @@ class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServ
   val sicCode2 = SicCode("87654", "Another test sic code description")
   val sicCodeGroup2 = SicCodeChoice(sicCode2, Nil)
 
-  val searchResults = SearchResults("testQuery", 1, List(sicCode), List(Sector("A", "Example", 1)))
-  val searchResults2 = SearchResults("testQuery", 1, List(sicCode2), List(Sector("B", "Alternative", 1)))
+  val searchResults = SearchResults("testQuery", 1, List(sicCode), List(Sector("A", "Example", "Cy business sector", 1)))
+  val searchResults2 = SearchResults("testQuery", 1, List(sicCode2), List(Sector("B", "Alternative", "Cy business sector", 1)))
 
   def generateSicStoreWithIndexes(indexes: List[String]) =
     SicStore(sessionId, Some(searchResults), Some(List(sicCodeGroup.copy(indexes = indexes))), dateTime)
@@ -81,7 +81,7 @@ class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServ
 
     "insert a new document when one does not exist" in new Setup {
       count mustBe 0
-      val updateSuccess: Boolean = await(repository.upsertSearchResults(journeyId, searchResults.copy(currentSector = Some(Sector("A", "Fake Sector", 1)))))
+      val updateSuccess: Boolean = await(repository.upsertSearchResults(journeyId, searchResults.copy(currentSector = Some(Sector("A", "Fake Sector", "Cy business sector", 1)))))
 
       updateSuccess mustBe true
       count mustBe 1
@@ -89,7 +89,7 @@ class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServ
 
     "update a document with the new sic code if the document already exists for a given session id" in new Setup {
 
-      val otherSearchResults = SearchResults("other query", 1, List(SicCode("87654", "Another test sic code description")), List(Sector("A", "Fake", 1)))
+      val otherSearchResults = SearchResults("other query", 1, List(SicCode("87654", "Another test sic code description")), List(Sector("A", "Fake", "Cy business sector", 1)))
 
       insert(sicStoreNoChoices)
 
@@ -142,7 +142,7 @@ class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServ
 
       val sicCodeToAdd = SicCode("67891", "some description")
 
-      val searchResults = SearchResults("testQuery", 1, List(sicCodeToAdd), List(Sector("A", "Fake", 1)))
+      val searchResults = SearchResults("testQuery", 1, List(sicCodeToAdd), List(Sector("A", "Fake", "Cy business sector", 1)))
       val sicStoreWithExistingChoice = SicStore(journeyId, Some(searchResults), Some(List(sicCodeGroup)), dateTime)
 
       insert(sicStoreWithExistingChoice)

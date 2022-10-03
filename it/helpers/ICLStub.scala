@@ -16,10 +16,10 @@ trait ICLStub {
       Json.obj("code" -> "01490026", "desc" -> "Snail farming")
     ),
     "sectors" -> Json.arr(
-      Json.obj("code" -> "A", "name" -> "Agriculture, Forestry And Fishing", "count" -> 19),
-      Json.obj("code" -> "C", "name" -> "Manufacturing", "count" -> 9),
-      Json.obj("code" -> "G", "name" -> "Wholesale And Retail Trade; Repair Of Motor Vehicles And Motorcycles", "count" -> 7),
-      Json.obj("code" -> "N", "name" -> "Administrative And Support Service Activities", "count" -> 1)
+      Json.obj("code" -> "A", "name" -> "Agriculture, Forestry And Fishing", "nameCy" -> "Cy business sector", "count" -> 19),
+      Json.obj("code" -> "C", "name" -> "Manufacturing", "nameCy" -> "Cy business sector", "count" -> 9),
+      Json.obj("code" -> "G", "name" -> "Wholesale And Retail Trade; Repair Of Motor Vehicles And Motorcycles", "nameCy" -> "Cy business sector", "count" -> 7),
+      Json.obj("code" -> "N", "name" -> "Administrative And Support Service Activities", "nameCy" -> "Cy business sector", "count" -> 1)
     )
   )
   def stubGETICLSearchResults = {

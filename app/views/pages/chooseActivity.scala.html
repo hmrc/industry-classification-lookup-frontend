@@ -36,7 +36,7 @@
 @(journeyId: String, sicSearchForm: Form[SicSearch], chooseActForm: Form[List[SicCode]], oSearchResults: Option[SearchResults])(implicit lang: play.api.i18n.Lang, request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @titlePrefix ={ @oSearchResults.map { searchResults =>
-      @messages("page.icl.chooseActivity.resultsfound", searchResults.numFound)@searchResults.currentSector.map { sector => @messages("page.icl.chooseActivity.insector", sector.name)}@Html(" - ")}}
+      @messages("page.icl.chooseActivity.resultsfound", searchResults.numFound)@searchResults.currentSector.map { sector => @messages("page.icl.chooseActivity.insector", sector.nameLabel)}@Html(" - ")}}
 
 @layout(pageTitle = Some(title(sicSearchForm, titlePrefix + messages("page.icl.chooseActivity.title"))), fullWidth = true, backLink = true) {
 

@@ -48,8 +48,8 @@ class SicSearchServiceSpec extends UnitTestSpec {
   )
   val sicCodeCode = "12345"
   val sicCode = SicCode(sicCodeCode, "some sic code description")
-  val oneSearchResult = SearchResults(query, 1, List(sicCode), List(Sector("A", "Fake Sector", 1)))
-  val threeSearchResults = SearchResults(query, 3, List(sicCode, sicCode, sicCode), List(Sector("A", "Fake Sector A", 2), Sector("B", "Fake Sector B", 1)))
+  val oneSearchResult = SearchResults(query, 1, List(sicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
+  val threeSearchResults = SearchResults(query, 3, List(sicCode, sicCode, sicCode), List(Sector("A", "Fake Sector A", "Cy business sector", 2), Sector("B", "Fake Sector B", "Cy business sector", 1)))
   val searchResultsEmpty = SearchResults(query, 0, List(), List())
   val choices = List(SicCodeChoice(sicCode, Nil))
   val sicStore = SicStore(sessionId, Some(oneSearchResult), Some(choices))
