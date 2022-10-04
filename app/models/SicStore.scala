@@ -16,7 +16,10 @@
 
 package models
 
+import config.AppConfig
+import featureswitch.core.config.WelshLanguage
 import org.joda.time.{DateTime, DateTimeZone}
+import play.api.i18n.Messages
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{Format, _}
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
@@ -37,7 +40,13 @@ case class SearchResults(query: String,
 
 case class Sector(code: String,
                   name: String,
-                  count: Int)
+                  nameCy: String,
+                  count: Int) {
+  def nameLabel(implicit messages: Messages, appConfig: AppConfig): String = messages.lang.code match {
+    case "cy" if appConfig.isEnabled(WelshLanguage) => nameCy
+    case _ => name
+  }
+}
 
 object SicStore {
   implicit val dateFormat = ReactiveMongoFormats.dateTimeFormats
@@ -61,6 +70,7 @@ object Sector {
   implicit val format: Format[Sector] = (
     (__ \ "code").format[String] and
     (__ \ "name").format[String] and
+    (__ \ "nameCy").formatWithDefault[String]("") and
     (__ \ "count").format[Int]
   )(Sector.apply, unlift(Sector.unapply))
 }
