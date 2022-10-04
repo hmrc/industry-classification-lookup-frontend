@@ -35,9 +35,9 @@ page.icl.chooseActivity.title                   = Codau Dosbarthiad Diwydiannol 
 page.icl.chooseActivity.heading                 = Codau Dosbarthiad Diwydiannol Safonol (SIC)
 page.icl.chooseActivity.subheading              = Chwilio am rywbeth y mae’r busnes yn ei wneud
 page.icl.chooseActivity.enteredkeyword          = Gwnaethoch chwilio am
-page.icl.chooseActivity.resultsfound            = o ganlyniadau
+page.icl.chooseActivity.resultsfound            = {0} ganlyniadau
 page.icl.chooseActivity.removeFilter            = Tynnu hidlydd
-page.icl.chooseActivity.insector                = yn <b class=bold">{0}</b>"
+page.icl.chooseActivity.insector                = yn {0}
 page.icl.chooseActivity.searchagain             = Ceisiwch chwilio eto gan ddefnyddio geiriau gwahanol
 page.icl.chooseActivity.changehidden            = Newid y cod SIC a ddefnyddiwyd i chwilio
 page.icl.chooseActivity.selection-heading       = Dewis rhai pethau y mae’r busnes yn eu gwneud
