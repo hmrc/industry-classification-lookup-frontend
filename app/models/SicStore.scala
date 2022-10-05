@@ -70,7 +70,7 @@ object Sector {
   implicit val format: Format[Sector] = (
     (__ \ "code").format[String] and
     (__ \ "name").format[String] and
-    (__ \ "nameCy").formatWithDefault[String]("") and
+    (__ \ "nameCy").format[String] and
     (__ \ "count").format[Int]
   )(Sector.apply, unlift(Sector.unapply))
 }
