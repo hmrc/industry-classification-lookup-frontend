@@ -44,14 +44,15 @@ class ICLConnector @Inject()(appConfig: AppConfig, http: HttpClient) extends Log
     }
   }
 
-  def search(query: String, journeySetup: JourneySetup, sector: Option[String] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SearchResults] = {
+  def search(query: String, journeySetup: JourneySetup, sector: Option[String] = None, lang: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SearchResults] = {
     implicit val reads: Reads[SearchResults] = SearchResults.readsWithQuery(query)
     val sectorFilter = sector.fold("")(s => s"&sector=$s")
     val constructUrlParameters = s"query=$query" +
       s"&pageResults=${journeySetup.amountOfResults}$sectorFilter" +
       s"&queryParser=${journeySetup.queryParser.getOrElse(false)}" +
       s"&queryBoostFirstTerm=${journeySetup.queryBooster.getOrElse(false)}" +
-      s"&indexName=${journeySetup.dataSet}"
+      s"&indexName=${journeySetup.dataSet}" +
+      s"&lang=$lang"
 
     http.GET[SearchResults](s"$ICLUrl/industry-classification-lookup/search?$constructUrlParameters") recover {
       case e: HttpException =>

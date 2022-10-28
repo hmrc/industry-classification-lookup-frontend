@@ -36,7 +36,7 @@ class ChooseActivityViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with 
 
   val query = "test query"
 
-  val testSicCode = SicCode("12345", "Testing")
+  val testSicCode = SicCode("12345", "Testing", "Testing")
 
   val searchResults = SearchResults(query, 1, List(testSicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
 
@@ -47,7 +47,7 @@ class ChooseActivityViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with 
   val back = "Back"
 
   "The choose activity screen" should {
-    lazy val view = app.injector.instanceOf[chooseActivity].apply(journeyId, SicSearchForm.form.fill(SicSearch(query)), ChooseMultipleActivitiesForm.form, Some(searchResults))
+    lazy val view = app.injector.instanceOf[chooseActivity].apply(journeyId, SicSearchForm.form.fill(SicSearch(query)), ChooseMultipleActivitiesForm.form(None), Some(searchResults))
     lazy val document = Jsoup.parse(view.body)
 
     "have the correct title" in {
@@ -59,7 +59,7 @@ class ChooseActivityViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with 
         app.injector.instanceOf[chooseActivity].apply(
           journeyId,
           SicSearchForm.form.fill(SicSearch(query)),
-          ChooseMultipleActivitiesForm.form,
+          ChooseMultipleActivitiesForm.form(None),
           Some(searchResults.copy(numFound = 0))
         )
       Jsoup.parse(viewWithNoResult.body).getElementsByTag("title").first().text mustBe s"0 results - $pageTitle"

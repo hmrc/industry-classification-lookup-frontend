@@ -30,14 +30,14 @@ import scala.concurrent.{ExecutionContext, Future}
 class SicSearchService @Inject()(val iCLConnector: ICLConnector,
                                  sicStoreRepository: SicStoreRepository) extends Logging {
 
-  def search(journeyData: JourneyData, query: String, sector: Option[String] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+  def search(journeyData: JourneyData, query: String, sector: Option[String] = None, lang: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
     if (isLookup(query)) {
       lookupSicCodes(journeyData, List(SicCode(query, ""))).flatMap {
-        case 0 => searchQuery(journeyData, query, sector)
+        case 0 => searchQuery(journeyData, query, sector, lang)
         case res => Future.successful(res)
       }
     } else {
-      searchQuery(journeyData, query, sector)
+      searchQuery(journeyData, query, sector, lang)
     }
   }
 
@@ -59,9 +59,14 @@ class SicSearchService @Inject()(val iCLConnector: ICLConnector,
   def lookupSicCodes(journeyData: JourneyData, selectedCodes: List[SicCode])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
     def fiteredListOfSicCodeChoice(sicCodesUnfiltered: List[SicCode], groups: Map[String, List[SicCode]]): List[SicCodeChoice] = {
       sicCodesUnfiltered map { sic =>
-        SicCodeChoice(sic, groups.get(sic.sicCode).fold(List.empty[String])(nSicCodes =>
-          nSicCodes.filterNot(sicCode => sicCode == sic || sicCode.description.isEmpty).map(_.description))
-        )
+        val maybeSicCodes = groups.get(sic.sicCode)
+
+        val indexes: (SicCode => String) => List[String] = descrFn => {
+          maybeSicCodes.fold(List.empty[String])(nSicCodes =>
+            nSicCodes.filterNot(sicCode => sicCode == sic || descrFn(sicCode).isEmpty).map(sicCode => descrFn(sicCode)))
+        }
+
+        SicCodeChoice(sic, indexes(_.description), indexes(_.descriptionCy))
       }
     }
 
@@ -85,9 +90,9 @@ class SicSearchService @Inject()(val iCLConnector: ICLConnector,
     sicCodes.groupBy(_.sicCode).keys.mkString(",")
   }
 
-  private[services] def searchQuery(journeyData: JourneyData, query: String, sector: Option[String] = None)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+  private[services] def searchQuery(journeyData: JourneyData, query: String, sector: Option[String] = None, lang: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
     (for {
-      oSearchResults <- iCLConnector.search(query, journeyData.journeySetupDetails, sector)
+      oSearchResults <- iCLConnector.search(query, journeyData.journeySetupDetails, sector, lang)
       sectorObject = sector.flatMap(sicCode => oSearchResults.sectors.find(_.code == sicCode))
       searchResults = sectorObject.fold(oSearchResults)(s => oSearchResults.copy(currentSector = Some(s)))
       _ <- sicStoreRepository.upsertSearchResults(journeyData.identifiers.journeyId, searchResults) flatMap { res =>

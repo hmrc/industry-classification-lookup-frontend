@@ -40,7 +40,7 @@ class ApiController @Inject()(mcc: MessagesControllerComponents,
     withSessionId { sessionId =>
       withJsBody[JourneyData](JourneyData.initialRequestReads(sessionId)) { journeyData =>
         implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
-        journeyService.initialiseJourney(journeyData).map(Ok(_))
+        journeyService.initialiseJourney(journeyData, getLang).map(Ok(_))
       }
     }
   }

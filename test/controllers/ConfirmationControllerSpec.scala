@@ -16,7 +16,6 @@
 
 package controllers
 
-import akka.stream.scaladsl.Sink
 import featureswitch.core.config.{FeatureSwitching, WelshLanguage}
 import helpers.UnitTestSpec
 import helpers.mocks.{MockAppConfig, MockMessages}
@@ -28,7 +27,6 @@ import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito._
 import play.api.mvc._
 import play.api.test.{FakeRequest, Helpers}
-import play.api.test.Helpers.await
 import views.html.pages.confirmation
 
 import java.time.LocalDateTime
@@ -72,8 +70,8 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
 
   val sicCodeCode = "12345"
   val sicCodeDescription = "some description"
-  val sicCode = SicCode(sicCodeCode, sicCodeDescription)
-  val sicCodeChoice = SicCodeChoice(sicCode, List("fake item"))
+  val sicCode = SicCode(sicCodeCode, sicCodeDescription, sicCodeDescription)
+  val sicCodeChoice = SicCodeChoice(sicCode, List("fake item"), List("fake item"))
   val searchResults = SearchResults("testQuery", 1, List(sicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
 
   "show" should {

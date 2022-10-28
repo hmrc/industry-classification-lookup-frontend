@@ -97,7 +97,7 @@
 
 @tableContent(sicCodeChoice: SicCodeChoice) = {
     @p() {
-        @sicCodeChoice.code - @sicCodeChoice.desc
+        @sicCodeChoice.code - @sicCodeChoice.getDescription
     }
-    @includesHelper(sicCodeChoice.indexes)
+    @includesHelper(sicCodeChoice.getIndexes)
 }

@@ -50,7 +50,7 @@ class RemoveSicCodeController @Inject()(mcc: MessagesControllerComponents,
         withJourney(journeyId) { journey =>
           withCurrentUsersChoices(journey.identifiers) { codes =>
             withSicCodeChoice(journeyId, codes, sicCode) { code =>
-              Future.successful(Ok(view(journeyId, confirmationForm(code.desc), code)))
+              Future.successful(Ok(view(journeyId, confirmationForm(code.getDescription), code)))
             }
           }
         }
@@ -63,7 +63,7 @@ class RemoveSicCodeController @Inject()(mcc: MessagesControllerComponents,
         withJourney(journeyId) { journeyData =>
           withCurrentUsersChoices(journeyData.identifiers) { codes =>
             withSicCodeChoice(journeyId, codes, sicCode) { code =>
-              confirmationForm(code.desc).bindFromRequest().fold(
+              confirmationForm(code.getDescription).bindFromRequest().fold(
                 errors => Future.successful(BadRequest(view(journeyId, errors, code))),
                 {
                   case "yes" => sicSearchService.removeChoice(journeyData.identifiers.journeyId, sicCode) map { _ =>

@@ -62,8 +62,8 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
 
   val sicCodeCode = "12345"
   val sicCodeDescription = "some description"
-  val sicCode = SicCode(sicCodeCode, sicCodeDescription)
-  val sicCodeChoice = SicCodeChoice(sicCode, List("fake item"))
+  val sicCode = SicCode(sicCodeCode, sicCodeDescription, sicCodeDescription)
+  val sicCodeChoice = SicCodeChoice(sicCode, List("fake item"), List("fake item"))
   val searchResults = SearchResults("testQuery", 1, List(sicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
 
   "show" should {

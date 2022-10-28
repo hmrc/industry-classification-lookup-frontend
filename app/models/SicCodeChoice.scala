@@ -17,16 +17,35 @@
 package models
 
 
-import play.api.libs.json.Json
+import config.AppConfig
+import featureswitch.core.config.WelshLanguage
+import play.api.i18n.Messages
+import play.api.libs.json.{Json, OFormat}
 
-case class SicCodeChoice(code: String, desc: String, indexes: List[String])
+case class SicCodeChoice(
+                          code: String,
+                          desc: String,
+                          descCy: String = "",
+                          indexes: List[String],
+                          indexesCy: List[String] = List.empty[String]
+                        ) {
+  def getDescription(implicit messages: Messages, appConfig: AppConfig): String = messages.lang.code match {
+    case "cy" if appConfig.isEnabled(WelshLanguage) => descCy
+    case _ => desc
+  }
+
+  def getIndexes(implicit messages: Messages, appConfig: AppConfig): List[String] = messages.lang.code match {
+    case "cy" if appConfig.isEnabled(WelshLanguage) => indexesCy
+    case _ => indexes
+  }
+}
 
 object SicCodeChoice {
-  implicit val format = Json.format[SicCodeChoice]
+  implicit val format: OFormat[SicCodeChoice] = Json.format[SicCodeChoice]
 
-  def apply(sicCode: SicCode, indexes: List[String]): SicCodeChoice =
-    new SicCodeChoice(sicCode.sicCode, sicCode.description, indexes)
+  def apply(sicCode: SicCode, indexes: List[String], indexesCy: List[String]): SicCodeChoice =
+    new SicCodeChoice(sicCode.sicCode, sicCode.description, sicCode.descriptionCy, indexes, indexesCy)
 
   def apply(sicCode: SicCode): SicCodeChoice =
-    new SicCodeChoice(sicCode.sicCode, sicCode.description, Nil)
+    new SicCodeChoice(sicCode.sicCode, sicCode.description, sicCode.descriptionCy, Nil)
 }

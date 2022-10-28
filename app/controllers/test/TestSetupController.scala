@@ -98,7 +98,7 @@ class TestSetupController @Inject()(mcc: MessagesControllerComponents,
             journeySetupDetails = JourneySetup(),
             lastUpdated = LocalDateTime.now()
           )
-          journeyService.initialiseJourney(journeyData).map(_ => Redirect(controllers.test.routes.TestSetupController.show(journeyId)))
+          journeyService.initialiseJourney(journeyData, getLang).map(_ => Redirect(controllers.test.routes.TestSetupController.show(journeyId)))
         }
       }
   }
