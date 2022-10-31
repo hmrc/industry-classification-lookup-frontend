@@ -21,7 +21,7 @@ import java.time.LocalDateTime
 import helpers.UnitTestSpec
 import helpers.mocks.MockJourneyDataRepo
 import models.setup.{Identifiers, JourneyData, JourneySetup}
-import org.mockito.ArgumentMatchers._
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.when
 import play.api.libs.json.Json
 
@@ -38,6 +38,7 @@ class JourneySetupServiceSpec extends UnitTestSpec with MockJourneyDataRepo {
     )
   }
 
+  val lang = "en"
   val identifier = Identifiers(
     journeyId = "testJourneyId",
     sessionId = "testSessionId"
@@ -57,7 +58,7 @@ class JourneySetupServiceSpec extends UnitTestSpec with MockJourneyDataRepo {
       mockInitialiseJourney(testJourneyData)
       when(mockSicSearchService.lookupSicCodes(any(), any())(any(), any())).thenReturn(Future.successful(0))
 
-      assertAndAwait(testService.initialiseJourney(testJourneyData)) {
+      assertAndAwait(testService.initialiseJourney(testJourneyData, lang)) {
         _ mustBe Json.obj(
           "journeyStartUri" -> s"/sic-search/testJourneyId/start-journey",
           "fetchResultsUri" -> s"/internal/testJourneyId/fetch-results"

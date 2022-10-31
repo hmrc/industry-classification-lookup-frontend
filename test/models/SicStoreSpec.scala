@@ -35,17 +35,17 @@ class SicStoreSpec extends UnitTestSpec {
        |    "query":"$query",
        |    "numFound":1,
        |    "results":[
-       |      {"code" : "19283", "desc" : "Search Sic Code Result Description"}
+       |      {"code" : "19283", "desc" : "Search Sic Code Result Description", "descCy" : "Search Sic Code Result Description"}
        |    ],
        |    "sectors":[
        |      {"code" : "A", "name" : "Clearly fake business sector", "nameCy": "Cy business sector", "count": 22}
        |    ]
        |  },
        |  "choices" : [
-       |    {"code" : "57384", "desc" : "Sic Code Test Description 1", "indexes": ["someIndex 1"]},
-       |    {"code" : "11920", "desc" : "Sic Code Test Description 2", "indexes": ["someIndex 2"]},
-       |    {"code" : "12994", "desc" : "Sic Code Test Description 3", "indexes": ["someIndex 3"]},
-       |    {"code" : "39387", "desc" : "Sic Code Test Description 4", "indexes": []}
+       |    {"code" : "57384", "desc" : "Sic Code Test Description 1", "descCy" : "Sic Code Test Description 1", "indexes": ["someIndex 1"], "indexesCy": ["someIndex 1"]},
+       |    {"code" : "11920", "desc" : "Sic Code Test Description 2", "descCy" : "Sic Code Test Description 2", "indexes": ["someIndex 2"], "indexesCy": ["someIndex 2"]},
+       |    {"code" : "12994", "desc" : "Sic Code Test Description 3", "descCy" : "Sic Code Test Description 3", "indexes": ["someIndex 3"], "indexesCy": ["someIndex 3"]},
+       |    {"code" : "39387", "desc" : "Sic Code Test Description 4", "descCy" : "Sic Code Test Description 4", "indexes": [], "indexesCy": []}
        |  ],
        |  "lastUpdated" : $now
        |}
@@ -60,7 +60,7 @@ class SicStoreSpec extends UnitTestSpec {
        |     "query":"$query",
        |     "numFound":1,
        |     "results":[
-       |       {"code" : "19283", "desc" : "Search Sic Code Result Description"}
+       |       {"code" : "19283", "desc" : "Search Sic Code Result Description", "descCy" : "Search Sic Code Result Description"}
        |     ],
        |     "sectors":[
        |       {"code" : "A", "name" : "Clearly fake business sector", "nameCy": "Cy business sector", "count": 22}
@@ -76,14 +76,14 @@ class SicStoreSpec extends UnitTestSpec {
     Some(SearchResults(
       query,
       1,
-      List(SicCode("19283", "Search Sic Code Result Description")),
+      List(SicCode("19283", "Search Sic Code Result Description", "Search Sic Code Result Description")),
       List(Sector("A", "Clearly fake business sector", "Cy business sector", 22))
     )),
     Some(List(
-      SicCodeChoice(SicCode("57384", "Sic Code Test Description 1"), List("someIndex 1")),
-      SicCodeChoice(SicCode("11920", "Sic Code Test Description 2"), List("someIndex 2")),
-      SicCodeChoice(SicCode("12994", "Sic Code Test Description 3"), List("someIndex 3")),
-      SicCodeChoice(SicCode("39387", "Sic Code Test Description 4"), List())
+      SicCodeChoice(SicCode("57384", "Sic Code Test Description 1", "Sic Code Test Description 1"), List("someIndex 1"), List("someIndex 1")),
+      SicCodeChoice(SicCode("11920", "Sic Code Test Description 2", "Sic Code Test Description 2"), List("someIndex 2"), List("someIndex 2")),
+      SicCodeChoice(SicCode("12994", "Sic Code Test Description 3", "Sic Code Test Description 3"), List("someIndex 3"), List("someIndex 3")),
+      SicCodeChoice(SicCode("39387", "Sic Code Test Description 4", "Sic Code Test Description 4"), List(), List())
     )),
     dateTime
   )
@@ -93,7 +93,7 @@ class SicStoreSpec extends UnitTestSpec {
     Some(SearchResults(
       query,
       1,
-      List(SicCode("19283", "Search Sic Code Result Description")),
+      List(SicCode("19283", "Search Sic Code Result Description", "Search Sic Code Result Description")),
       List(Sector("A", "Clearly fake business sector", "Cy business sector", 22))
     )),
     None,

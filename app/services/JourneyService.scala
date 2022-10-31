@@ -30,7 +30,7 @@ import scala.concurrent.Future
 class JourneyService @Inject()(journeyDataRepository: JourneyDataRepository,
                                val sicSearchService: SicSearchService) {
 
-  def initialiseJourney(journeyData: JourneyData)(implicit hc: HeaderCarrier): Future[JsValue] = {
+  def initialiseJourney(journeyData: JourneyData, lang: String)(implicit hc: HeaderCarrier): Future[JsValue] = {
     for {
       res <- journeyDataRepository.upsertJourney(journeyData) map { _ =>
         Json.obj(
@@ -38,7 +38,7 @@ class JourneyService @Inject()(journeyDataRepository: JourneyDataRepository,
           "fetchResultsUri" -> s"/internal/${journeyData.identifiers.journeyId}/fetch-results"
         )
       }
-      sicCodes = journeyData.journeySetupDetails.sicCodes map (SicCode(_, ""))
+      sicCodes = journeyData.journeySetupDetails.sicCodes map (SicCode(_, "", ""))
       _ <- sicSearchService.lookupSicCodes(journeyData, sicCodes.toList)
     } yield res
   }

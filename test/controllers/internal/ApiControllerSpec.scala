@@ -18,9 +18,9 @@ package controllers.internal
 
 import helpers.UnitTestSpec
 import helpers.mocks.{MockAppConfig, MockMessages}
-import models.setup.{Identifiers, JourneyData, JourneySetup}
 import models.{SicCode, SicCodeChoice}
-import org.mockito.ArgumentMatchers.any
+import models.setup.{Identifiers, JourneyData, JourneySetup}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{AnyContentAsEmpty, Result}
@@ -47,7 +47,7 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
   }
 
   "journeyInitialisation" should {
-
+    val lang = "en"
     val validRequestedJson: JsValue = Json.parse(
       """{
         | "redirectUrl": "test/url",
@@ -80,7 +80,7 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
       )
 
       "journey is initialised with custom messages" in new Setup {
-        when(mockJourneyService.initialiseJourney(any())(any())) thenReturn Future.successful(expectedJsonResponse)
+        when(mockJourneyService.initialiseJourney(any(), eqTo(lang))(any())) thenReturn Future.successful(expectedJsonResponse)
 
         val result: Future[Result] = controller.journeyInitialisation()(requestWithSessionId)
 
@@ -93,7 +93,7 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
           .withSessionId("test-session-id")
           .withBody(validRequestedJsonWithoutCustomMessages)
 
-        when(mockJourneyService.initialiseJourney(any())(any())) thenReturn Future.successful(expectedJsonResponse)
+        when(mockJourneyService.initialiseJourney(any(), eqTo(lang))(any())) thenReturn Future.successful(expectedJsonResponse)
 
         val result: Future[Result] = controller.journeyInitialisation()(fakeRequest)
         status(result) mustBe OK
@@ -142,8 +142,8 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
     "return 200 with json" when {
       "the journey exists and there have been sic codes selected" in new Setup {
 
-        val sicCode = SicCode("12345", "test description")
-        val sicCodeChoice = SicCodeChoice(sicCode, List("123", "456", "789"))
+        val sicCode = SicCode("12345", "test description", "test description")
+        val sicCodeChoice = SicCodeChoice(sicCode, List("123", "456", "789"), List("123", "456", "789"))
         val sicCodeChoices = List(sicCodeChoice)
 
         val sicCodeChoicesJson: JsValue = Json.parse(
@@ -153,7 +153,13 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
             |     {
             |       "code":"12345",
             |       "desc":"test description",
+            |       "descCy":"test description",
             |       "indexes":[
+            |         "123",
+            |         "456",
+            |         "789"
+            |       ],
+            |       "indexesCy":[
             |         "123",
             |         "456",
             |         "789"

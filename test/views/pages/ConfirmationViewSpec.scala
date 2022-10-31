@@ -32,8 +32,8 @@ class ConfirmationViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with Mo
   override def messagesApi: MessagesApi = mockMessagesApi
 
   val sicCodeChoices = List(
-    SicCodeChoice("12345", "my fake description", List("this is the index")),
-    SicCodeChoice("67892", "my fake second description", List("this is index", "with another one"))
+    SicCodeChoice("12345", "my fake description", "my fake description", List("this is the index")),
+    SicCodeChoice("67892", "my fake second description", "my fake second description", List("this is index", "with another one"))
   )
 
   val pageHeading = "MyPageHeading"

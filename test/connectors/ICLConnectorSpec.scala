@@ -28,6 +28,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class ICLConnectorSpec extends UnitTestSpec with MockAppConfig {
 
+  val lang = "en"
   val iCLUrl = "http://localhost:12345"
 
   class Setup extends CodeMocks {
@@ -42,7 +43,7 @@ class ICLConnectorSpec extends UnitTestSpec with MockAppConfig {
   "lookup" should {
 
     val sicCode = "12345"
-    val sicCodeResult = SicCode(sicCode, "some description")
+    val sicCodeResult = SicCode(sicCode, "some description", "some description")
 
     val lookupUrl = s"$iCLUrl/industry-classification-lookup/lookup/$sicCode"
 
@@ -82,25 +83,27 @@ class ICLConnectorSpec extends UnitTestSpec with MockAppConfig {
 
     val query = "test query"
     val zeroResults = SearchResults(query, 0, List(), List())
-    val searchResults = SearchResults(query, 1, List(SicCode("12345", "some description")), List(Sector("A", "Example of a business sector", "Cy business sector", 1)))
+    val searchResults = SearchResults(query, 1, List(SicCode("12345", "some description", "some description")), List(Sector("A", "Example of a business sector", "Cy business sector", 1)))
     val sector = "B"
     val journeySetup = JourneySetup(dataSet = "foo", queryBooster = None, amountOfResults = 5)
     val searchUrl = s"$iCLUrl/industry-classification-lookup/search?query=$query" +
       s"&pageResults=${journeySetup.amountOfResults}" +
       s"&queryParser=${journeySetup.queryParser.getOrElse(false)}" +
       s"&queryBoostFirstTerm=${journeySetup.queryBooster.getOrElse(false)}" +
-      s"&indexName=${journeySetup.dataSet}"
+      s"&indexName=${journeySetup.dataSet}" +
+      s"&lang=$lang"
     val searchSectorUrl = s"$iCLUrl/industry-classification-lookup/search?query=$query" +
       s"&pageResults=${journeySetup.amountOfResults}" +
       s"&sector=$sector" +
       s"&queryParser=${journeySetup.queryParser.getOrElse(false)}" +
       s"&queryBoostFirstTerm=${journeySetup.queryBooster.getOrElse(false)}" +
-      s"&indexName=${journeySetup.dataSet}"
+      s"&indexName=${journeySetup.dataSet}" +
+      s"&lang=$lang"
 
     "return a SearchResults case class when one is returned from ICL" in new Setup {
       mockHttpGet[SearchResults](searchUrl).thenReturn(Future.successful(searchResults))
 
-      awaitAndAssert(connector.search(query, journeySetup)) {
+      awaitAndAssert(connector.search(query, journeySetup, lang = lang)) {
         _ mustBe searchResults
       }
     }
@@ -108,7 +111,7 @@ class ICLConnectorSpec extends UnitTestSpec with MockAppConfig {
     "return a SearchResults case class when a sector search is returned from ICL" in new Setup {
       mockHttpGet[SearchResults](searchSectorUrl).thenReturn(Future.successful(searchResults))
 
-      awaitAndAssert(connector.search(query, journeySetup, Some(sector))) {
+      awaitAndAssert(connector.search(query, journeySetup, Some(sector), lang)) {
         _ mustBe searchResults
       }
     }
@@ -116,7 +119,7 @@ class ICLConnectorSpec extends UnitTestSpec with MockAppConfig {
     "return 0 results when ICL returns a 404" in new Setup {
       mockHttpGet[SearchResults](searchUrl).thenReturn(Future.failed(new NotFoundException("404")))
 
-      awaitAndAssert(connector.search(query, journeySetup)) {
+      awaitAndAssert(connector.search(query, journeySetup, lang = lang)) {
         _ mustBe zeroResults
       }
     }
@@ -124,7 +127,7 @@ class ICLConnectorSpec extends UnitTestSpec with MockAppConfig {
     "throw the exception when the future recovers an the exception is not http related" in new Setup {
       mockHttpGet[SearchResults](searchUrl).thenReturn(Future.failed(new RuntimeException("something went wrong")))
 
-      val result: RuntimeException = intercept[RuntimeException](await(connector.search(query, journeySetup)))
+      val result: RuntimeException = intercept[RuntimeException](await(connector.search(query, journeySetup, lang = lang)))
       result.getMessage mustBe "something went wrong"
     }
   }

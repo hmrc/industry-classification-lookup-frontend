@@ -81,7 +81,7 @@
                             idPrefix = "code",
                             legend = messages("page.icl.chooseActivity.title"),
                             items = searchResults.results.map(sicCode => CheckboxItem(
-                                content = Text(sicCode.description),
+                                content = Text(sicCode.getDescription),
                                 value = sicCode.sicCode
                             )),
                             legendAsHeading = false,

@@ -26,7 +26,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.when
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, Result}
+import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded, Cookie, Result}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AuthConnector
 import views.html.pages.chooseActivity
@@ -55,9 +55,10 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       override lazy val loginURL = "/test/login"
     }
 
-    val requestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId)
+    val requestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId).withCookies(Cookie("PLAY_LANG", "en"))
   }
 
+  val lang = "en"
   val journeyId = "testJourneyId"
   val sessionId = "session-12345"
   val identifiers = Identifiers(journeyId, sessionId)
@@ -66,8 +67,8 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
   val SECTOR_A = "A"
   val query = "testQuery"
-  val sicCode = SicCode("12345", "Test Description")
-  val sicCode2 = SicCode("12345", "Test Description2")
+  val sicCode = SicCode("12345", "Test Description", "Test Description")
+  val sicCode2 = SicCode("12345", "Test Description2", "Test Description2")
 
   val searchResults = SearchResults(query, 1, List(sicCode), List(Sector(SECTOR_A, "Fake Sector", "Cy business sector", 1)))
   val noSearchResults = SearchResults(query, 0, List(), List())
@@ -168,7 +169,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
   "Submit a search" should {
     "return a 303 with the search results page" in new Setup {
 
-      when(mockSicSearchService.search(any(), eqTo(query), any())(any(), any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any()))
         .thenReturn(Future.successful(multipleSearchResults.numFound))
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
@@ -186,7 +187,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
     "return a 303 with the choices list page for an authorised user when the search returns only 1 result" in new Setup {
 
-      when(mockSicSearchService.search(any(), eqTo(query), any())(any(), any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any()))
         .thenReturn(Future.successful(searchResults.numFound))
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
@@ -237,7 +238,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
 
       val request: FakeRequest[AnyContentAsFormUrlEncoded] = requestWithSession.withFormUrlEncodedBody(
-        "code[0]" -> "12345"
+        "code[0]" -> "12345-test description-test description"
       )
 
       requestWithAuthorisedUser(controller.submit(journeyId), request) {
@@ -270,7 +271,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(eqTo(journeyId))(any()))
         .thenReturn(Future.successful(Some(searchResults)))
 
-      when(mockSicSearchService.search(any(), eqTo(query), any())(any(), any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any()))
         .thenReturn(Future.successful(1))
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
@@ -286,7 +287,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(eqTo(journeyId))(any()))
         .thenReturn(Future.successful(Some(noSearchResults)))
 
-      when(mockSicSearchService.search(any(), eqTo(query), any())(any(), any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any()))
         .thenReturn(Future.successful(0))
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
@@ -304,7 +305,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(eqTo(journeyId))(any()))
         .thenReturn(Future.successful(Some(searchResults)))
 
-      when(mockSicSearchService.search(any(), eqTo(query), any())(any(), any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any()))
         .thenReturn(Future.successful(1))
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)

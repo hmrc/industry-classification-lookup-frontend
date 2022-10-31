@@ -79,7 +79,9 @@ class SicStoreRepository @Inject()(config: Configuration,
       Json.obj(
         "code" -> scc.code,
         "desc" -> scc.desc,
-        "indexes" -> scc.indexes
+        "descCy" -> scc.descCy,
+        "indexes" -> scc.indexes,
+        "indexesCy" -> scc.indexesCy
       )
   })
 
@@ -121,13 +123,16 @@ class SicStoreRepository @Inject()(config: Configuration,
 
         val updateIndexes = toUpdate.foldLeft(Json.obj()) { (json, tuple) =>
           val (sicCodeChoice, index) = tuple
-          val indexes = store.choices match {
+          val choiceIndexes: (SicCodeChoice => List[String]) => List[String] = indexFn => store.choices match {
             case Some(list) =>
               list.find(_.code == sicCodeChoice.code)
-                .fold(sicCodeChoice.indexes)(choice => (choice.indexes ++ sicCodeChoice.indexes).distinct)
-            case None => sicCodeChoice.indexes
+                .fold(indexFn(sicCodeChoice))(choice => (indexFn(choice) ++ indexFn(sicCodeChoice)).distinct)
+            case None => indexFn(sicCodeChoice)
           }
-          val update = Json.obj(s"choices.$index.indexes" -> BSONDocument("$each" -> BSONFormats.readAsBSONValue(getIndexesJsonObject(indexes)).get))
+          val update = Json.obj(
+            s"choices.$index.indexes" -> BSONDocument("$each" -> BSONFormats.readAsBSONValue(getIndexesJsonObject(choiceIndexes(_.indexes))).get),
+            s"choices.$index.indexesCy" -> BSONDocument("$each" -> BSONFormats.readAsBSONValue(getIndexesJsonObject(choiceIndexes(_.indexesCy))).get)
+          )
 
           json ++ update
         }

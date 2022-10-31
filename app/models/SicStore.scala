@@ -30,7 +30,14 @@ case class SicStore(journeyId: String,
                     lastUpdated: DateTime = DateTime.now(DateTimeZone.UTC))
 
 case class SicCode(sicCode: String,
-                   description: String)
+                   description: String,
+                   descriptionCy: String = "") {
+
+  def getDescription(implicit  messages: Messages, appConfig: AppConfig): String = messages.lang.code match {
+    case "cy" if appConfig.isEnabled(WelshLanguage) => descriptionCy
+    case _ => description
+  }
+}
 
 case class SearchResults(query: String,
                          numFound: Int,
@@ -62,7 +69,8 @@ object SicStore {
 object SicCode {
   implicit val format: Format[SicCode] = (
     (__ \ "code").format[String] and
-    (__ \ "desc").format[String]
+    (__ \ "desc").format[String] and
+    (__ \ "descCy").format[String]
   )(SicCode.apply, unlift(SicCode.unapply))
 }
 

@@ -16,30 +16,34 @@
 
 package forms.chooseactivity
 
-import models.SicCode
+import models.{SearchResults, SicCode}
 import play.api.data.Forms._
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.data.{Form, Mapping}
 
 object ChooseMultipleActivitiesForm {
-  val toSicValuePair: (String) => SicCode = sicVal => {
-    val sicValueSplit = sicVal.split("-",2)
-    SicCode(sicValueSplit.head, sicValueSplit.last)
+  val toSicValuePair: (String, Option[SearchResults]) => Option[SicCode] = (sicVal, maybeSearchResult) => {
+    val Array(code, descr) = sicVal.split("-",2)
+    maybeSearchResult match {
+      case Some(searchResult) =>
+        searchResult.results.find(sc => {
+          sc.sicCode == code && (sc.descriptionCy == descr || sc.description == descr)
+        })
+      case None => None
+    }
   }
 
-  def validateList: Mapping[List[SicCode]] = {
+  def validateList(searchResults: Option[SearchResults] = None): Mapping[List[SicCode]] = {
     val textConstraint: Constraint[List[String]] = Constraint {
       case s if s.isEmpty => Invalid(ValidationError("errors.invalid.sic.noSelection"))
       case _              => Valid
     }
     list(text)
       .verifying(textConstraint)
-      .transform[List[SicCode]](x => x.filterNot(_.isEmpty).map(toSicValuePair), _ => List.empty[String])
+      .transform[List[SicCode]](x => x.filterNot(_.isEmpty).flatMap(value => toSicValuePair(value, searchResults)), _ => List.empty[String])
   }
 
-  val form = Form(
-    single(
-      "code" -> validateList
-    )
+  val form: Option[SearchResults] => Form[List[SicCode]] = results => Form(
+    single("code" -> validateList(results))
   )
 }

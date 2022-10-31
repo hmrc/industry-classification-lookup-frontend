@@ -19,7 +19,7 @@ package controllers
 import auth.SicSearchExternalURLs
 import config.Logging
 import controllers.action.ICLLanguageSupport
-import featureswitch.core.config.FeatureSwitching
+import featureswitch.core.config.{FeatureSwitching, WelshLanguage}
 import models.SicCodeChoice
 import models.setup.{Identifiers, JourneyData}
 import play.api.libs.json._
@@ -100,6 +100,13 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
         case listOfChoices => f(listOfChoices)
       }
       case None => Future.successful(Redirect(controllers.routes.ChooseActivityController.show(identifiers.journeyId)))
+    }
+  }
+
+  private[controllers] def getLang(implicit request: Request[_]) = {
+    request.cookies.get(messagesApi.langCookieName) match {
+      case Some(langCookie) if isEnabled(WelshLanguage) => langCookie.value
+      case _ => "en"
     }
   }
 }

@@ -140,9 +140,9 @@ class ApiControllerISpec extends ClientSpec {
         )
 
         setupUnauthorised()
-        val responseBody = Json.toJson(List(SicCode("12345", "desc one"), SicCode("67890", "desc 2"))).toString()
+        val responseBody = Json.toJson(List(SicCode("12345", "desc one", "desc one"), SicCode("67890", "desc 2", "desc 2"))).toString()
 
-        stubGet("/industry-classification-lookup/lookup/67890,12345", 200, Some(responseBody))
+        stubGet(s"/industry-classification-lookup/lookup/67890,12345", 200, Some(responseBody))
         await(journeyRepo.count) mustBe 0
         await(sicStoreRepo.count) mustBe 0
 
@@ -237,7 +237,7 @@ class ApiControllerISpec extends ClientSpec {
         val sessionIdValue = "test-session-id"
         val sessionId: String = getSessionCookie(sessionID = "test-session-id")
 
-        val sicCodeChoices = List(SicCodeChoice(SicCode("12345", "test description"), Nil))
+        val sicCodeChoices = List(SicCodeChoice(SicCode("12345", "test description", "test description"), Nil, Nil))
         val sicStore: SicStore = SicStore(journeyId, None, Some(sicCodeChoices))
         insertSicStore(sicStore)
 

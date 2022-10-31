@@ -17,10 +17,10 @@
 package forms
 
 import forms.chooseactivity.ChooseMultipleActivitiesForm
-import models.SicCode
+import models.{SearchResults, SicCode}
 import org.scalatestplus.play.PlaySpec
 import play.api.data.FormBinding.Implicits.formBinding
-import play.api.data.{FormBinding, FormError}
+import play.api.data.FormError
 import play.api.mvc.AnyContentAsFormUrlEncoded
 import play.api.test.FakeRequest
 
@@ -37,45 +37,46 @@ class ChooseMultipleActivityFormSpec extends PlaySpec {
   implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody(inputMap.toSeq: _*)
 
   val inputMap2: Map[String, String] = Map(
-    "code[0]" -> "testCode0",
-    "code[1]" -> "testCode1",
+    "code[0]" -> "testCode0-testDescription0",
+    "code[1]" -> "testCode1-testDescription1",
     "code[2]" -> "",
-    "code[3]" -> "testCode3",
-    "code[4]" -> "testCode4"
+    "code[3]" -> "testCode3-testDescription3",
+    "code[4]" -> "testCode4-testDescription4"
   )
 
-  val expectedList = List("testCode0", "testCode1", "testCode2", "testCode3", "testCode4")
-  val expectedSicCodeList = List(SicCode("testCode0", "testDescription0"),
-    SicCode("testCode1", "testDescription1"),
-    SicCode("testCode2", "testDescription2"),
-    SicCode("testCode3", "testDescription3"),
-    SicCode("testCode4", "testDescription4"))
+  val expectedSicCodeList = List(SicCode("testCode0", "testDescription0", "testDescription0"),
+    SicCode("testCode1", "testDescription1", "testDescription1"),
+    SicCode("testCode2", "testDescription2", "testDescription2"),
+    SicCode("testCode3", "testDescription3", "testDescription3"),
+    SicCode("testCode4", "testDescription4", "testDescription4"))
+
+  val searchResults = SearchResults("test-query", 1, expectedSicCodeList, List())
 
   "SicSearchMultipleForm" should {
     "bind successfully" when {
       "binding from a request" in {
-        ChooseMultipleActivitiesForm.form.bindFromRequest().get mustBe expectedSicCodeList
+        ChooseMultipleActivitiesForm.form(Some(searchResults)).bindFromRequest().get mustBe expectedSicCodeList
       }
 
       "binding from a map and transform data" in {
-        ChooseMultipleActivitiesForm.form.bind(inputMap).get mustBe expectedSicCodeList
+        ChooseMultipleActivitiesForm.form(Some(searchResults)).bind(inputMap).get mustBe expectedSicCodeList
       }
 
       "binding from a map" in {
-        ChooseMultipleActivitiesForm.form.bind(inputMap).get mustBe expectedSicCodeList
+        ChooseMultipleActivitiesForm.form(Some(searchResults)).bind(inputMap).get mustBe expectedSicCodeList
       }
 
       "binding from a map with gaps" in {
-        ChooseMultipleActivitiesForm.form.bind(inputMap2).get mustBe List(
-          SicCode("testCode0", "testCode0"),
-          SicCode("testCode1", "testCode1"),
-          SicCode("testCode3", "testCode3"),
-          SicCode("testCode4", "testCode4"))
+        ChooseMultipleActivitiesForm.form(Some(searchResults)).bind(inputMap2).get mustBe List(
+          SicCode("testCode0", "testDescription0", "testDescription0"),
+          SicCode("testCode1", "testDescription1", "testDescription1"),
+          SicCode("testCode3", "testDescription3", "testDescription3"),
+          SicCode("testCode4", "testDescription4", "testDescription4"))
       }
     }
 
     "return an empty list when unbinding from sic code" in {
-      ChooseMultipleActivitiesForm.form.mapping.unbind(expectedSicCodeList) mustBe Map()
+      ChooseMultipleActivitiesForm.form(None).mapping.unbind(expectedSicCodeList) mustBe Map()
     }
 
     "bind unsuccessfully" when {
@@ -84,11 +85,11 @@ class ChooseMultipleActivityFormSpec extends PlaySpec {
       )
 
       "nothing is the request" in {
-        ChooseMultipleActivitiesForm.form.bindFromRequest()(FakeRequest(), formBinding).errors mustBe emptyErrors
+        ChooseMultipleActivitiesForm.form(None).bindFromRequest()(FakeRequest(), formBinding).errors mustBe emptyErrors
       }
 
       "the map is empty" in {
-        ChooseMultipleActivitiesForm.form.bind(Map.empty[String, String]).errors mustBe emptyErrors
+        ChooseMultipleActivitiesForm.form(None).bind(Map.empty[String, String]).errors mustBe emptyErrors
       }
     }
   }

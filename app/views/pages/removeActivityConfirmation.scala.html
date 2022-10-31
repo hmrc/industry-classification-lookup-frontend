@@ -29,13 +29,13 @@
 
 @(journeyId: String, removeSicCodeForm: Form[String], sicCodeChoice: SicCodeChoice)(implicit lang: play.api.i18n.Lang, request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@layout(pageTitle = Some(title(removeSicCodeForm, messages("page.icl.confirmremoval.title", sicCodeChoice.desc))), backLink = true) {
+@layout(pageTitle = Some(title(removeSicCodeForm, messages("page.icl.confirmremoval.title", sicCodeChoice.getDescription))), backLink = true) {
 
     @errorSummary(removeSicCodeForm.errors)
 
-    @h1(messages("page.icl.confirmremoval.heading", sicCodeChoice.desc))
+    @h1(messages("page.icl.confirmremoval.heading", sicCodeChoice.getDescription))
 
-    @includesHelper(sicCodeChoice.indexes)
+    @includesHelper(sicCodeChoice.getIndexes)
 
     @formWithCSRF(action = controllers.routes.RemoveSicCodeController.submit(journeyId, sicCodeChoice.code)) {
         @yesNoRadio(
@@ -43,7 +43,7 @@
             fieldName = "removeCode",
             yesValue = "yes",
             noValue = "no",
-            headingKey = messages("page.icl.confirmremoval.title", sicCodeChoice.desc),
+            headingKey = messages("page.icl.confirmremoval.title", sicCodeChoice.getDescription),
             isPageHeading = false,
             classes = "govuk-visually-hidden",
             inline = true

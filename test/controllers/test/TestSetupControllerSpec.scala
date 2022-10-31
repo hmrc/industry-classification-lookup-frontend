@@ -20,7 +20,7 @@ import helpers.UnitTestSpec
 import helpers.mocks.{MockAppConfig, MockMessages}
 import models._
 import models.setup.{Identifiers, JourneyData, JourneySetup}
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json
@@ -54,6 +54,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
     val requestWithSessionId: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId)
   }
 
+  val lang = "en"
   val journeyId = "testJourneyId"
   val sessionId = "session-12345"
   val identifiers = Identifiers(journeyId, sessionId)
@@ -65,7 +66,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
 
   val sicStore = SicStore(
     sessionId,
-    Some(SearchResults("test-query", 1, List(SicCode("19283", "Search Sic Code Result Description")), List()))
+    Some(SearchResults("test-query", 1, List(SicCode("19283", "Search Sic Code Result Description", "Search Sic Code Result Description")), List()))
   )
 
   "show" should {
@@ -123,7 +124,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
 
   "testSetup" must {
     "redirect to the test setup show page" in new Setup {
-      when(mockJourneyService.initialiseJourney(any())(any())) thenReturn Future.successful(Json.parse("""{}"""))
+      when(mockJourneyService.initialiseJourney(any(), eqTo(lang))(any())) thenReturn Future.successful(Json.parse("""{}"""))
 
       AuthHelpers.showWithAuthorisedUser(controller.testSetup, requestWithSessionId) { result =>
         status(result) mustBe SEE_OTHER
@@ -141,7 +142,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
   "endOfJourney" must {
     "return Ok when a journey exists and have a session" in new Setup {
 
-      val sicCodeChoices = Some(List(SicCodeChoice(SicCode("12345", "test description"))))
+      val sicCodeChoices = Some(List(SicCodeChoice(SicCode("12345", "test description", "test description"))))
 
       when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
 
