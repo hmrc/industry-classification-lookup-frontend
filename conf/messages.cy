@@ -28,8 +28,7 @@ common.feedbackThird                            = yn ein helpu i’w wella.
 
 page.icl.sicsearch.title                        = Chwilio am weithgaredd busnes
 page.icl.sicsearch.heading                      = Chwilio am rywbeth y mae’r busnes yn ei wneud
-page.icl.sicsearch.form.label                   = Nodwch un neu ddau o eiriau allweddol (neu’r cod SIC rhifol, os ydych yn gwybod beth ydyw)
-page.icl.sicsearch.form.hint                    = Er enghraifft, ''plymio'', ''rheoli eiddo''
+page.icl.sicsearch.form.label                   = Nodwch un neu ddau o eiriau allweddol (neu’r cod SIC rhifol, os ydych yn gwybod beth ydyw) Er enghraifft, ''plymio'', ''rheoli eiddo''
 
 page.icl.chooseActivity.title                   = Codau Dosbarthiad Diwydiannol Safonol (SIC)
 page.icl.chooseActivity.heading                 = Codau Dosbarthiad Diwydiannol Safonol (SIC)

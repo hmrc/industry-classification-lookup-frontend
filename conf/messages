@@ -28,8 +28,7 @@ common.feedbackThird                            = will help us to improve it.
 
 page.icl.sicsearch.title                        = Search for a business activity
 page.icl.sicsearch.heading                      = Search for a thing that the business does
-page.icl.sicsearch.form.label                   = Enter one or two keywords (or the numerical SIC code, if you know it)
-page.icl.sicsearch.form.hint                    = For example, ''plumbing'', ''property management''
+page.icl.sicsearch.form.label                   = Enter one or two keywords (or the numerical SIC code, if you know it) For example, ''plumbing'', ''property management''
 
 page.icl.chooseActivity.title                   = Standard Industry Classifications (SIC) codes
 page.icl.chooseActivity.heading                 = Standard Industry Classifications (SIC) codes
