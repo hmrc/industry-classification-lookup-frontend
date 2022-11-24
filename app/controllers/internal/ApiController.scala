@@ -24,7 +24,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.{JourneyService, SicSearchService}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.HeaderCarrierConverter
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
@@ -37,20 +37,25 @@ class ApiController @Inject()(mcc: MessagesControllerComponents,
                              )(implicit ec: ExecutionContext, val appConfig: AppConfig) extends ICLController(mcc) {
 
   def journeyInitialisation(): Action[JsValue] = Action.async(parse.json) { implicit request =>
-    withSessionId { sessionId =>
-      withJsBody[JourneyData](JourneyData.initialRequestReads(sessionId)) { journeyData =>
-        implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
-        journeyService.initialiseJourney(journeyData, getLang).map(Ok(_))
+    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
+    authorised() {
+      withSessionId { sessionId =>
+        withJsBody[JourneyData](JourneyData.initialRequestReads(sessionId)) { journeyData =>
+          journeyService.initialiseJourney(journeyData, getLang).map(Ok(_))
+        }
       }
     }
   }
 
   def fetchResults(journeyId: String): Action[AnyContent] = Action.async { implicit request =>
-    withSessionId { sessionId =>
-      hasJourney(Identifiers(journeyId, sessionId)) { _ =>
-        sicSearchService.retrieveChoices(journeyId) map {
-          case Some(choices) => Ok(Json.obj("sicCodes" -> Json.toJson(choices)))
-          case None => NotFound
+    implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
+    authorised() {
+      withSessionId { sessionId =>
+        hasJourney(Identifiers(journeyId, sessionId)) { _ =>
+          sicSearchService.retrieveChoices(journeyId) map {
+            case Some(choices) => Ok(Json.obj("sicCodes" -> Json.toJson(choices)))
+            case None => NotFound
+          }
         }
       }
     }

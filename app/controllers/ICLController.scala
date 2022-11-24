@@ -40,20 +40,20 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
   val journeyService: JourneyService
   val sicSearchService: SicSearchService
 
-  def userAuthorised(api: Boolean = false)(body: => Future[Result])(implicit request: Request[_], hc: HeaderCarrier): Future[Result] = {
+  def userAuthorised(api: Boolean = false)(body: => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
     authorised() {
       body
-    }(hc, implicitly).recover(if (api) apiAuthErrorHandling() else authErrorHandling())
+    }.recover(if (api) apiAuthErrorHandling() else authErrorHandling())
   }
 
-  def authErrorHandling()(implicit request: Request[_]): PartialFunction[Throwable, Result] = {
+  def authErrorHandling(): PartialFunction[Throwable, Result] = {
     case _: NoActiveSession => Redirect(loginURL)
     case e: AuthorisationException =>
       logger.error("Unexpected auth exception ", e)
       InternalServerError
   }
 
-  def apiAuthErrorHandling()(implicit request: Request[_]): PartialFunction[Throwable, Result] = {
+  def apiAuthErrorHandling(): PartialFunction[Throwable, Result] = {
     case _: NoActiveSession => Forbidden
     case _: NotFoundException => Forbidden
     case e: AuthorisationException =>
@@ -61,8 +61,8 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
       InternalServerError
   }
 
-  def withSessionId(f: => String => Future[Result])(implicit req: Request[_]): Future[Result] = {
-    hc(req).sessionId.fold[Future[Result]](Future.successful(BadRequest("SessionId is missing from request")))(sessionId => f(sessionId.value))
+  def withSessionId(f: => String => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
+    hc.sessionId.fold[Future[Result]](Future.successful(BadRequest("SessionId is missing from request")))(sessionId => f(sessionId.value))
   }
 
   def withJsBody[T](reads: Reads[T])(f: T => Future[Result])(implicit request: Request[JsValue]): Future[Result] = {
@@ -73,7 +73,7 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
     }
   }
 
-  def hasJourney(identifiers: Identifiers)(f: => JourneyData => Future[Result])(implicit req: Request[_]): Future[Result] = {
+  def hasJourney(identifiers: Identifiers)(f: => JourneyData => Future[Result]): Future[Result] = {
     journeyService.getJourney(identifiers) flatMap { journeyData =>
       f(journeyData)
     } recoverWith {

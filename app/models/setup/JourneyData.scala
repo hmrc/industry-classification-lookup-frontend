@@ -16,13 +16,13 @@
 
 package models.setup
 
-import java.time.LocalDateTime
-import java.util.UUID
-
-import models.TimeFormat
 import models.setup.messages.CustomMessages
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+
+import java.time.LocalDateTime
+import java.util.UUID
 
 case class JourneyData(identifiers: Identifiers,
                        redirectUrl: String,
@@ -56,7 +56,7 @@ object JourneySetup {
 
   val mongoWrites: Writes[JourneySetup] = new Writes[JourneySetup] {
     override def writes(o: JourneySetup): JsValue = {
-      val jsonJourneySetupDetails = Json.obj(
+      Json.obj(
         "dataSet" -> o.dataSet,
         "amountOfResults" -> o.amountOfResults,
         "sicCodes" -> o.sicCodes
@@ -64,13 +64,11 @@ object JourneySetup {
       o.queryParser.fold(Json.obj())(v => Json.obj("queryParser" -> v)) ++
       o.queryBooster.fold(Json.obj())(v => Json.obj("queryBooster" -> v)) ++
       o.customMessages.fold(Json.obj())(v => Json.obj("customMessages" -> v))
-
-      Json.obj("journeySetupDetails" -> jsonJourneySetupDetails)
     }
   }
 }
 
-object JourneyData extends TimeFormat {
+object JourneyData extends MongoJavatimeFormats {
   //Journeys
   val QUERY_BUILDER = "query-builder"
   val QUERY_PARSER  = "query-parser"
@@ -89,7 +87,7 @@ object JourneyData extends TimeFormat {
     (__ \ "identifiers").format[Identifiers] and
     (__ \ "redirectUrl").format[String] and
     (__ \ "journeySetupDetails").format[JourneySetup] and
-    (__ \ "lastUpdated").format[LocalDateTime](dateTimeRead)(dateTimeWrite)
+    (__ \ "lastUpdated").format[LocalDateTime](Implicits.jatLocalDateTimeFormat)
   )(JourneyData.apply, unlift(JourneyData.unapply))
 
   def initialRequestReads(sessionId: String): Reads[JourneyData] = (

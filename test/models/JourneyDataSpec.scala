@@ -16,13 +16,12 @@
 
 package models
 
-import java.util.UUID
-
 import models.setup.messages.{CustomMessages, Summary}
 import models.setup.{JourneyData, JourneySetup}
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 
+import java.util.UUID
 import scala.util.Try
 
 class JourneyDataSpec extends PlaySpec {
@@ -135,11 +134,9 @@ class JourneyDataSpec extends PlaySpec {
       val expectedJson = Json.parse(
         """
           |{
-          | "journeySetupDetails": {
-          |   "dataSet" : "ons-supplement-sic5",
-          |   "amountOfResults" : 50,
-          |   "sicCodes":[]
-          | }
+          |  "dataSet" : "ons-supplement-sic5",
+          |  "amountOfResults" : 50,
+          |  "sicCodes":[]
           |}
         """.stripMargin)
       Json.toJson(journeySetup)(JourneySetup.mongoWrites) mustBe expectedJson
@@ -160,23 +157,21 @@ class JourneyDataSpec extends PlaySpec {
       val expectedJson = Json.parse(
         """
           |{
-          | "journeySetupDetails": {
-          |   "dataSet" : "foo",
-          |   "queryParser" : true,
-          |   "queryBooster" : true,
-          |   "amountOfResults" : 200,
-          |   "customMessages" : {
-          |     "summary": {
-          |       "heading": "heading text",
-          |       "lead": "lead text",
-          |       "hint": "hint text"
-          |     }
-          |   },
-          |   "sicCodes" : [
-          |     "12345",
-          |     "67890"
-          |   ]
-          | }
+          |  "dataSet" : "foo",
+          |  "queryParser" : true,
+          |  "queryBooster" : true,
+          |  "amountOfResults" : 200,
+          |  "customMessages" : {
+          |    "summary": {
+          |      "heading": "heading text",
+          |      "lead": "lead text",
+          |      "hint": "hint text"
+          |    }
+          |  },
+          |  "sicCodes" : [
+          |    "12345",
+          |    "67890"
+          |  ]
           |}
         """.stripMargin)
       Json.toJson(journeySetup)(JourneySetup.mongoWrites) mustBe expectedJson

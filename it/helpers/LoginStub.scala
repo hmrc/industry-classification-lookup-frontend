@@ -18,7 +18,7 @@ package helpers
 
 import com.github.tomakehurst.wiremock.client.WireMock._
 
-trait LoginStub extends CookieBaker {
+trait LoginStub {
   def stubSuccessfulLogin(withSignIn: Boolean = false) = {
 
     stubFor(get(urlEqualTo("/auth/authority"))

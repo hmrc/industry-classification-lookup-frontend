@@ -56,9 +56,10 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
   val identifiers = Identifiers(journeyId, sessionId)
   val journeyData = JourneyData(identifiers, "redirectUrl", JourneySetup(), LocalDateTime.now())
 
-  val requestWithSessionId: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId)
+  val getRequestWithSessionId: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withMethod("GET").withSessionId(sessionId)
+  val postRequestWithSessionId: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId)
 
-  def formRequestWithSessionId(answer: String): FakeRequest[AnyContentAsFormUrlEncoded] = requestWithSessionId.withFormUrlEncodedBody("removeCode" -> answer)
+  def formRequestWithSessionId(answer: String): FakeRequest[AnyContentAsFormUrlEncoded] = postRequestWithSessionId.withMethod("POST").withFormUrlEncodedBody("removeCode" -> answer)
 
   val sicCodeCode = "12345"
   val sicCodeDescription = "some description"
@@ -77,7 +78,7 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
 
       when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
 
-      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId, sicCodeCode), requestWithSessionId) {
+      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId, sicCodeCode), getRequestWithSessionId) {
         result =>
           status(result) mustBe OK
       }
@@ -90,7 +91,7 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
 
       when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
 
-      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId, "Unknown"), requestWithSessionId) {
+      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId, "Unknown"), getRequestWithSessionId) {
         result =>
           status(result) mustBe SEE_OTHER
           redirectLocation(result) mustBe Some(controllers.routes.ChooseActivityController.show(journeyId, Some(true)).url)

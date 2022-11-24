@@ -17,15 +17,17 @@
 package models
 
 import helpers.UnitTestSpec
-import org.joda.time.DateTime
 import play.api.libs.json.{JsSuccess, JsValue, Json}
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-class SicStoreSpec extends UnitTestSpec {
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+class SicStoreSpec extends UnitTestSpec with MongoJavatimeFormats {
 
   val query = "testQuery"
-  val dateTime: DateTime = DateTime.parse("2017-06-15T10:06:28.434Z")
-  val now: JsValue = Json.toJson(dateTime)(ReactiveMongoFormats.dateTimeWrite)
+  val dateTime: LocalDateTime = LocalDateTime.parse("2017-06-15T10:06:28.434Z", DateTimeFormatter.ISO_DATE_TIME)
+  val now: JsValue = Json.toJson(dateTime)(Implicits.jatLocalDateTimeFormat)
 
   val sicStoreWithChoicesJson: JsValue = Json.parse(
     s"""

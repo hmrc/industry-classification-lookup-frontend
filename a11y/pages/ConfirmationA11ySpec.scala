@@ -1,9 +1,7 @@
 
 package pages
 
-import forms.RemoveSicCodeForm
 import helpers.A11ySpec
-import play.api.data.Form
 import views.html.pages.confirmation
 
 class ConfirmationA11ySpec extends A11ySpec {

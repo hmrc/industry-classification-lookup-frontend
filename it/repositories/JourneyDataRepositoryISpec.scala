@@ -16,33 +16,32 @@
 
 package repositories
 
-import java.time.LocalDateTime
-
+import com.mongodb.client.model.Updates.unset
 import models.setup.messages.{CustomMessages, Summary}
 import models.setup.{Identifiers, JourneyData, JourneySetup}
+import org.mongodb.scala.model.Filters
+import org.mongodb.scala.result.InsertOneResult
 import org.scalatest.{Assertion, BeforeAndAfterEach}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.libs.json.{JsResultException, Json, OWrites}
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.commands.WriteResult
-import reactivemongo.play.json.collection.JSONCollection
-import uk.gov.hmrc.mongo.Awaiting
+import play.api.libs.json.{Json, OWrites}
+import play.api.test.Helpers._
 
-class JourneyDataRepositoryISpec extends PlaySpec with Awaiting with BeforeAndAfterEach with GuiceOneServerPerSuite {
+import java.time.LocalDateTime
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class JourneyDataRepositoryISpec extends PlaySpec with BeforeAndAfterEach with GuiceOneServerPerSuite {
 
   class Setup {
 
     val repository: JourneyDataRepository = app.injector.instanceOf[JourneyDataRepository]
-    val mongo: ReactiveMongoComponent = app.injector.instanceOf[ReactiveMongoComponent]
+    await(repository.collection.drop.toFuture())
 
-    await(repository.drop)
+    def count: Long = await(repository.collection.countDocuments().toFuture())
 
-    def count: Int = await(repository.count)
+    def insert(journeyData: JourneyData): InsertOneResult = await(repository.collection.insertOne(journeyData).toFuture())
 
-    def insert(journeyData: JourneyData): WriteResult = await(repository.insert(journeyData))
-
-    def fetchAll: List[JourneyData] = await(repository.findAll())
+    def fetchAll: List[JourneyData] = await(repository.collection.find().toFuture().map(_.toList))
   }
 
   def dateHasAdvanced(futureTime: LocalDateTime): Assertion = assert(futureTime.isAfter(now))
@@ -124,20 +123,21 @@ class JourneyDataRepositoryISpec extends PlaySpec with Awaiting with BeforeAndAf
       insert(journeyData)
       await(repository.retrieveJourneyData(journeyData.identifiers)).journeySetupDetails mustBe JourneySetup(queryBooster = Some(true), customMessages = Some(customMsgs))
     }
-
     "throw a RuntimeException when the journey does not exist in the repo" in new Setup {
       intercept[RuntimeException](await(repository.retrieveJourneyData(journeyData.identifiers)))
     }
-
     "throw a JsResultException when a journey exists but journey data isn't defined" in new Setup {
-
       case class JID(identifiers: Identifiers)
 
       implicit val writes: OWrites[JID] = Json.writes[JID]
 
-      await(mongo.mongoConnector.db().collection[JSONCollection]("journey-data").insert.one(JID(Identifiers("testJourneyId", "testSessionId"))))
+      await(repository.collection.insertOne(journeyData).toFuture())
+      await(repository.collection.updateOne(
+        filter = Filters.equal("identifiers.journeyId", journeyData.identifiers.journeyId),
+        update = unset("journeySetupDetails")).toFuture()
+      )
 
-      a[JsResultException] mustBe thrownBy(await(repository.retrieveJourneyData(Identifiers(journeyId = "testJourneyId", sessionId = "testSessionId"))))
+      a[RuntimeException] mustBe thrownBy(await(repository.retrieveJourneyData(Identifiers(journeyId = "testJourneyId", sessionId = "testSessionId"))))
     }
   }
 

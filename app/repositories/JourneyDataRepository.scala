@@ -16,96 +16,102 @@
 
 package repositories
 
-import java.time.{LocalDateTime, ZoneOffset}
-
-import javax.inject.{Inject, Singleton}
+import com.mongodb.client.model.Filters._
+import com.mongodb.client.model.Indexes.ascending
 import models.setup.{Identifiers, JourneyData, JourneySetup}
-import play.api.Configuration
-import play.api.libs.json.{Json, Writes}
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.indexes.{Index, IndexType}
-import reactivemongo.bson.{BSONDocument, BSONObjectID}
-import reactivemongo.play.json._
-import uk.gov.hmrc.mongo.ReactiveRepository
+import org.mongodb.scala.bson.collection.immutable.Document
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.model
+import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.Updates.{currentDate, set}
+import org.mongodb.scala.model.{IndexOptions, ReplaceOptions}
+import play.api.{Configuration, Logging}
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
+import java.util.concurrent.TimeUnit
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class JourneyDataRepository @Inject()(config: Configuration,
-                                      mongo: ReactiveMongoComponent
+                                      mongo: MongoComponent
                                      )(implicit val ec: ExecutionContext)
-  extends ReactiveRepository[JourneyData, BSONObjectID](
-    "journey-data",
-    mongo.mongoConnector.db,
-    JourneyData.format
-  ) with TTLIndexing[JourneyData, BSONObjectID] {
-
-  override val ttl: Long = config.get[Long]("mongodb.timeToLiveInSeconds")
-
-  override def ensureIndexes(implicit ec: ExecutionContext): Future[Seq[Boolean]] = {
-    super.ensureIndexes flatMap { l =>
-      ensureTTLIndexes map {
-        ttl => l ++ ttl
-      }
-    }
-  }
-
-  override def indexes: Seq[Index] = Seq(
-    Index(
-      key = Seq(
-        "identifiers.journeyId" -> IndexType.Ascending,
-        "identifiers.sessionId" -> IndexType.Ascending
+  extends PlayMongoRepository[JourneyData](
+    mongoComponent = mongo,
+    collectionName = "journey-data",
+    domainFormat = JourneyData.format,
+    indexes = Seq(
+      model.IndexModel(
+        keys = ascending("identifiers.journeyId", "identifiers.sessionId"),
+        indexOptions = IndexOptions()
+          .name("SessionIdAndJourneyId")
+          .unique(true)
       ),
-      name = Some("SessionIdAndJourneyId"),
-      unique = true
+      model.IndexModel(
+        keys = ascending("lastUpdated"),
+        indexOptions = IndexOptions()
+          .name("lastUpdatedIndex")
+          .expireAfter(config.get[Int]("mongodb.timeToLiveInSeconds"), TimeUnit.SECONDS)
+      )
     )
-  )
+  ) with Logging {
 
-  private def identifiersSelector(identifiers: Identifiers) = BSONDocument("identifiers.journeyId" -> identifiers.journeyId, "identifiers.sessionId" -> identifiers.sessionId)
+  private def identifiersSelector(identifiers: Identifiers): Bson =
+    and(equal("identifiers.journeyId", identifiers.journeyId), equal("identifiers.sessionId", identifiers.sessionId))
 
-  private[repositories] def renewJourney[T](identifiers: Identifiers)(f: => T): Future[T] = {
-    val selector = identifiersSelector(identifiers)
-    val dateTime = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli
-    collection.update.one(selector, BSONDocument("$set" -> BSONDocument("lastUpdated" -> BSONDocument("$date" -> dateTime)))) map { _ =>
-      f
+  private[repositories] def renewJourney[T](identifiers: Identifiers)(f: => T): Future[T] =
+    collection.updateOne(
+      filter = identifiersSelector(identifiers),
+      update = currentDate("lastUpdated")
+    )
+    .toFuture()
+    .map( _ => f)
+
+  def upsertJourney(journeyData: JourneyData): Future[JourneyData] =
+    collection.replaceOne(
+      filter = identifiersSelector(journeyData.identifiers),
+      replacement = journeyData,
+      options = ReplaceOptions().upsert(true)
+    )
+    .toFuture()
+    .map(_ => journeyData)
+    .recover { case e =>
+      logger.warn(s"""[JourneyDataMongoRepository][upsertJourney] failed with message ${e.getMessage}
+        for journeyId: ${journeyData.identifiers.journeyId} sessionId: ${journeyData.identifiers.sessionId}""")
+      throw e
     }
-  }
-
-  def upsertJourney(journeyData: JourneyData): Future[JourneyData] = {
-    val selector = identifiersSelector(journeyData.identifiers)
-    collection.findAndUpdate(selector, journeyData, upsert = true, fetchNewObject = true)
-      .map(_.result[JourneyData].get)
-      .recover { case e =>
-        logger.warn(s"[JourneyDataMongoRepository][upsertJourney] failed with message ${e.getMessage} for journeyId: ${journeyData.identifiers.journeyId} sessionId: ${journeyData.identifiers.sessionId}")
-        throw e
-      }
-  }
 
   def updateJourneySetup(identifiers: Identifiers, journeySetup: JourneySetup): Future[JourneySetup] = {
-    implicit val journeySetupWrites: Writes[JourneySetup] = JourneySetup.mongoWrites
-    val selector = identifiersSelector(identifiers)
-    val journeyDoc = Json.toJson(journeySetup)
-    val modifier = Json.obj("$set" -> journeyDoc)
-    collection.update.one(selector, modifier).map(res => if (res.n > 0) {
-      journeySetup
-    } else {
-      logger.warn(s"[JourneyDataMongoRepository][updateJourneySetup] completed an update but no document was modified for journeyId: ${identifiers.journeyId} sessionId: ${identifiers.sessionId}")
-      throw new RuntimeException("Exception thrown because expected update did not succeed")
-    })
-      .recover {
-        case e =>
-          logger.warn(s"[JourneyDataMongoRepository][updateJourneySetup] failed with message: ${e.getMessage} journeyId: ${identifiers.journeyId} sessionId: ${identifiers.sessionId}")
-          throw e
+    collection.updateOne(
+      filter = identifiersSelector(identifiers),
+      update = set("journeySetupDetails", Codecs.toBson(journeySetup)(JourneySetup.mongoWrites))
+    )
+    .toFuture()
+    .map(res =>
+      if (res.getMatchedCount > 0) {
+        journeySetup
+      } else {
+        logger.warn(s"[JourneyDataMongoRepository][updateJourneySetup] completed an update but no document was modified for journeyId: ${identifiers.journeyId} sessionId: ${identifiers.sessionId}")
+        throw new RuntimeException("Exception thrown because expected update did not succeed")
       }
-  }
-
-  def retrieveJourneyData(identifiers: Identifiers): Future[JourneyData] = {
-    val selector = identifiersSelector(identifiers)
-    collection.find(selector).one[JourneyData] flatMap {
-      case Some(data) => renewJourney(identifiers)(data)
-      case _ =>
-        logger.warn("Could not find JourneyId")
-        throw new RuntimeException("Missing document")
+    )
+    .recover {
+      case e =>
+        logger.warn(s"[JourneyDataMongoRepository][updateJourneySetup] failed with message: ${e.getMessage} journeyId: ${identifiers.journeyId} sessionId: ${identifiers.sessionId}")
+        throw e
     }
   }
+
+  def retrieveJourneyData(identifiers: Identifiers): Future[JourneyData] =
+    collection.find[JourneyData](identifiersSelector(identifiers))
+      .headOption()
+      .flatMap {
+        case Some(data) =>
+          renewJourney(identifiers)(data)
+        case _ =>
+          logger.warn("Could not find JourneyId")
+          throw new RuntimeException(s"Missing document for journeyId: ${identifiers.journeyId} sessionId: ${identifiers.sessionId}")
+      }
+
 }
