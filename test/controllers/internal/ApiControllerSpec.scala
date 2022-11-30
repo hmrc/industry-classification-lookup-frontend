@@ -17,20 +17,24 @@
 package controllers.internal
 
 import helpers.UnitTestSpec
+import helpers.auth.AuthHelpers
 import helpers.mocks.{MockAppConfig, MockMessages}
-import models.{SicCode, SicCodeChoice}
 import models.setup.{Identifiers, JourneyData, JourneySetup}
+import models.{SicCode, SicCodeChoice}
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.when
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
+import uk.gov.hmrc.auth.core.AuthConnector
 
 import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfig {
+class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfig with AuthHelpers {
+
+  override val authConnector: AuthConnector = mockAuthConnector
 
   trait Setup {
     val controller: ApiController = new ApiController(
@@ -80,6 +84,7 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
       )
 
       "journey is initialised with custom messages" in new Setup {
+        mockAuthorisedUser(Future.successful({}))
         when(mockJourneyService.initialiseJourney(any(), eqTo(lang))(any())) thenReturn Future.successful(expectedJsonResponse)
 
         val result: Future[Result] = controller.journeyInitialisation()(requestWithSessionId)
@@ -89,6 +94,7 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
       }
 
       "journey is initialised without custom messages" in new Setup {
+        mockAuthorisedUser(Future.successful({}))
         val fakeRequest: FakeRequest[JsValue] = FakeRequest()
           .withSessionId("test-session-id")
           .withBody(validRequestedJsonWithoutCustomMessages)
@@ -103,6 +109,7 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
 
     "return 400" when {
       "payload provided is not valid" in new Setup {
+        mockAuthorisedUser(Future.successful({}))
         val invalidRequest: FakeRequest[JsValue] = FakeRequest()
           .withSessionId("test-session-id")
           .withBody(
@@ -124,6 +131,7 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
       }
 
       "sessionId is missing" in new Setup {
+        mockAuthorisedUser(Future.successful({}))
         val requestWithoutSessionId: FakeRequest[JsValue] = FakeRequest().withBody(validRequestedJson)
 
         val result: Future[Result] = controller.journeyInitialisation()(requestWithoutSessionId)
@@ -141,7 +149,7 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
 
     "return 200 with json" when {
       "the journey exists and there have been sic codes selected" in new Setup {
-
+        mockAuthorisedUser(Future.successful({}))
         val sicCode = SicCode("12345", "test description", "test description")
         val sicCodeChoice = SicCodeChoice(sicCode, List("123", "456", "789"), List("123", "456", "789"))
         val sicCodeChoices = List(sicCodeChoice)
@@ -170,6 +178,7 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
           """.stripMargin)
 
         val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+          .withMethod("POST")
           .withSessionId(sessionId)
 
         when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
@@ -183,7 +192,8 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
 
     "return 400" when {
       "there is no session id in the request made" in new Setup {
-        val result: Future[Result] = controller.fetchResults(journeyId)(FakeRequest())
+        mockAuthorisedUser(Future.successful({}))
+        val result: Future[Result] = controller.fetchResults(journeyId)(FakeRequest().withMethod("POST"))
         status(result) mustBe BAD_REQUEST
         contentAsString(result) mustBe "SessionId is missing from request"
       }
@@ -191,7 +201,8 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
 
     "return exception" when {
       "there is not a journey setup for the requested journeyId" in new Setup {
-        val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId)
+        mockAuthorisedUser(Future.successful({}))
+        val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withMethod("POST").withSessionId(sessionId)
 
         when(mockJourneyService.getJourney(any())) thenReturn Future.failed(new RuntimeException)
 
@@ -199,9 +210,10 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
       }
     }
     "return 404" when {
-
       "there is no sic code choices in the sic store" in new Setup {
+        mockAuthorisedUser(Future.successful({}))
         val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+          .withMethod("POST")
           .withSessionId(sessionId)
 
         when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)

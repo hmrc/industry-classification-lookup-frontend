@@ -21,9 +21,9 @@ import org.scalatestplus.mockito.MockitoSugar
 import repositories.SicStoreRepository
 import services.{JourneyService, SicSearchService}
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.http.HttpClient
 
 trait MockedComponents {
   self: MockitoSugar =>

@@ -32,9 +32,10 @@ class ConfirmationController @Inject()(mcc: MessagesControllerComponents,
                                        val sicSearchService: SicSearchService,
                                        val journeyService: JourneyService,
                                        val authConnector: AuthConnector,
-                                       view: confirmation
-                                      )(implicit ec: ExecutionContext,
-                                        val appConfig: AppConfig) extends ICLController(mcc) {
+                                       view: confirmation)
+                                      (implicit ec: ExecutionContext, val appConfig: AppConfig) extends ICLController(mcc) {
+
+  private val maxChoices = 4
 
   def show(journeyId: String): Action[AnyContent] = Action.async {
     implicit request =>
@@ -62,13 +63,14 @@ class ConfirmationController @Inject()(mcc: MessagesControllerComponents,
       userAuthorised() {
         withJourney(journeyId) { journeyData =>
           withCurrentUsersChoices(journeyData.identifiers) { choices =>
-            if (choices.size <= 4) {
+            if (choices.size <= maxChoices) {
               journeyService.getRedirectUrl(journeyData.identifiers) map { url =>
                 Redirect(url)
               }
             } else {
-              val amountToRemove = (choices.size - 4).toString
-              Future.successful(BadRequest(view(journeyId, choices, Some(Seq(amountToRemove)))))
+              // Used to tell the user how many choices they must remove to proceed
+              val amountToRemove = (choices.size - maxChoices).toString
+              Future.successful(BadRequest(view(journeyId, choices, errorArgs = Some(Seq(amountToRemove)))))
             }
           }
         }

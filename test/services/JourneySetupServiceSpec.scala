@@ -16,15 +16,14 @@
 
 package services
 
-import java.time.LocalDateTime
-
 import helpers.UnitTestSpec
 import helpers.mocks.MockJourneyDataRepo
 import models.setup.{Identifiers, JourneyData, JourneySetup}
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.libs.json.Json
 
+import java.time.LocalDateTime
 import scala.concurrent.Future
 
 class JourneySetupServiceSpec extends UnitTestSpec with MockJourneyDataRepo {

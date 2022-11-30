@@ -23,7 +23,6 @@ import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import reactivemongo.api.commands.DefaultWriteResult
 import repositories.JourneyDataRepository
 
 import scala.concurrent.Future
@@ -37,8 +36,6 @@ trait MockJourneyDataRepo extends MockitoSugar with BeforeAndAfterEach {
     super.beforeEach()
     reset(mockJourneyDataRepository)
   }
-
-  def mockWR(success: Boolean) = DefaultWriteResult(success, 1, Seq.empty, None, None, None)
 
   def mockInitialiseJourney(journeyData: JourneyData): OngoingStubbing[Future[JourneyData]] = {
     when(mockJourneyDataRepository.upsertJourney(ArgumentMatchers.any()))

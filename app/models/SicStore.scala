@@ -18,16 +18,17 @@ package models
 
 import config.AppConfig
 import featureswitch.core.config.WelshLanguage
-import org.joda.time.{DateTime, DateTimeZone}
 import play.api.i18n.Messages
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{Format, _}
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import play.api.libs.json._
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+
+import java.time.LocalDateTime
 
 case class SicStore(journeyId: String,
                     searchResults: Option[SearchResults] = None,
                     choices: Option[List[SicCodeChoice]] = None,
-                    lastUpdated: DateTime = DateTime.now(DateTimeZone.UTC))
+                    lastUpdated: LocalDateTime = LocalDateTime.now())
 
 case class SicCode(sicCode: String,
                    description: String,
@@ -55,14 +56,14 @@ case class Sector(code: String,
   }
 }
 
-object SicStore {
-  implicit val dateFormat = ReactiveMongoFormats.dateTimeFormats
+object SicStore extends MongoJavatimeFormats {
+  implicit val dateFormat = Implicits.jatLocalDateTimeFormat
 
   implicit val format: Format[SicStore] = (
     (__ \ "journeyId").format[String] and
     (__ \ "search").formatNullable[SearchResults](SearchResults.format) and
     (__ \ "choices").formatNullable[List[SicCodeChoice]] and
-    (__ \ "lastUpdated").format[DateTime]
+    (__ \ "lastUpdated").format[LocalDateTime]
   )(SicStore.apply, unlift(SicStore.unapply))
 }
 

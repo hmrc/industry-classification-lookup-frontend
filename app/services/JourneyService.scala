@@ -16,13 +16,13 @@
 
 package services
 
-import javax.inject.{Inject, Singleton}
 import models.SicCode
 import models.setup.{Identifiers, JourneyData, JourneySetup}
 import play.api.libs.json.{JsValue, Json}
 import repositories._
 import uk.gov.hmrc.http.HeaderCarrier
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 

@@ -18,31 +18,31 @@ package repositories
 
 import models._
 import models.setup.{JourneyData, JourneySetup}
-import org.joda.time.DateTime
+import org.mongodb.scala.result.InsertOneResult
 import org.scalatest.concurrent.Eventually
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
-import play.api.libs.json.{JsValue, Json}
-import reactivemongo.api.commands.WriteResult
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
-import uk.gov.hmrc.mongo.{Awaiting, MongoSpecSupport}
+import play.api.test.Helpers._
 
-class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServerPerSuite with Eventually with Awaiting {
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class SicStoreRepoISpec extends PlaySpec with GuiceOneServerPerSuite with Eventually {
 
   class Setup {
     val repository: SicStoreRepository = app.injector.instanceOf[SicStoreRepository]
 
-    await(repository.drop)
+    await(repository.collection.drop.toFuture())
 
-    def count: Int = await(repository.count)
+    def count: Long = await(repository.collection.countDocuments().toFuture())
 
-    def insert(sicStore: SicStore): WriteResult = await(repository.insert(sicStore))
+    def insert(sicStore: SicStore): InsertOneResult = await(repository.collection.insertOne(sicStore).toFuture())
 
-    def fetchAll: List[SicStore] = await(repository.findAll())
+    def fetchAll: List[SicStore] = await(repository.collection.find.toFuture().map(_.toList))
   }
 
-  val dateTime: DateTime = DateTime.parse("2017-06-15T10:06:28.434Z")
-  val now: JsValue = Json.toJson(dateTime)(ReactiveMongoFormats.dateTimeWrite)
+  val dateTime = LocalDateTime.parse("2017-06-15T10:06:28.434Z", DateTimeFormatter.ISO_DATE_TIME)
 
   val sessionId = "session-id-12345"
   val journeyId = "testJourneyId"
@@ -65,20 +65,18 @@ class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServ
   val sicStore1Choice = SicStore(journeyId, Some(searchResults), Some(List(sicCodeGroup)), dateTime)
   val sicStore2Choices = SicStore(journeyId, Some(searchResults2), Some(List(sicCodeGroup, sicCodeGroup2)), dateTime)
   val journeySetup = JourneySetup(dataSet, Some(false), Some(true), 50, None)
-  "retrieveSicStore" should {
 
+  "retrieveSicStore" should {
     "return a sic store when it is present" in new Setup {
-      await(repository.insert(sicStoreNoChoices))
+      await(repository.collection.insertOne(sicStoreNoChoices).toFuture())
       await(repository.retrieveSicStore(journeyId)) mustBe Some(sicStoreNoChoices)
     }
-
     "return nothing when the reg id is not present" in new Setup {
       await(repository.retrieveSicStore(journeyId)) mustBe None
     }
   }
 
   "updateSearchResults" should {
-
     "insert a new document when one does not exist" in new Setup {
       count mustBe 0
       val updateSuccess: Boolean = await(repository.upsertSearchResults(journeyId, searchResults.copy(currentSector = Some(Sector("A", "Fake Sector", "Cy business sector", 1)))))
@@ -86,9 +84,7 @@ class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServ
       updateSuccess mustBe true
       count mustBe 1
     }
-
     "update a document with the new sic code if the document already exists for a given session id" in new Setup {
-
       val otherSearchResults = SearchResults(
         "other query", 1,
         List(SicCode("87654", "Another test sic code description", "Another test sic code description")),
@@ -112,7 +108,6 @@ class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServ
   }
 
   "insertChoice" should {
-
     "insert new sic codes into empty sic store" in new Setup {
       count mustBe 0
 
@@ -126,7 +121,6 @@ class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServ
 
       fetchedDocument.choices mustBe Some(List(sicCodeGroup, sicCode2))
     }
-
     "insert a new sic code into a choices list with no other choices" in new Setup {
       insert(sicStoreNoChoices)
       count mustBe 1
@@ -141,9 +135,7 @@ class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServ
       fetchedDocument.choices mustBe sicStore1Choice.choices
       fetchedDocument.lastUpdated isAfter sicStore1Choice.lastUpdated mustBe true
     }
-
     "insert a new sic code choice into a choices list with another choice already there" in new Setup {
-
       val sicCodeToAdd = SicCode("67891", "some description", "some description")
 
       val searchResults = SearchResults("testQuery", 1, List(sicCodeToAdd), List(Sector("A", "Fake", "Cy business sector", 1)))
@@ -159,7 +151,6 @@ class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServ
       fetchedDocument.choices mustBe sicStoreWith2Choices.choices
       fetchedDocument.lastUpdated isAfter sicStoreWith2Choices.lastUpdated mustBe true
     }
-
     "inserting the same choice twice will not duplicate it in the documents choices" in new Setup {
       insert(sicStore1Choice)
 
@@ -170,7 +161,6 @@ class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServ
       fetchedDocument.choices mustBe sicStore1Choice.choices
       fetchedDocument.lastUpdated isAfter sicStore1Choice.lastUpdated mustBe true
     }
-
     "inserting the same sicCode with different indexes will not duplicate it in the documents choices" in new Setup {
       insert(sicStore1Choice)
 
@@ -181,7 +171,6 @@ class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServ
       fetchedDocument.choices mustBe generateSicStoreWithIndexes(List("some description")).choices
       fetchedDocument.lastUpdated isAfter sicStore1Choice.lastUpdated mustBe true
     }
-
     "inserting the same sicCode with different indexes will update the correct choice + add a new choice" in new Setup {
       val sicCode3 = SicCode("67891", "some other description", "some other description")
       val sicCodeGroup3 = SicCodeChoice(sicCode3, List("some index 1"), List("some index 1"))
@@ -202,9 +191,8 @@ class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServ
   }
 
   "removeChoice" should {
-
     "remove a choice from the list of choices held in the document" in new Setup {
-      await(repository.insert(sicStore2Choices))
+      await(repository.collection.insertOne(sicStore2Choices).toFuture())
       await(repository.removeChoice(journeyId, sicCode.sicCode))
 
       val fetchedDocument: SicStore = await(repository.retrieveSicStore(journeyId)).get
@@ -212,9 +200,8 @@ class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServ
       fetchedDocument.choices mustBe Some(List(sicCodeGroup2))
       fetchedDocument.lastUpdated isAfter sicStore2Choices.lastUpdated mustBe true
     }
-
     "remove a choice from the choice list leaving no choices" in new Setup {
-      await(repository.insert(sicStore1Choice))
+      await(repository.collection.insertOne(sicStore1Choice).toFuture())
       await(repository.removeChoice(journeyId, sicCode.sicCode))
 
       val fetchedDocument: SicStore = await(repository.retrieveSicStore(journeyId)).get
@@ -222,7 +209,6 @@ class SicStoreRepoISpec extends PlaySpec with MongoSpecSupport with GuiceOneServ
       fetchedDocument.choices mustBe Some(List())
       fetchedDocument.lastUpdated isAfter sicStore1Choice.lastUpdated mustBe true
     }
-
     "return None if unable to remove the choice from the list" in new Setup {
       await(repository.removeChoice(journeyId, sicCode.sicCode))
       await(repository.retrieveSicStore(journeyId)) mustBe None

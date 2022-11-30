@@ -19,10 +19,10 @@ package controllers
 import config.AppConfig
 import helpers.UnitTestSpec
 import helpers.mocks.{MockAppConfig, MockMessages}
-import play.api.mvc.{AnyContentAsEmpty, Result, Results}
-import play.api.test.FakeRequest
+import play.api.mvc.{Result, Results}
 import services.{JourneyService, SicSearchService}
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.SessionId
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -46,13 +46,12 @@ class ICLControllerSpec extends UnitTestSpec with MockAppConfig with MockMessage
   }
 
   val sessionId = "session-12345"
-  val requestWithSessionId: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId)
 
   "withSessionId" should {
     "supply the sessionId to the function parameter and return the supplied result" in new Setup {
       val suppliedFunction: String => Future[Result] = sessionId => Future.successful(Results.Ok(sessionId))
 
-      assertFutureResult(TestICLController.withSessionId(suppliedFunction)(requestWithSessionId)) { res =>
+      assertFutureResult(TestICLController.withSessionId(suppliedFunction)(hc.copy(sessionId = Some(SessionId(sessionId))))) { res =>
         status(res) mustBe OK
         contentAsString(res) mustBe sessionId
       }
@@ -61,7 +60,7 @@ class ICLControllerSpec extends UnitTestSpec with MockAppConfig with MockMessage
     "return a Bad Request when the request does not contain a session id" in new Setup {
       val suppliedFunction: String => Future[Result] = _ => Future.successful(Results.Ok)
 
-      assertFutureResult(TestICLController.withSessionId(suppliedFunction)(FakeRequest())) { res =>
+      assertFutureResult(TestICLController.withSessionId(suppliedFunction)(hc)) { res =>
         status(res) mustBe BAD_REQUEST
         contentAsString(res) mustBe "SessionId is missing from request"
       }

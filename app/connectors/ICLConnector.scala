@@ -19,49 +19,63 @@ package connectors
 import config.{AppConfig, Logging}
 import models.setup.JourneySetup
 import models.{SearchResults, SicCode}
-import play.api.http.Status.NO_CONTENT
+import play.api.http.Status._
 import play.api.libs.json.{Json, Reads}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse}
+import uk.gov.hmrc.http.HttpReads.Implicits
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException, StringContextOps, UpstreamErrorResponse}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ICLConnector @Inject()(appConfig: AppConfig, http: HttpClient) extends Logging {
+class ICLConnector @Inject()(appConfig: AppConfig, http: HttpClientV2)(implicit ec: ExecutionContext) extends Logging {
 
   lazy val ICLUrl: String = appConfig.industryClassificationLookupBackend
 
-  def lookup(sicCode: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[List[SicCode]] = {
-    http.GET[HttpResponse](s"$ICLUrl/industry-classification-lookup/lookup/$sicCode") map { resp =>
-      if (resp.status == NO_CONTENT) List.empty[SicCode] else Json.fromJson[List[SicCode]](resp.json).getOrElse(List.empty[SicCode])
-    } recover {
-      case e: HttpException =>
-        logger.error(s"[Lookup] Looking up sic code : $sicCode returned a ${e.responseCode}")
-        throw e
-      case e: Throwable =>
-        logger.error(s"[Lookup] Looking up sic code : $sicCode has thrown a non-http exception")
-        throw e
+  def lookup(sicCode: String)(implicit hc: HeaderCarrier): Future[List[SicCode]] = {
+    http.get(url"$ICLUrl/industry-classification-lookup/lookup/$sicCode")
+      .execute
+      .map { resp =>
+        resp.status match {
+          case OK => Json.fromJson[List[SicCode]](resp.json).getOrElse(Nil)
+          case NO_CONTENT => Nil
+          case status =>
+            logger.error(s"[Lookup] Looking up sic code: $sicCode returned a $status")
+            throw new InternalServerException(s"[Lookup] Looking up sic code: $sicCode returned a $status")
+        }
+      } recover {
+        case e: Throwable =>
+          logger.error(s"[Lookup] Looking up sic code: $sicCode has thrown a non-http exception")
+          throw e
+      }
     }
-  }
 
   def search(query: String, journeySetup: JourneySetup, sector: Option[String] = None, lang: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SearchResults] = {
     implicit val reads: Reads[SearchResults] = SearchResults.readsWithQuery(query)
-    val sectorFilter = sector.fold("")(s => s"&sector=$s")
-    val constructUrlParameters = s"query=$query" +
-      s"&pageResults=${journeySetup.amountOfResults}$sectorFilter" +
-      s"&queryParser=${journeySetup.queryParser.getOrElse(false)}" +
-      s"&queryBoostFirstTerm=${journeySetup.queryBooster.getOrElse(false)}" +
-      s"&indexName=${journeySetup.dataSet}" +
-      s"&lang=$lang"
+    val sectorFilter = sector.map(s => List("sector" -> s)).getOrElse(Nil)
 
-    http.GET[SearchResults](s"$ICLUrl/industry-classification-lookup/search?$constructUrlParameters") recover {
-      case e: HttpException =>
-        logger.error(s"[Search] Searching using query : $query returned a ${e.responseCode}")
-        SearchResults(
-          query, 0, List(), List())
-      case e =>
-        logger.error(s"[Search] Searching using query : $query has thrown a non-http exception")
-        throw e
-    }
+    val filters = Seq(
+      "query" -> query,
+      "queryParser" -> s"${journeySetup.queryParser.getOrElse(false)}",
+      "pageResults" -> s"${journeySetup.amountOfResults}",
+      "queryBoostFirstTerm" -> s"${journeySetup.queryBooster.getOrElse(false)}",
+      "indexName" -> journeySetup.dataSet,
+      "lang" -> lang
+    ) ++ sectorFilter
+
+    http.get(url"$ICLUrl/industry-classification-lookup/search")
+      .transform(_.withQueryStringParameters(filters: _*))
+      .execute[SearchResults](Implicits.readFromJson, ec)
+      .recover {
+        case e: UpstreamErrorResponse =>
+          logger.error(s"[Search] Searching using query : $query returned a ${e.statusCode}")
+          SearchResults(query, numFound = 0, results = Nil, sectors = Nil)
+        case e =>
+          logger.error(s"[Search] Searching using query : $query has thrown a non-http exception")
+          throw e
+      }
   }
+
 }

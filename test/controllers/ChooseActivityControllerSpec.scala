@@ -55,7 +55,8 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       override lazy val loginURL = "/test/login"
     }
 
-    val requestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId).withCookies(Cookie("PLAY_LANG", "en"))
+    val getRequestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId).withMethod("GET").withCookies(Cookie("PLAY_LANG", "en"))
+    val postRequestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId).withMethod("POST").withCookies(Cookie("PLAY_LANG", "en"))
   }
 
   val lang = "en"
@@ -86,7 +87,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
 
-      requestWithAuthorisedUser(controller.show(journeyId), requestWithSession) {
+      requestWithAuthorisedUser(controller.show(journeyId), getRequestWithSession) {
         response: Future[Result] =>
           status(response) mustBe OK
           val document = Jsoup.parse(contentAsString(response))
@@ -106,7 +107,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
 
-      requestWithAuthorisedUser(controller.show(journeyId, Some(true)), requestWithSession) {
+      requestWithAuthorisedUser(controller.show(journeyId, Some(true)), postRequestWithSession) {
         response: Future[Result] =>
           status(response) mustBe OK
           val document = Jsoup.parse(contentAsString(response))
@@ -124,7 +125,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
 
-      requestWithAuthorisedUser(controller.show(journeyId, Some(true)), requestWithSession) {
+      requestWithAuthorisedUser(controller.show(journeyId, Some(true)), postRequestWithSession) {
         response: Future[Result] =>
           status(response) mustBe OK
       }
@@ -137,7 +138,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
 
-      requestWithAuthorisedUser(controller.show(journeyId, Some(true)), requestWithSession) {
+      requestWithAuthorisedUser(controller.show(journeyId, Some(true)), postRequestWithSession) {
         response: Future[Result] =>
           status(response) mustBe OK
           val document = Jsoup.parse(contentAsString(response))
@@ -155,7 +156,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
 
-      requestWithAuthorisedUser(controller.show(journeyId, Some(true)), requestWithSession) { result =>
+      requestWithAuthorisedUser(controller.show(journeyId, Some(true)), postRequestWithSession) { result =>
         status(result) mustBe OK
         val document = Jsoup.parse(contentAsString(result))
         document.getElementById("sicSearch").attr("name") mustBe "sicSearch"
@@ -174,7 +175,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
 
-      val request: FakeRequest[AnyContentAsFormUrlEncoded] = requestWithSession.withFormUrlEncodedBody(
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = postRequestWithSession.withFormUrlEncodedBody(
         "sicSearch" -> query
       )
 
@@ -192,7 +193,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
 
-      val request: FakeRequest[AnyContentAsFormUrlEncoded] = requestWithSession.withFormUrlEncodedBody(
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = postRequestWithSession.withFormUrlEncodedBody(
         "sicSearch" -> query
       )
 
@@ -210,11 +211,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
 
-      val request: FakeRequest[AnyContentAsFormUrlEncoded] = requestWithSession.withFormUrlEncodedBody(
-        "sicSearch" -> ""
-      )
-
-      requestWithAuthorisedUser(controller.submit(journeyId, Some("test")), requestWithSession) {
+      requestWithAuthorisedUser(controller.submit(journeyId, Some("test")), postRequestWithSession) {
         response: Future[Result] =>
           status(response) mustBe BAD_REQUEST
       }
@@ -237,7 +234,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
 
-      val request: FakeRequest[AnyContentAsFormUrlEncoded] = requestWithSession.withFormUrlEncodedBody(
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = postRequestWithSession.withFormUrlEncodedBody(
         "code[0]" -> "12345-test description-test description"
       )
 
@@ -255,7 +252,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
 
-      val request: FakeRequest[AnyContentAsFormUrlEncoded] = requestWithSession.withFormUrlEncodedBody(
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = postRequestWithSession.withFormUrlEncodedBody(
         "code" -> ""
       )
 
@@ -276,7 +273,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
 
-      requestWithAuthorisedUser(controller.filter(journeyId, SECTOR_A), requestWithSession) {
+      requestWithAuthorisedUser(controller.filter(journeyId, SECTOR_A), postRequestWithSession) {
         result =>
           status(result) mustBe SEE_OTHER
           redirectLocation(result) mustBe Some(routes.ChooseActivityController.show(journeyId, Some(true)).url)
@@ -292,7 +289,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
 
-      requestWithAuthorisedUser(controller.filter(journeyId, SECTOR_A), requestWithSession) {
+      requestWithAuthorisedUser(controller.filter(journeyId, SECTOR_A), postRequestWithSession) {
         result =>
           status(result) mustBe SEE_OTHER
           redirectLocation(result) mustBe Some(routes.ChooseActivityController.show(journeyId, Some(true)).url)
@@ -310,7 +307,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
 
-      requestWithAuthorisedUser(controller.clearFilter(journeyId), requestWithSession) {
+      requestWithAuthorisedUser(controller.clearFilter(journeyId), postRequestWithSession) {
         result =>
           status(result) mustBe SEE_OTHER
           redirectLocation(result) mustBe Some(routes.ChooseActivityController.show(journeyId, Some(true)).url)

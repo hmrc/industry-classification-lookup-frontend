@@ -51,7 +51,8 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
       override lazy val loginURL = "/test/login"
     }
 
-    val requestWithSessionId: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId)
+    val getRequestWithSessionId: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId).withMethod("GET")
+    val postRequestWithSessionId: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId).withMethod("POST")
   }
 
   val lang = "en"
@@ -75,7 +76,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
 
       when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
 
-      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), requestWithSessionId) { result =>
+      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), getRequestWithSessionId) { result =>
         status(result) mustBe 200
       }
     }
@@ -84,7 +85,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
 
       when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
 
-      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), requestWithSessionId) { result =>
+      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), getRequestWithSessionId) { result =>
         status(result) mustBe 200
       }
     }
@@ -93,7 +94,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
   "submit" should {
 
     "return a 400 when the form is empty" in new Setup {
-      val request: FakeRequest[AnyContentAsFormUrlEncoded] = requestWithSessionId.withFormUrlEncodedBody(
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = postRequestWithSessionId.withFormUrlEncodedBody(
         "journey" -> ""
       )
 
@@ -106,7 +107,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
 
     s"return a 303 and redirect to ${controllers.routes.ChooseActivityController.show(journeyId)} when a journey is initialised" in new Setup {
 
-      val request: FakeRequest[AnyContentAsFormUrlEncoded] = requestWithSessionId.withFormUrlEncodedBody(
+      val request: FakeRequest[AnyContentAsFormUrlEncoded] = postRequestWithSessionId.withFormUrlEncodedBody(
         "queryParser" -> "false",
         "dataSet" -> dataSet,
         "amountOfResults" -> "5"
@@ -126,7 +127,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
     "redirect to the test setup show page" in new Setup {
       when(mockJourneyService.initialiseJourney(any(), eqTo(lang))(any())) thenReturn Future.successful(Json.parse("""{}"""))
 
-      AuthHelpers.showWithAuthorisedUser(controller.testSetup, requestWithSessionId) { result =>
+      AuthHelpers.showWithAuthorisedUser(controller.testSetup, postRequestWithSessionId) { result =>
         status(result) mustBe SEE_OTHER
         redirectLocation(result) mustBe Some("/session-12345/setup-journey")
       }
@@ -149,7 +150,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
       when(mockSicSearchService.retrieveChoices(any())(any()))
         .thenReturn(Future.successful(sicCodeChoices))
 
-      AuthHelpers.showWithAuthorisedUser(controller.endOfJourney(journeyId), requestWithSessionId) { result =>
+      AuthHelpers.showWithAuthorisedUser(controller.endOfJourney(journeyId), postRequestWithSessionId) { result =>
         status(result) mustBe OK
         contentAsString(result) mustBe "End of Journey" + Json.prettyPrint(Json.toJson(sicCodeChoices))
       }
@@ -163,7 +164,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
     }
 
     "return a Exception when there is no journey setup" in new Setup {
-      intercept[Exception](AuthHelpers.showWithAuthorisedUser(controller.endOfJourney(journeyId), requestWithSessionId) { result =>
+      intercept[Exception](AuthHelpers.showWithAuthorisedUser(controller.endOfJourney(journeyId), postRequestWithSessionId) { result =>
         status(result) mustBe "this will never run so test will pass"
       })
     }
