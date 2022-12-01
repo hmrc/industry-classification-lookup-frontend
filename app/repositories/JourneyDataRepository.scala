@@ -19,7 +19,6 @@ package repositories
 import com.mongodb.client.model.Filters._
 import com.mongodb.client.model.Indexes.ascending
 import models.setup.{Identifiers, JourneyData, JourneySetup}
-import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model
 import org.mongodb.scala.model.Filters.equal
