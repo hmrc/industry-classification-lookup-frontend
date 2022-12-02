@@ -25,7 +25,7 @@ import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model
 import org.mongodb.scala.model.Filters.{equal, exists}
 import org.mongodb.scala.model.Updates.{addEachToSet, combine}
-import org.mongodb.scala.model.{DeleteOptions, IndexOptions, UpdateOptions}
+import org.mongodb.scala.model.{IndexOptions, UpdateOptions}
 import play.api.{Configuration, Logging}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
@@ -57,7 +57,7 @@ class SicStoreRepository @Inject()(config: Configuration,
   collection.find[Document](or(equal("journeyId", null), exists("journeyId", exists = false)))
     .subscribe(
       found => {
-        val id = found.getObjectId().toString
+        val id = found.getObjectId("_id")
         logger.info(s"[SicStore] Found record missing journeyId field: $id. Attempting to delete...")
         collection.deleteOne(equal("_id", id)).subscribe(
           delete => if (delete.wasAcknowledged() && delete.getDeletedCount > 0) {
