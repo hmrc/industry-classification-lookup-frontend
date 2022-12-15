@@ -17,13 +17,14 @@
 package forms.chooseactivity
 
 import models.{SearchResults, SicCode}
+import org.apache.commons.lang3.StringEscapeUtils
 import play.api.data.Forms._
 import play.api.data.validation.{Constraint, Invalid, Valid, ValidationError}
 import play.api.data.{Form, Mapping}
 
 object ChooseMultipleActivitiesForm {
   val toSicValuePair: (String, Option[SearchResults]) => Option[SicCode] = (sicVal, maybeSearchResult) => {
-    val Array(code, descr) = sicVal.split("-",2)
+    val Array(code, descr) = StringEscapeUtils.unescapeHtml4(sicVal).split("-",2)
     maybeSearchResult match {
       case Some(searchResult) =>
         searchResult.results.find(sc => {
@@ -36,7 +37,7 @@ object ChooseMultipleActivitiesForm {
   def validateList(searchResults: Option[SearchResults] = None): Mapping[List[SicCode]] = {
     val textConstraint: Constraint[List[String]] = Constraint {
       case s if s.isEmpty => Invalid(ValidationError("errors.invalid.sic.noSelection"))
-      case _              => Valid
+      case _ => Valid
     }
     list(text)
       .verifying(textConstraint)
