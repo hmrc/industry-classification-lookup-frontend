@@ -16,19 +16,14 @@
 
 package controllers.action
 
-import featureswitch.core.config.{FeatureSwitching, WelshLanguage}
 import play.api.i18n.{I18nSupport, Lang, Messages}
 import play.api.mvc.RequestHeader
 
-trait ICLLanguageSupport extends I18nSupport with FeatureSwitching {
+trait ICLLanguageSupport extends I18nSupport {
 
   implicit val english: Lang = Lang("en")
 
   override implicit def request2Messages(implicit request: RequestHeader): Messages = {
-    if (isEnabled(WelshLanguage)) {
       messagesApi.preferred(request)
-    } else {
-      messagesApi.preferred(Seq(english))
-    }
   }
 }

@@ -17,7 +17,6 @@
 package controllers
 
 import config.AppConfig
-import featureswitch.core.config.WelshLanguage
 import models.setup.messages.Summary
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.{JourneyService, SicSearchService}
@@ -46,7 +45,7 @@ class ConfirmationController @Inject()(mcc: MessagesControllerComponents,
 
             val langCookieValue = request.cookies.get(messagesApi.langCookieName).map(_.value)
             val maybeSummaryContent = langCookieValue match {
-              case Some("cy") if isEnabled(WelshLanguage) => customMessages.flatMap(_.summaryCy)
+              case Some("cy") => customMessages.flatMap(_.summaryCy)
               case _ => customMessages.flatMap(_.summary)
             }
 
