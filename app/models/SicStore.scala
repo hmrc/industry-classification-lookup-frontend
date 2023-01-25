@@ -17,7 +17,6 @@
 package models
 
 import config.AppConfig
-import featureswitch.core.config.WelshLanguage
 import play.api.i18n.Messages
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
@@ -35,7 +34,7 @@ case class SicCode(sicCode: String,
                    descriptionCy: String = "") {
 
   def getDescription(implicit  messages: Messages, appConfig: AppConfig): String = messages.lang.code match {
-    case "cy" if appConfig.isEnabled(WelshLanguage) => descriptionCy
+    case "cy" => descriptionCy
     case _ => description
   }
 }
@@ -51,7 +50,7 @@ case class Sector(code: String,
                   nameCy: String,
                   count: Int) {
   def nameLabel(implicit messages: Messages, appConfig: AppConfig): String = messages.lang.code match {
-    case "cy" if appConfig.isEnabled(WelshLanguage) => nameCy
+    case "cy" => nameCy
     case _ => name
   }
 }

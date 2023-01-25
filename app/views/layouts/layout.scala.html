@@ -15,7 +15,6 @@
  *@
 
 @import config.AppConfig
-@import featureswitch.core.config.WelshLanguage
 @import play.api.i18n.Messages
 @import play.api.mvc.Request
 @import uk.gov.hmrc.hmrcfrontend.views.config.StandardBetaBanner
@@ -73,6 +72,6 @@
     accessibilityStatementUrl = Some(appConfig.accessibilityStatementUrl),
     additionalScriptsBlock = Some(scripts),
     mainContentLayout = if(fullWidth) Some(fullWidthContentLayout()) else Some(twoThirdsMainContent(_)),
-    isWelshTranslationAvailable = appConfig.isEnabled(WelshLanguage)
+    isWelshTranslationAvailable = true
 )(content)
 

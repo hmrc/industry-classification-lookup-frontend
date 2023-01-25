@@ -16,7 +16,6 @@
 
 package controllers
 
-import featureswitch.core.config.{FeatureSwitching, WelshLanguage}
 import helpers.UnitTestSpec
 import helpers.mocks.{MockAppConfig, MockMessages}
 import models._
@@ -33,7 +32,7 @@ import java.time.LocalDateTime
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with MockMessages with FeatureSwitching {
+class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with MockMessages {
 
   class Setup {
 
@@ -100,8 +99,7 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
             .select("h1").text() mustBe englishSummary.heading.get
       }
     }
-    "return a 200 and CY heading welsh language cookie is set and FS is enabled" in new Setup {
-      enable(WelshLanguage)
+    "return a 200 and CY heading welsh language cookie is set" in new Setup {
       when(mockSicSearchService.retrieveChoices(any())(any()))
         .thenReturn(Future.successful(Some(List(sicCodeChoice))))
 
@@ -113,21 +111,6 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
           status(result) mustBe 200
           Jsoup.parse(Helpers.contentAsString(result))
             .select("h1").text() mustBe welshSummary.heading.get
-      }
-      disable(WelshLanguage)
-    }
-    "return a 200 and EN heading when welsh lang cookie set but FS is disabled" in new Setup {
-      when(mockSicSearchService.retrieveChoices(any())(any()))
-        .thenReturn(Future.successful(Some(List(sicCodeChoice))))
-
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyDataWithCustomMessages)
-
-      val requestWithWelshLangCookie = getRequestWithSessionId.withCookies(Cookie("PLAY_LANG", "cy"))
-      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), requestWithWelshLangCookie) {
-        maybeResult =>
-          status(maybeResult) mustBe 200
-          Jsoup.parse(Helpers.contentAsString(maybeResult))
-            .select("h1").text() mustBe englishSummary.heading.get
       }
     }
     "return a 303 when previous choices are not found in mongo" in new Setup {

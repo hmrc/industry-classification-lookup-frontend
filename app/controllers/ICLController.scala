@@ -19,7 +19,6 @@ package controllers
 import auth.SicSearchExternalURLs
 import config.Logging
 import controllers.action.ICLLanguageSupport
-import featureswitch.core.config.{FeatureSwitching, WelshLanguage}
 import models.SicCodeChoice
 import models.setup.{Identifiers, JourneyData}
 import play.api.libs.json._
@@ -35,7 +34,7 @@ import scala.util.{Failure, Success, Try}
 
 abstract class ICLController @Inject()(mcc: MessagesControllerComponents
                                       )(implicit ec: ExecutionContext)
-  extends FrontendController(mcc) with AuthorisedFunctions with ICLLanguageSupport with SicSearchExternalURLs with FeatureSwitching with Logging {
+  extends FrontendController(mcc) with AuthorisedFunctions with ICLLanguageSupport with SicSearchExternalURLs with Logging {
 
   val journeyService: JourneyService
   val sicSearchService: SicSearchService
@@ -105,7 +104,7 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
 
   private[controllers] def getLang(implicit request: Request[_]) = {
     request.cookies.get(messagesApi.langCookieName) match {
-      case Some(langCookie) if isEnabled(WelshLanguage) => langCookie.value
+      case Some(langCookie) => langCookie.value
       case _ => "en"
     }
   }

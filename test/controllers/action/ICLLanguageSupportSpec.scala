@@ -17,7 +17,6 @@
 package controllers.action
 
 import config.AppConfig
-import featureswitch.core.config.{FeatureSwitching, WelshLanguage}
 import helpers.UnitTestSpec
 import models.SicCodeChoice
 import org.jsoup.Jsoup
@@ -29,7 +28,7 @@ import views.html.pages.confirmation
 
 import javax.inject.Inject
 
-class VatRegLanguageSupportSpec extends UnitTestSpec with FeatureSwitching {
+class VatRegLanguageSupportSpec extends UnitTestSpec {
 
   lazy val app: Application = new GuiceApplicationBuilder()
     .configure("metrics.enabled" -> "false")
@@ -43,52 +42,25 @@ class VatRegLanguageSupportSpec extends UnitTestSpec with FeatureSwitching {
   val testController: WelshTestController = app.injector.instanceOf[WelshTestController]
 
   "ICL Language Support" when {
-    "the play lang cookie is set to Welsh" when {
-      "the Welsh feature switch is enabled" must {
-        "return a page with Welsh content" in {
-          enable(WelshLanguage)
+    "the play lang cookie is set to Welsh" must {
+      "return a page with Welsh content" in {
 
-          val res = testController.getPage()(FakeRequest().withCookies(Cookie("PLAY_LANG", "cy")))
-          val doc = Jsoup.parse(contentAsString(res))
+        val res = testController.getPage()(FakeRequest().withCookies(Cookie("PLAY_LANG", "cy")))
+        val doc = Jsoup.parse(contentAsString(res))
 
-          doc.select("h1").first().text() mustBe ExpectedMessages.welshHeading
-        }
-      }
-      "the Welsh feature switch is disabled" must {
-        "return a page with English content" in {
-          disable(WelshLanguage)
-
-          val res = testController.getPage()(FakeRequest().withCookies(Cookie("PLAY_LANG", "cy")))
-          val doc = Jsoup.parse(contentAsString(res))
-
-          doc.select("h1").first().text() mustBe ExpectedMessages.englishHeading
-        }
-      }
-    }
-    "the play lang cookie is set to English" when {
-      "the Welsh feature switch is enabled" must {
-        "return a page with English content" in {
-          enable(WelshLanguage)
-
-          val res = testController.getPage()(FakeRequest().withCookies(Cookie("PLAY_LANG", "en")))
-          val doc = Jsoup.parse(contentAsString(res))
-
-          doc.select("h1").first().text() mustBe ExpectedMessages.englishHeading
-        }
-      }
-      "the Welsh feature switch is disabled" must {
-        "return a page with English content" in {
-          disable(WelshLanguage)
-
-          val res = testController.getPage()(FakeRequest().withCookies(Cookie("PLAY_LANG", "en")))
-          val doc = Jsoup.parse(contentAsString(res))
-
-          doc.select("h1").first().text() mustBe ExpectedMessages.englishHeading
-        }
+        doc.select("h1").first().text() mustBe ExpectedMessages.welshHeading
       }
     }
   }
+  "the play lang cookie is set to English" must {
+    "return a page with English content" in {
 
+      val res = testController.getPage()(FakeRequest().withCookies(Cookie("PLAY_LANG", "en")))
+      val doc = Jsoup.parse(contentAsString(res))
+
+      doc.select("h1").first().text() mustBe ExpectedMessages.englishHeading
+    }
+  }
 }
 
 class WelshTestController @Inject()(page: confirmation,

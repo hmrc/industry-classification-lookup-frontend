@@ -18,7 +18,6 @@ package models
 
 
 import config.AppConfig
-import featureswitch.core.config.WelshLanguage
 import play.api.i18n.Messages
 import play.api.libs.json.{Json, OFormat}
 
@@ -30,12 +29,12 @@ case class SicCodeChoice(
                           indexesCy: List[String] = List.empty[String]
                         ) {
   def getDescription(implicit messages: Messages, appConfig: AppConfig): String = messages.lang.code match {
-    case "cy" if appConfig.isEnabled(WelshLanguage) => descCy
+    case "cy" => descCy
     case _ => desc
   }
 
   def getIndexes(implicit messages: Messages, appConfig: AppConfig): List[String] = messages.lang.code match {
-    case "cy" if appConfig.isEnabled(WelshLanguage) => indexesCy
+    case "cy" => indexesCy
     case _ => indexes
   }
 }
