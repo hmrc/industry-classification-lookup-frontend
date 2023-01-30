@@ -9,16 +9,28 @@ This code is open source software licensed under the [Apache 2.0 License]("http:
 ## 1. Starting the service
 
 ### With Service Manager
+To start all the dependent services required by Industry Classification Lookup Frontend in service manager, run `sm --start ICL_ALL -r` or `sm2 --start ICL_ALL -r` if you are using sm2.
 
-to run all required services, run `sm --start ICL_ALL -r`
-or to run it individually, `sm --start ICL_FE -r`.
+If you want to run the service individually, run `sm --start ICL_FE -r` or `sm2 --start ICL_FE -r` if you are using to sm2.
 
-### Locally
+Prior to starting the service locally, make sure the instance running in service manager is stopped by running either `sm --stop ICL_FE`, or `sm2 --stop ICL_FE` if you are using sm2.
 
-run `./run.sh`
+### From source code on your local machine
+> The below instructions are for Mac/Linux only. Windows users will have to use SBT to run the service on port `9874`.
+1. Clone this repository into the development environment on your machine.
+2. Open a terminal and navigate to the folder you cloned the service into.
+3. Run either `./run.sh` or `sbt "run 9874 -Dapplication.router=testOnlyDoNotUseInAppConf.Routes -Dconfig.resource=application.conf"` to start the service locally on port `9874` and enable the `/test-only` routes for local testing.
+4. Ensure all dependent services are started, using the `ICL_ALL` service manager profile.
 
-## 2. Initialsing a Journey
+### Test the application
 
+#### Unit and Integration tests
+To run the unit and integration tests, you can either use ```sbt test it:test``` or ```sbt clean coverage test it:test scalastyle coverageReport```.
+
+#### Accessibility tests
+To run the accessibility tests, use ```sbt a11y:test```.
+
+## 2. Initializing a Journey
 To start, the calling service must make a **POST** to `/internal/initialise-journey`
 
 The **POST** will contain a **json** body as config for setting up the journey. The **json** consists of:
@@ -74,7 +86,6 @@ The **Ok** response will look like:
 ```
 
 ## 3. Receiving selected sic codes
-
 Once the user has left the service and redirected back to the calling service via the provided redirect url, the calling service can make a **GET** request to the **fetchResultsUri** and a json body will be returned with the results of the journey.
 
 The responses that can be recieved from the **GET** can be:
