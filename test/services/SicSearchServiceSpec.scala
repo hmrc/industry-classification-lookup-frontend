@@ -65,13 +65,13 @@ class SicSearchServiceSpec extends UnitTestSpec {
 
   "lookupSicCodes" should {
     "return true when a sic code is found in ICL and successfully saved" in new Setup {
-      when(mockICLConnector.lookup(eqTo(sicCodeCode))(any()))
+      when(mockICLConnector.lookup(eqTo(sicCodeCode))(any(), any()))
         .thenReturn(Future.successful(List(sicCode)))
 
       when(mockSicStoreRepository.upsertSearchResults(eqTo(journeyId), any()))
         .thenReturn(Future.successful(true))
 
-      when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any()))
+      when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any())(any()))
         .thenReturn(Future.successful(true))
 
       when(mockSicStoreRepository.upsertSearchResults(eqTo(journeyId), any()))
@@ -83,13 +83,13 @@ class SicSearchServiceSpec extends UnitTestSpec {
     }
 
     "return true if a sicCode with no description is passed in and is found in ICL and successfully saved" in new Setup {
-      when(mockICLConnector.lookup(eqTo(sicCodeCode))(any()))
+      when(mockICLConnector.lookup(eqTo(sicCodeCode))(any(), any()))
         .thenReturn(Future.successful(List(sicCode)))
 
       when(mockSicStoreRepository.upsertSearchResults(eqTo(journeyId), any()))
         .thenReturn(Future.successful(true))
 
-      when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any()))
+      when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any())(any()))
         .thenReturn(Future.successful(true))
       when(mockSicStoreRepository.upsertSearchResults(eqTo(journeyId), any()))
         .thenReturn(Future.successful(true))
@@ -100,10 +100,10 @@ class SicSearchServiceSpec extends UnitTestSpec {
     }
 
     "return false when a sic code is found in ICL but unsuccessfully saved" in new Setup {
-      when(mockICLConnector.lookup(eqTo(sicCodeCode))(any()))
+      when(mockICLConnector.lookup(eqTo(sicCodeCode))(any(), any()))
         .thenReturn(Future.successful(Nil))
 
-      when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any()))
+      when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any())(any()))
         .thenReturn(Future.successful(true))
 
       when(mockSicStoreRepository.upsertSearchResults(eqTo(journeyId), any()))
@@ -115,7 +115,7 @@ class SicSearchServiceSpec extends UnitTestSpec {
     }
 
     "return false when a sic code is not found" in new Setup {
-      when(mockICLConnector.lookup(eqTo(sicCodeCode))(any()))
+      when(mockICLConnector.lookup(eqTo(sicCodeCode))(any(), any()))
         .thenReturn(Future.successful(Nil))
       when(mockSicStoreRepository.upsertSearchResults(eqTo(journeyId), any()))
         .thenReturn(Future.successful(true))
@@ -134,16 +134,16 @@ class SicSearchServiceSpec extends UnitTestSpec {
 
   "searchQuery" should {
     "return true when 1 search result is returned from ICL" in new Setup {
-      when(mockICLConnector.search(eqTo(query), any(), any(), eqTo(lang))(any(), any()))
+      when(mockICLConnector.search(eqTo(query), any(), any(), eqTo(lang))(any(), any(), any()))
         .thenReturn(Future.successful(oneSearchResult))
 
       when(mockSicStoreRepository.upsertSearchResults(any(), any()))
         .thenReturn(Future.successful(true))
 
-      when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any()))
+      when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any())(any()))
         .thenReturn(Future.successful(true))
 
-      when(mockICLConnector.lookup(any())(any()))
+      when(mockICLConnector.lookup(any())(any(), any()))
         .thenReturn(Future.successful(List(SicCode("", "", ""))))
 
       awaitAndAssert(service.searchQuery(testJourneyData, query, lang = lang)) {
@@ -152,7 +152,7 @@ class SicSearchServiceSpec extends UnitTestSpec {
     }
 
     "return true when more than 1 search results are returned from ICL" in new Setup {
-      when(mockICLConnector.search(eqTo(query), any(), any(), eqTo(lang))(any(), any()))
+      when(mockICLConnector.search(eqTo(query), any(), any(), eqTo(lang))(any(), any(), any()))
         .thenReturn(Future.successful(threeSearchResults))
 
       when(mockSicStoreRepository.upsertSearchResults(eqTo(journeyId), eqTo(threeSearchResults)))
@@ -164,7 +164,7 @@ class SicSearchServiceSpec extends UnitTestSpec {
     }
 
     "return false when a set of search results are returned from ICL" in new Setup {
-      when(mockICLConnector.search(eqTo(query), any(), any(), eqTo(lang))(any(), any()))
+      when(mockICLConnector.search(eqTo(query), any(), any(), eqTo(lang))(any(), any(), any()))
         .thenReturn(Future.successful(searchResultsEmpty))
 
       when(mockSicStoreRepository.upsertSearchResults(any(), any()))
@@ -176,7 +176,7 @@ class SicSearchServiceSpec extends UnitTestSpec {
     }
 
     "return false when nothing is returned from ICL" in new Setup {
-      when(mockICLConnector.search(eqTo(query), any(), any(), eqTo(lang))(any(), any()))
+      when(mockICLConnector.search(eqTo(query), any(), any(), eqTo(lang))(any(), any(), any()))
         .thenReturn(Future.failed(new NotFoundException("404")))
 
       awaitAndAssert(service.searchQuery(testJourneyData, query, lang = lang)) {
@@ -189,13 +189,13 @@ class SicSearchServiceSpec extends UnitTestSpec {
     "lookup and return a sic code" in new Setup {
       val query = "12345"
 
-      when(mockICLConnector.lookup(any())(any()))
+      when(mockICLConnector.lookup(any())(any(), any()))
         .thenReturn(Future.successful(List(sicCode)))
 
       when(mockSicStoreRepository.upsertSearchResults(eqTo(journeyId), any()))
         .thenReturn(Future.successful(true))
 
-      when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any()))
+      when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any())(any()))
         .thenReturn(Future.successful(true))
 
       awaitAndAssert(service.search(testJourneyData, query, lang = lang)) {
@@ -206,18 +206,18 @@ class SicSearchServiceSpec extends UnitTestSpec {
     "lookup a sic code and fallback to normal search if nothing is found" in new Setup {
       val query = "12345"
 
-      when(mockICLConnector.lookup(any())(any()))
+      when(mockICLConnector.lookup(any())(any(), any()))
         .thenReturn(Future.successful(Nil))
 
-      when(mockICLConnector.search(eqTo(query), any(), any(), eqTo(lang))(any(), any()))
+      when(mockICLConnector.search(eqTo(query), any(), any(), eqTo(lang))(any(), any(), any()))
         .thenReturn(Future.successful(oneSearchResult))
       when(mockSicStoreRepository.upsertSearchResults(any(), any()))
         .thenReturn(Future.successful(true))
 
-      when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any()))
+      when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any())(any()))
         .thenReturn(Future.successful(true))
 
-      when(mockICLConnector.lookup(any())(any()))
+      when(mockICLConnector.lookup(any())(any(), any()))
         .thenReturn(Future.successful(List(SicCode("", "", ""))))
 
       awaitAndAssert(service.search(testJourneyData, query, lang = lang)) {
@@ -228,15 +228,15 @@ class SicSearchServiceSpec extends UnitTestSpec {
     "search using a query and return a set of search results" in new Setup {
       val query = "some query"
 
-      when(mockICLConnector.search(eqTo(query), any(), any(), eqTo(lang))(any(), any()))
+      when(mockICLConnector.search(eqTo(query), any(), any(), eqTo(lang))(any(), any(), any()))
         .thenReturn(Future.successful(oneSearchResult))
       when(mockSicStoreRepository.upsertSearchResults(any(), any()))
         .thenReturn(Future.successful(true))
 
-      when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any()))
+      when(mockSicStoreRepository.insertChoices(eqTo(journeyId), any())(any()))
         .thenReturn(Future.successful(true))
 
-      when(mockICLConnector.lookup(any())(any()))
+      when(mockICLConnector.lookup(any())(any(), any()))
         .thenReturn(Future.successful(List(SicCode("", "", ""))))
 
       awaitAndAssert(service.search(testJourneyData, query, Some("A"), lang)) {
@@ -248,7 +248,7 @@ class SicSearchServiceSpec extends UnitTestSpec {
   "insertChoices" should {
 
     "return the sic code that was inserted successfully" in new Setup {
-      when(mockSicStoreRepository.insertChoices(eqTo(sessionId), eqTo(choices)))
+      when(mockSicStoreRepository.insertChoices(eqTo(sessionId), eqTo(choices))(any()))
         .thenReturn(Future.successful(true))
 
       awaitAndAssert(service.insertChoices(sessionId, choices)) {
@@ -260,7 +260,7 @@ class SicSearchServiceSpec extends UnitTestSpec {
   "removeChoice" should {
 
     "return the sic code that was removed successfully" in new Setup {
-      when(mockSicStoreRepository.removeChoice(eqTo(sessionId), eqTo(sicCodeCode)))
+      when(mockSicStoreRepository.removeChoice(eqTo(sessionId), eqTo(sicCodeCode))(any()))
         .thenReturn(Future.successful(true))
 
       awaitAndAssert(service.removeChoice(sessionId, sicCodeCode)) {

@@ -6,6 +6,7 @@ import helpers.ClientSpec
 import models.setup.JourneySetup
 import models.{SearchResults, Sector, SicCode}
 import play.api.libs.json.Json
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
 
@@ -25,6 +26,7 @@ class ICLConnectorISpec extends ClientSpec {
   val lang = "en"
   val searchUrl = "/industry-classification-lookup/search*"
 
+  implicit val request = FakeRequest()
   implicit val hc: HeaderCarrier = HeaderCarrier()
   val connector = app.injector.instanceOf[ICLConnector]
 

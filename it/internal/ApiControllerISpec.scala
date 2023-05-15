@@ -23,12 +23,15 @@ import models.{SicCode, SicCodeChoice, SicStore}
 import org.mongodb.scala.result.InsertOneResult
 import play.api.http.HeaderNames
 import play.api.libs.json.Json
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.{JourneyDataRepository, SicStoreRepository}
 
 import java.time.LocalDateTime
 
 class ApiControllerISpec extends ClientSpec {
+
+  implicit val request = FakeRequest()
 
   trait Setup {
     val sicStoreRepo: SicStoreRepository = app.injector.instanceOf[SicStoreRepository]

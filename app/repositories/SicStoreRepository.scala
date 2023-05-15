@@ -19,6 +19,7 @@ package repositories
 import com.mongodb.client.model.Filters.or
 import com.mongodb.client.model.Indexes.ascending
 import com.mongodb.client.model.Updates.{currentDate, pull, set}
+import config.Logging
 import models.{SearchResults, SicCodeChoice, SicStore}
 import org.mongodb.scala.bson.collection.immutable.Document
 import org.mongodb.scala.bson.conversions.Bson
@@ -26,7 +27,8 @@ import org.mongodb.scala.model
 import org.mongodb.scala.model.Filters.{equal, exists}
 import org.mongodb.scala.model.Updates.{addEachToSet, combine}
 import org.mongodb.scala.model.{IndexOptions, UpdateOptions}
-import play.api.{Configuration, Logging}
+import play.api.Configuration
+import play.api.mvc.Request
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
@@ -84,8 +86,9 @@ class SicStoreRepository @Inject()(config: Configuration,
     .toFuture()
     .map(_.wasAcknowledged)
 
-  def insertChoices(journeyId: String, sicCodes: List[SicCodeChoice]): Future[Boolean] = {
-    def addChoices(journeyId: String, choices: List[SicCodeChoice]): Future[Boolean] =
+  def insertChoices(journeyId: String, sicCodes: List[SicCodeChoice])(implicit request: Request[_]): Future[Boolean] = {
+    def addChoices(journeyId: String, choices: List[SicCodeChoice]): Future[Boolean] = {
+      infoLog(s"[SicStoreRepository][insertChoices] Adding new SIC code choices for journey ID $journeyId")
       if (choices.isEmpty) {
         Future.successful(true)
       } else {
@@ -97,6 +100,7 @@ class SicStoreRepository @Inject()(config: Configuration,
         .toFuture()
         .map(_.wasAcknowledged())
       }
+    }
 
     retrieveSicStore(journeyId) flatMap { optSicStore =>
       optSicStore.fold(addChoices(journeyId, sicCodes)) { sicStore =>
@@ -133,6 +137,7 @@ class SicStoreRepository @Inject()(config: Configuration,
         if (codesToUpdate.isEmpty) {
           addChoices(journeyId, newCodes)
         } else {
+          infoLog(s"[SicStoreRepository][insertChoices] Updating SIC code indexes for journey ID $journeyId")
           collection.updateOne(
             filter = journeyIdSelector(journeyId),
             update = combine(currentDate("lastUpdated"), combine(updateIndexes: _*)),
@@ -145,15 +150,18 @@ class SicStoreRepository @Inject()(config: Configuration,
     }
   }
 
-  def removeChoice(journeyId: String, sicCode: String): Future[Boolean] = {
+  def removeChoice(journeyId: String, sicCode: String)(implicit request: Request[_]): Future[Boolean] = {
     retrieveSicStore(journeyId) flatMap {
       case Some(_) =>
+        infoLog(s"[SicStoreRepository][removeChoice] Updating SIC code choices for journey ID $journeyId")
         collection.updateOne(
           filter = journeyIdSelector(journeyId),
           update = combine(currentDate("lastUpdated"), pull("choices", Document("code" -> sicCode)))
         ).toFuture()
-        .map(_.getModifiedCount == 1)
-      case None => Future.successful(false)
+          .map(_.getModifiedCount == 1)
+      case None =>
+        warnLog(s"[SicStoreRepository][removeChoice] Failed to find SicStore with journey ID $journeyId")
+        Future.successful(false)
     }
   }
 }

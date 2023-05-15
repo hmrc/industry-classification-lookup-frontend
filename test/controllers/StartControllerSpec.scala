@@ -20,7 +20,7 @@ import helpers.UnitTestSpec
 import helpers.auth.AuthHelpers
 import helpers.mocks.{MockAppConfig, MockMessages}
 import models.setup.{Identifiers, JourneyData, JourneySetup}
-import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
@@ -59,7 +59,7 @@ class StartControllerSpec extends UnitTestSpec with MockAppConfig with MockMessa
         val journeyData = JourneyData(identifiers, "redirectUrl", JourneySetup(), LocalDateTime.now())
         val url: String = routes.ChooseActivityController.show(journeyId).url
 
-        when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
+        when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
         AuthHelpers.requestWithAuthorisedUser(controller.startJourney(journeyId), requestWithSession) {
           result =>
@@ -75,7 +75,7 @@ class StartControllerSpec extends UnitTestSpec with MockAppConfig with MockMessa
         val journeyData = JourneyData(identifiers, "redirectUrl", journeySetup, LocalDateTime.now())
         val url: String = routes.ConfirmationController.show(journeyId).url
 
-        when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
+        when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
         AuthHelpers.requestWithAuthorisedUser(controller.startJourney(journeyId), requestWithSession) {
           result =>

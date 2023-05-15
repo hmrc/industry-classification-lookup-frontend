@@ -85,7 +85,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
     "return a 200 with a new search for an authorised user" in new Setup {
 
-      when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
       requestWithAuthorisedUser(controller.show(journeyId), getRequestWithSession) {
         response: Future[Result] =>
@@ -105,7 +105,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(ArgumentMatchers.anyString())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(None))
 
-      when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
       requestWithAuthorisedUser(controller.show(journeyId, Some(true)), postRequestWithSession) {
         response: Future[Result] =>
@@ -123,7 +123,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(any())(any()))
         .thenReturn(Future.successful(Some(searchResults)))
 
-      when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
       requestWithAuthorisedUser(controller.show(journeyId, Some(true)), postRequestWithSession) {
         response: Future[Result] =>
@@ -136,7 +136,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(ArgumentMatchers.anyString())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Some(multipleSearchResults)))
 
-      when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
       requestWithAuthorisedUser(controller.show(journeyId, Some(true)), postRequestWithSession) {
         response: Future[Result] =>
@@ -154,7 +154,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(any())(any()))
         .thenReturn(Future.successful(Some(noSearchResults)))
 
-      when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
       requestWithAuthorisedUser(controller.show(journeyId, Some(true)), postRequestWithSession) { result =>
         status(result) mustBe OK
@@ -170,10 +170,10 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
   "Submit a search" should {
     "return a 303 with the search results page" in new Setup {
 
-      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any(),any()))
         .thenReturn(Future.successful(multipleSearchResults.numFound))
 
-      when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
       val request: FakeRequest[AnyContentAsFormUrlEncoded] = postRequestWithSession.withFormUrlEncodedBody(
         "sicSearch" -> query
@@ -188,10 +188,10 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
     "return a 303 with the choices list page for an authorised user when the search returns only 1 result" in new Setup {
 
-      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any(), any()))
         .thenReturn(Future.successful(searchResults.numFound))
 
-      when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
       val request: FakeRequest[AnyContentAsFormUrlEncoded] = postRequestWithSession.withFormUrlEncodedBody(
         "sicSearch" -> query
@@ -209,7 +209,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(ArgumentMatchers.anyString())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(None))
 
-      when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
       requestWithAuthorisedUser(controller.submit(journeyId, Some("test")), postRequestWithSession) {
         response: Future[Result] =>
@@ -229,10 +229,10 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(ArgumentMatchers.anyString())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Some(searchResults)))
 
-      when(mockSicSearchService.lookupSicCodes(any(), any())(any(), any()))
+      when(mockSicSearchService.lookupSicCodes(any(), any())(any(), any(), any()))
         .thenReturn(Future.successful(1))
 
-      when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
       val request: FakeRequest[AnyContentAsFormUrlEncoded] = postRequestWithSession.withFormUrlEncodedBody(
         "code[0]" -> "12345-test description-test description"
@@ -250,7 +250,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(ArgumentMatchers.anyString())(ArgumentMatchers.any()))
         .thenReturn(Future.successful(Some(searchResults)))
 
-      when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
       val request: FakeRequest[AnyContentAsFormUrlEncoded] = postRequestWithSession.withFormUrlEncodedBody(
         "code" -> ""
@@ -268,10 +268,10 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(eqTo(journeyId))(any()))
         .thenReturn(Future.successful(Some(searchResults)))
 
-      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any(), any()))
         .thenReturn(Future.successful(1))
 
-      when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
       requestWithAuthorisedUser(controller.filter(journeyId, SECTOR_A), postRequestWithSession) {
         result =>
@@ -284,10 +284,10 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(eqTo(journeyId))(any()))
         .thenReturn(Future.successful(Some(noSearchResults)))
 
-      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any(), any()))
         .thenReturn(Future.successful(0))
 
-      when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
       requestWithAuthorisedUser(controller.filter(journeyId, SECTOR_A), postRequestWithSession) {
         result =>
@@ -302,10 +302,10 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       when(mockSicSearchService.retrieveSearchResults(eqTo(journeyId))(any()))
         .thenReturn(Future.successful(Some(searchResults)))
 
-      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any(), any()))
         .thenReturn(Future.successful(1))
 
-      when(mockJourneyService.getJourney(ArgumentMatchers.any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
       requestWithAuthorisedUser(controller.clearFilter(journeyId), postRequestWithSession) {
         result =>

@@ -20,6 +20,7 @@ import config.Logging
 import connectors.ICLConnector
 import models._
 import models.setup.JourneyData
+import play.api.mvc.Request
 import repositories.SicStoreRepository
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -30,7 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class SicSearchService @Inject()(val iCLConnector: ICLConnector,
                                  sicStoreRepository: SicStoreRepository) extends Logging {
 
-  def search(journeyData: JourneyData, query: String, sector: Option[String] = None, lang: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+  def search(journeyData: JourneyData, query: String, sector: Option[String] = None, lang: String)(implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Future[Int] = {
     if (isLookup(query)) {
       lookupSicCodes(journeyData, List(SicCode(query, ""))).flatMap {
         case 0 => searchQuery(journeyData, query, sector, lang)
@@ -49,14 +50,14 @@ class SicSearchService @Inject()(val iCLConnector: ICLConnector,
     sicStoreRepository.retrieveSicStore(journeyId).map(_.flatMap(_.choices))
   }
 
-  def insertChoices(journeyId: String, sicCodes: List[SicCodeChoice])(implicit ec: ExecutionContext): Future[Boolean] =
+  def insertChoices(journeyId: String, sicCodes: List[SicCodeChoice])(implicit ec: ExecutionContext, request: Request[_]): Future[Boolean] =
     sicStoreRepository.insertChoices(journeyId, sicCodes)
 
-  def removeChoice(journeyId: String, sicCodeToRemove: String)(implicit ec: ExecutionContext): Future[Boolean] = {
+  def removeChoice(journeyId: String, sicCodeToRemove: String)(implicit ec: ExecutionContext, request: Request[_]): Future[Boolean] = {
     sicStoreRepository.removeChoice(journeyId, sicCodeToRemove)
   }
 
-  def lookupSicCodes(journeyData: JourneyData, selectedCodes: List[SicCode])(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+  def lookupSicCodes(journeyData: JourneyData, selectedCodes: List[SicCode])(implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Future[Int] = {
     def fiteredListOfSicCodeChoice(sicCodesUnfiltered: List[SicCode], groups: Map[String, List[SicCode]]): List[SicCodeChoice] = {
       sicCodesUnfiltered map { sic =>
         val maybeSicCodes = groups.get(sic.sicCode)
@@ -90,7 +91,8 @@ class SicSearchService @Inject()(val iCLConnector: ICLConnector,
     sicCodes.groupBy(_.sicCode).keys.mkString(",")
   }
 
-  private[services] def searchQuery(journeyData: JourneyData, query: String, sector: Option[String] = None, lang: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Int] = {
+  private[services] def searchQuery(journeyData: JourneyData, query: String, sector: Option[String] = None, lang: String)
+                                   (implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Future[Int] = {
     (for {
       oSearchResults <- iCLConnector.search(query, journeyData.journeySetupDetails, sector, lang)
       sectorObject = sector.flatMap(sicCode => oSearchResults.sectors.find(_.code == sicCode))
@@ -100,7 +102,7 @@ class SicSearchService @Inject()(val iCLConnector: ICLConnector,
       }
     } yield searchResults.numFound) recover {
       case e =>
-        logger.error(s"[SicSearchService] [searchQuery] Exception encountered when attempting to fetch results from ICL ${e.getMessage}")
+        errorLog(s"[SicSearchService] [searchQuery] Exception encountered when attempting to fetch results from ICL ${e.getMessage}")
         0
     }
   }

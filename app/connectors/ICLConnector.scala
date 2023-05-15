@@ -21,6 +21,7 @@ import models.setup.JourneySetup
 import models.{SearchResults, SicCode}
 import play.api.http.Status._
 import play.api.libs.json.{Json, Reads}
+import play.api.mvc.Request
 import uk.gov.hmrc.http.HttpReads.Implicits
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -34,7 +35,7 @@ class ICLConnector @Inject()(appConfig: AppConfig, http: HttpClientV2)(implicit 
 
   lazy val ICLUrl: String = appConfig.industryClassificationLookupBackend
 
-  def lookup(sicCode: String)(implicit hc: HeaderCarrier): Future[List[SicCode]] = {
+  def lookup(sicCode: String)(implicit hc: HeaderCarrier, request: Request[_]): Future[List[SicCode]] = {
     http.get(url"$ICLUrl/industry-classification-lookup/lookup/$sicCode")
       .execute
       .map { resp =>
@@ -42,17 +43,17 @@ class ICLConnector @Inject()(appConfig: AppConfig, http: HttpClientV2)(implicit 
           case OK => Json.fromJson[List[SicCode]](resp.json).getOrElse(Nil)
           case NO_CONTENT => Nil
           case status =>
-            logger.error(s"[Lookup] Looking up sic code: $sicCode returned a $status")
+            errorLog(s"[Lookup] Looking up sic code: $sicCode returned a $status")
             throw new InternalServerException(s"[Lookup] Looking up sic code: $sicCode returned a $status")
         }
       } recover {
         case e: Throwable =>
-          logger.error(s"[Lookup] Looking up sic code: $sicCode has thrown a non-http exception")
+          errorLog(s"[Lookup] Looking up sic code: $sicCode has thrown a non-http exception")
           throw e
       }
     }
 
-  def search(query: String, journeySetup: JourneySetup, sector: Option[String] = None, lang: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[SearchResults] = {
+  def search(query: String, journeySetup: JourneySetup, sector: Option[String] = None, lang: String)(implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Future[SearchResults] = {
     implicit val reads: Reads[SearchResults] = SearchResults.readsWithQuery(query)
     val sectorFilter = sector.map(s => List("sector" -> s)).getOrElse(Nil)
 
@@ -70,10 +71,10 @@ class ICLConnector @Inject()(appConfig: AppConfig, http: HttpClientV2)(implicit 
       .execute[SearchResults](Implicits.readFromJson, ec)
       .recover {
         case e: UpstreamErrorResponse =>
-          logger.error(s"[Search] Searching using query : $query returned a ${e.statusCode}")
+          errorLog(s"[Search] Searching using query : $query returned a ${e.statusCode}")
           SearchResults(query, numFound = 0, results = Nil, sectors = Nil)
         case e =>
-          logger.error(s"[Search] Searching using query : $query has thrown a non-http exception")
+          errorLog(s"[Search] Searching using query : $query has thrown a non-http exception")
           throw e
       }
   }

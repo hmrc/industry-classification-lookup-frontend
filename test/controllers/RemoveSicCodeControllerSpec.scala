@@ -70,13 +70,13 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
   "show" should {
     "return a 200 when the page is rendered" in new Setup {
 
-      when(mockSicSearchService.removeChoice(any(), any())(any()))
+      when(mockSicSearchService.removeChoice(any(), any())(any(), any()))
         .thenReturn(Future.successful(true))
 
       when(mockSicSearchService.retrieveChoices(any())(any()))
         .thenReturn(Future.successful(Some(List(sicCodeChoice))))
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
       AuthHelpers.showWithAuthorisedUser(controller.show(journeyId, sicCodeCode), getRequestWithSessionId) {
         result =>
@@ -89,7 +89,7 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
       when(mockSicSearchService.retrieveChoices(any())(any()))
         .thenReturn(Future.successful(Some(List(sicCodeChoice))))
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
       AuthHelpers.showWithAuthorisedUser(controller.show(journeyId, "Unknown"), getRequestWithSessionId) {
         result =>
@@ -105,12 +105,12 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
       when(mockSicSearchService.retrieveChoices(any())(any()))
         .thenReturn(Future.successful(Some(List(sicCodeChoice))))
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
       AuthHelpers.submitWithAuthorisedUser(controller.submit(journeyId, sicCodeCode), formRequestWithSessionId("")) {
         result =>
           status(result) mustBe BAD_REQUEST
-          verify(mockSicSearchService, times(0)).removeChoice(any(), any())(any())
+          verify(mockSicSearchService, times(0)).removeChoice(any(), any())(any(), any())
       }
     }
     "remove choice and redirect to the confirmation page if yes is selected" in new Setup {
@@ -118,16 +118,16 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
       when(mockSicSearchService.retrieveChoices(any())(any()))
         .thenReturn(Future.successful(Some(List(sicCodeChoice))))
 
-      when(mockSicSearchService.removeChoice(any(), any())(any()))
+      when(mockSicSearchService.removeChoice(any(), any())(any(), any()))
         .thenReturn(Future.successful(true))
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
       AuthHelpers.submitWithAuthorisedUser(controller.submit(journeyId, sicCodeCode), formRequestWithSessionId("yes")) {
         result =>
           status(result) mustBe SEE_OTHER
           redirectLocation(result) mustBe Some(controllers.routes.ConfirmationController.show(journeyId).url)
-          verify(mockSicSearchService, times(1)).removeChoice(any(), any())(any())
+          verify(mockSicSearchService, times(1)).removeChoice(any(), any())(any(), any())
       }
     }
     "redirect to the confirmation page if no is selected" in new Setup {
@@ -135,13 +135,13 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
       when(mockSicSearchService.retrieveChoices(any())(any()))
         .thenReturn(Future.successful(Some(List(sicCodeChoice))))
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
       AuthHelpers.submitWithAuthorisedUser(controller.submit(journeyId, sicCodeCode), formRequestWithSessionId("no")) {
         result =>
           status(result) mustBe SEE_OTHER
           redirectLocation(result) mustBe Some(controllers.routes.ConfirmationController.show(journeyId).url)
-          verify(mockSicSearchService, times(0)).removeChoice(any(), any())(any())
+          verify(mockSicSearchService, times(0)).removeChoice(any(), any())(any(), any())
       }
     }
   }

@@ -19,6 +19,7 @@ package services
 import models.SicCode
 import models.setup.{Identifiers, JourneyData, JourneySetup}
 import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.Request
 import repositories._
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -30,7 +31,7 @@ class JourneyService @Inject()(journeyDataRepository: JourneyDataRepository,
                                val sicSearchService: SicSearchService)
                               (implicit executionContext: ExecutionContext) {
 
-  def initialiseJourney(journeyData: JourneyData, lang: String)(implicit hc: HeaderCarrier): Future[JsValue] = {
+  def initialiseJourney(journeyData: JourneyData, lang: String)(implicit hc: HeaderCarrier, request: Request[_]): Future[JsValue] = {
     for {
       res <- journeyDataRepository.upsertJourney(journeyData) map { _ =>
         Json.obj(
@@ -43,15 +44,15 @@ class JourneyService @Inject()(journeyDataRepository: JourneyDataRepository,
     } yield res
   }
 
-  def updateJourneyWithJourneySetup(identifiers: Identifiers, journeySetupDetails: JourneySetup): Future[JourneySetup] = {
+  def updateJourneyWithJourneySetup(identifiers: Identifiers, journeySetupDetails: JourneySetup)(implicit request: Request[_]): Future[JourneySetup] = {
     journeyDataRepository.updateJourneySetup(identifiers, journeySetupDetails)
   }
 
-  def getJourney(identifiers: Identifiers): Future[JourneyData] = {
+  def getJourney(identifiers: Identifiers)(implicit request: Request[_]): Future[JourneyData] = {
     journeyDataRepository.retrieveJourneyData(identifiers)
   }
 
-  def getRedirectUrl(identifiers: Identifiers): Future[String] = {
+  def getRedirectUrl(identifiers: Identifiers)(implicit request: Request[_]): Future[String] = {
     journeyDataRepository.retrieveJourneyData(identifiers) map (_.redirectUrl)
   }
 }
