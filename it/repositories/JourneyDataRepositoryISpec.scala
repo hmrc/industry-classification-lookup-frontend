@@ -27,7 +27,8 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.libs.json.{Json, OWrites}
 import play.api.test.Helpers._
 
-import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.{LocalDateTime, ZoneOffset}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class JourneyDataRepositoryISpec extends PlaySpec with BeforeAndAfterEach with GuiceOneServerPerSuite {
@@ -46,7 +47,7 @@ class JourneyDataRepositoryISpec extends PlaySpec with BeforeAndAfterEach with G
 
   def dateHasAdvanced(futureTime: LocalDateTime): Assertion = assert(futureTime.isAfter(now))
 
-  val now: LocalDateTime = LocalDateTime.now
+  val now: LocalDateTime = LocalDateTime.parse(LocalDateTime.now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")))
 
   val customMsgs = CustomMessages(
     summary = Some(Summary(
@@ -143,13 +144,15 @@ class JourneyDataRepositoryISpec extends PlaySpec with BeforeAndAfterEach with G
 
   "renewJourney" must {
     "update the lastUpdated value in the document to the current time" in new Setup {
-      val currentDateTime: LocalDateTime = LocalDateTime.now()
+      val beforeDateTime: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC).minusSeconds(5)
+      val afterDateTime: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC).plusSeconds(5)
 
       insert(journeyData.copy(lastUpdated = LocalDateTime.of(2000, 1, 1, 12, 0, 0)))
 
       await(repository.renewJourney(journeyData.identifiers) {})
 
-      fetchAll.head.lastUpdated isAfter currentDateTime mustBe true
+      fetchAll.head.lastUpdated isAfter beforeDateTime mustBe true
+      fetchAll.head.lastUpdated isBefore afterDateTime mustBe true
     }
   }
 }
