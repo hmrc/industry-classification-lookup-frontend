@@ -39,24 +39,30 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
   val journeyService: JourneyService
   val sicSearchService: SicSearchService
 
-  def userAuthorised(api: Boolean = false)(body: => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
+  def userAuthorised(api: Boolean = false)(body: => Future[Result])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] = {
     authorised() {
       body
     }.recover(if (api) apiAuthErrorHandling() else authErrorHandling())
   }
 
-  def authErrorHandling(): PartialFunction[Throwable, Result] = {
-    case _: NoActiveSession => Redirect(loginURL)
+  def authErrorHandling()(implicit request: Request[_]): PartialFunction[Throwable, Result] = {
+    case _: NoActiveSession =>
+      infoLog("[ICLController][authErrorHandling] session is inactive; redirecting to login")
+      Redirect(loginURL)
     case e: AuthorisationException =>
-      logger.error("Unexpected auth exception ", e)
+      errorLog("[ICLController][authErrorHandling] Unexpected auth exception", e)
       InternalServerError
   }
 
-  def apiAuthErrorHandling(): PartialFunction[Throwable, Result] = {
-    case _: NoActiveSession => Forbidden
-    case _: NotFoundException => Forbidden
+  def apiAuthErrorHandling()(implicit request: Request[_]): PartialFunction[Throwable, Result] = {
+    case _: NoActiveSession =>
+      infoLog("[ICLController][apiAuthErrorHandling] session is inactive; request forbidden")
+      Forbidden
+    case _: NotFoundException =>
+      infoLog("[ICLController][apiAuthErrorHandling] API returned Not Found")
+      Forbidden
     case e: AuthorisationException =>
-      logger.error("Unexpected auth exception ", e)
+      errorLog("[ICLController][apiAuthErrorHandling] Unexpected auth exception", e)
       InternalServerError
   }
 
@@ -66,18 +72,24 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
 
   def withJsBody[T](reads: Reads[T])(f: T => Future[Result])(implicit request: Request[JsValue]): Future[Result] = {
     Try(request.body.validate[T](reads)) match {
-      case Success(JsSuccess(payload, _)) => f(payload)
-      case Success(JsError(errs)) => Future(BadRequest(Json.prettyPrint(JsError.toJson(errs))))
-      case Failure(e) => Future(BadRequest(s"Could not parse body due to ${e.getMessage}"))
+      case Success(JsSuccess(payload, _)) =>
+        infoLog("[ICLController][withJsBody] Journey initialisation successful")
+        f(payload)
+      case Success(JsError(errs)) =>
+        warnLog("[ICLController][withJsBody] Bad request" )
+        Future(BadRequest(Json.prettyPrint(JsError.toJson(errs))))
+      case Failure(e) =>
+        errorLog("[ICLController][withJsBody] Request failed", e)
+        Future(BadRequest(s"Could not parse body due to ${e.getMessage}"))
     }
   }
 
-  def hasJourney(identifiers: Identifiers)(f: => JourneyData => Future[Result]): Future[Result] = {
+  def hasJourney(identifiers: Identifiers)(f: => JourneyData => Future[Result])(implicit request: Request[_]): Future[Result] = {
     journeyService.getJourney(identifiers) flatMap { journeyData =>
       f(journeyData)
     } recoverWith {
       case err =>
-        logger.error(s"[hasJourney] - msg: $err ${err.getMessage}", err)
+        errorLog(s"[ICLController][hasJourney] - msg: $err ${err.getMessage}", err)
         throw err
     }
   }
@@ -87,7 +99,7 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
       hasJourney(Identifiers(journeyId, sessionId)) { journeyData =>
         f(journeyData)
       }.recoverWith {
-        case e => Future.successful(Redirect(controllers.test.routes.TestSetupController.show(journeyId)))
+        case _ => Future.successful(Redirect(controllers.test.routes.TestSetupController.show(journeyId)))
       }
     }
   }

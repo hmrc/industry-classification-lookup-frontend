@@ -56,7 +56,7 @@ class JourneySetupServiceSpec extends UnitTestSpec with MockJourneyDataRepo {
   "initialiseJourney" should {
     "return Json containing the start and fetch uri's" in new Setup {
       mockInitialiseJourney(testJourneyData)
-      when(mockSicSearchService.lookupSicCodes(any(), any())(any(), any())).thenReturn(Future.successful(0))
+      when(mockSicSearchService.lookupSicCodes(any(), any())(any(), any(), any())).thenReturn(Future.successful(0))
 
       assertAndAwait(testService.initialiseJourney(testJourneyData, lang)) {
         _ mustBe Json.obj(
@@ -69,7 +69,7 @@ class JourneySetupServiceSpec extends UnitTestSpec with MockJourneyDataRepo {
 
   "getRedirectUrl" should {
     "return a redirect url" in new Setup {
-      when(mockJourneyDataRepository.retrieveJourneyData(any()))
+      when(mockJourneyDataRepository.retrieveJourneyData(any())(any()))
         .thenReturn(Future.successful(journeyData))
 
       assertAndAwait(testService.getRedirectUrl(identifier)) {
@@ -80,21 +80,21 @@ class JourneySetupServiceSpec extends UnitTestSpec with MockJourneyDataRepo {
   "updateJourneyWithJourneySetup" should {
     val journeySetup = JourneySetup("foo", queryParser = None, None, 5)
     "return updated Journey Setup" in new Setup {
-      when(mockJourneyDataRepository.updateJourneySetup(any(), any())).thenReturn(Future.successful(journeySetup))
+      when(mockJourneyDataRepository.updateJourneySetup(any(), any())(any())).thenReturn(Future.successful(journeySetup))
       await(testService.updateJourneyWithJourneySetup(journeyData.identifiers, journeySetup)) mustBe journeySetup
     }
     "return an Exception" in new Setup {
-      when(mockJourneyDataRepository.updateJourneySetup(any(), any())).thenReturn(Future.failed(new Exception("foo bar wizz bang")))
+      when(mockJourneyDataRepository.updateJourneySetup(any(), any())(any())).thenReturn(Future.failed(new Exception("foo bar wizz bang")))
       intercept[Exception](await(testService.updateJourneyWithJourneySetup(journeyData.identifiers, journeySetup)))
     }
   }
   "getJourney" should {
     "get journey data successfully" in new Setup {
-      when(mockJourneyDataRepository.retrieveJourneyData(any())).thenReturn(Future.successful(journeyData))
+      when(mockJourneyDataRepository.retrieveJourneyData(any())(any())).thenReturn(Future.successful(journeyData))
       await(testService.getJourney(journeyData.identifiers)) mustBe journeyData
     }
     "return an Exception" in new Setup {
-      when(mockJourneyDataRepository.retrieveJourneyData(any())).thenReturn(Future.failed(new Exception("foo bar wizz bang")))
+      when(mockJourneyDataRepository.retrieveJourneyData(any())(any())).thenReturn(Future.failed(new Exception("foo bar wizz bang")))
       intercept[Exception](await(testService.getJourney(journeyData.identifiers)))
     }
   }

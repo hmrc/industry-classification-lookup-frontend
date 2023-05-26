@@ -25,7 +25,7 @@ import org.scalatest.{Assertion, BeforeAndAfterAll, BeforeAndAfterEach}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.{HeaderNames, HttpProtocol, MimeTypes, Status}
-import play.api.mvc.{AnyContent, Result}
+import play.api.mvc.{AnyContent, Request, Result}
 import play.api.test._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
@@ -56,6 +56,8 @@ trait UnitTestSpec
   override implicit def defaultAwaitTimeout: Timeout = 5.seconds
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
+
+  implicit val request: Request[_] = FakeRequest()
 
   private def resetMocks(): Unit = {
     reset(

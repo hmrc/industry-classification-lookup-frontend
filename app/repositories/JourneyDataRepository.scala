@@ -18,13 +18,15 @@ package repositories
 
 import com.mongodb.client.model.Filters._
 import com.mongodb.client.model.Indexes.ascending
+import config.Logging
 import models.setup.{Identifiers, JourneyData, JourneySetup}
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Updates.{currentDate, set}
 import org.mongodb.scala.model.{IndexOptions, ReplaceOptions}
-import play.api.{Configuration, Logging}
+import play.api.Configuration
+import play.api.mvc.Request
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
@@ -59,7 +61,7 @@ class JourneyDataRepository @Inject()(config: Configuration,
   private def identifiersSelector(identifiers: Identifiers): Bson =
     and(equal("identifiers.journeyId", identifiers.journeyId), equal("identifiers.sessionId", identifiers.sessionId))
 
-  private[repositories] def renewJourney[T](identifiers: Identifiers)(f: => T): Future[T] =
+  private[repositories] def renewJourney[T](identifiers: Identifiers)(f: => T)(implicit request: Request[_]): Future[T] =
     collection.updateOne(
       filter = identifiersSelector(identifiers),
       update = currentDate("lastUpdated")
@@ -67,7 +69,7 @@ class JourneyDataRepository @Inject()(config: Configuration,
     .toFuture()
     .map( _ => f)
 
-  def upsertJourney(journeyData: JourneyData): Future[JourneyData] =
+  def upsertJourney(journeyData: JourneyData)(implicit request: Request[_]): Future[JourneyData] =
     collection.replaceOne(
       filter = identifiersSelector(journeyData.identifiers),
       replacement = journeyData,
@@ -76,12 +78,12 @@ class JourneyDataRepository @Inject()(config: Configuration,
     .toFuture()
     .map(_ => journeyData)
     .recover { case e =>
-      logger.warn(s"""[JourneyDataMongoRepository][upsertJourney] failed with message ${e.getMessage}
-        for journeyId: ${journeyData.identifiers.journeyId} sessionId: ${journeyData.identifiers.sessionId}""")
+      warnLog(s"""[JourneyDataRepository][upsertJourney] failed with message ${e.getMessage}
+        for journeyId: ${journeyData.identifiers.journeyId}""")
       throw e
     }
 
-  def updateJourneySetup(identifiers: Identifiers, journeySetup: JourneySetup): Future[JourneySetup] = {
+  def updateJourneySetup(identifiers: Identifiers, journeySetup: JourneySetup)(implicit request: Request[_]): Future[JourneySetup] = {
     collection.updateOne(
       filter = identifiersSelector(identifiers),
       update = set("journeySetupDetails", Codecs.toBson(journeySetup)(JourneySetup.mongoWrites))
@@ -91,25 +93,25 @@ class JourneyDataRepository @Inject()(config: Configuration,
       if (res.getMatchedCount > 0) {
         journeySetup
       } else {
-        logger.warn(s"[JourneyDataMongoRepository][updateJourneySetup] completed an update but no document was modified for journeyId: ${identifiers.journeyId} sessionId: ${identifiers.sessionId}")
+        warnLog(s"[JourneyDataMongoRepository][updateJourneySetup] completed an update but no document was modified for journeyId: ${identifiers.journeyId}")
         throw new RuntimeException("Exception thrown because expected update did not succeed")
       }
     )
     .recover {
       case e =>
-        logger.warn(s"[JourneyDataMongoRepository][updateJourneySetup] failed with message: ${e.getMessage} journeyId: ${identifiers.journeyId} sessionId: ${identifiers.sessionId}")
+        warnLog(s"[JourneyDataMongoRepository][updateJourneySetup] failed with message: ${e.getMessage} journeyId: ${identifiers.journeyId} sessionId: ${identifiers.sessionId}")
         throw e
     }
   }
 
-  def retrieveJourneyData(identifiers: Identifiers): Future[JourneyData] =
+  def retrieveJourneyData(identifiers: Identifiers)(implicit request: Request[_]): Future[JourneyData] =
     collection.find[JourneyData](identifiersSelector(identifiers))
       .headOption()
       .flatMap {
         case Some(data) =>
           renewJourney(identifiers)(data)
         case _ =>
-          logger.warn("Could not find JourneyId")
+          warnLog("[JourneyDataRepository][retrieveJourneyData] Could not find JourneyId")
           throw new RuntimeException(s"Missing document for journeyId: ${identifiers.journeyId} sessionId: ${identifiers.sessionId}")
       }
 

@@ -22,6 +22,7 @@ import org.mongodb.scala.result.InsertOneResult
 import org.scalatest.concurrent.Eventually
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
 import java.time.LocalDateTime
@@ -41,6 +42,8 @@ class SicStoreRepoISpec extends PlaySpec with GuiceOneServerPerSuite with Eventu
 
     def fetchAll: List[SicStore] = await(repository.collection.find.toFuture().map(_.toList))
   }
+
+  implicit val request = FakeRequest()
 
   val dateTime = LocalDateTime.parse("2017-06-15T10:06:28.434Z", DateTimeFormatter.ISO_DATE_TIME)
 

@@ -27,7 +27,6 @@ import play.api.test.FakeRequest
 import views.html.pages.{confirmation => ConfirmationPage}
 
 class ConfirmationViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with MockAppConfig with MockMessages with I18nSupport {
-  implicit val request: FakeRequest[_] = FakeRequest()
 
   override def messagesApi: MessagesApi = mockMessagesApi
 

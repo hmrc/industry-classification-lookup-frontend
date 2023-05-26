@@ -85,7 +85,7 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
 
       "journey is initialised with custom messages" in new Setup {
         mockAuthorisedUser(Future.successful({}))
-        when(mockJourneyService.initialiseJourney(any(), eqTo(lang))(any())) thenReturn Future.successful(expectedJsonResponse)
+        when(mockJourneyService.initialiseJourney(any(), eqTo(lang))(any(), any())) thenReturn Future.successful(expectedJsonResponse)
 
         val result: Future[Result] = controller.journeyInitialisation()(requestWithSessionId)
 
@@ -99,7 +99,7 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
           .withSessionId("test-session-id")
           .withBody(validRequestedJsonWithoutCustomMessages)
 
-        when(mockJourneyService.initialiseJourney(any(), eqTo(lang))(any())) thenReturn Future.successful(expectedJsonResponse)
+        when(mockJourneyService.initialiseJourney(any(), eqTo(lang))(any(), any())) thenReturn Future.successful(expectedJsonResponse)
 
         val result: Future[Result] = controller.journeyInitialisation()(fakeRequest)
         status(result) mustBe OK
@@ -181,7 +181,7 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
           .withMethod("POST")
           .withSessionId(sessionId)
 
-        when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
+        when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
         when(mockSicSearchService.retrieveChoices(any())(any())) thenReturn Future.successful(Some(sicCodeChoices))
 
         val result: Future[Result] = controller.fetchResults(journeyId)(fakeRequest)
@@ -204,7 +204,7 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
         mockAuthorisedUser(Future.successful({}))
         val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withMethod("POST").withSessionId(sessionId)
 
-        when(mockJourneyService.getJourney(any())) thenReturn Future.failed(new RuntimeException)
+        when(mockJourneyService.getJourney(any())(any())) thenReturn Future.failed(new RuntimeException)
 
         intercept[Exception](await(controller.fetchResults(journeyId)(fakeRequest)))
       }
@@ -216,7 +216,7 @@ class ApiControllerSpec extends UnitTestSpec with MockMessages with MockAppConfi
           .withMethod("POST")
           .withSessionId(sessionId)
 
-        when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
+        when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
         when(mockSicSearchService.retrieveChoices(any())(any())) thenReturn Future.successful(None)
 
         val result: Future[Result] = controller.fetchResults(journeyId)(fakeRequest)

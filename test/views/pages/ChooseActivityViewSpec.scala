@@ -28,7 +28,6 @@ import play.api.test.FakeRequest
 import views.html.pages.chooseActivity
 
 class ChooseActivityViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with MockAppConfig with MockMessages with I18nSupport {
-  implicit val request: FakeRequest[_] = FakeRequest()
 
   override def messagesApi: MessagesApi = mockMessagesApi
 

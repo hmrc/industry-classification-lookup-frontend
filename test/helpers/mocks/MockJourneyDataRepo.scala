@@ -17,7 +17,7 @@
 package helpers.mocks
 
 import models.setup.JourneyData
-import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import org.mockito.stubbing.OngoingStubbing
 import org.scalatest.BeforeAndAfterEach
@@ -38,7 +38,7 @@ trait MockJourneyDataRepo extends MockitoSugar with BeforeAndAfterEach {
   }
 
   def mockInitialiseJourney(journeyData: JourneyData): OngoingStubbing[Future[JourneyData]] = {
-    when(mockJourneyDataRepository.upsertJourney(ArgumentMatchers.any()))
+    when(mockJourneyDataRepository.upsertJourney(any())(any()))
       .thenReturn(Future.successful(journeyData))
   }
 

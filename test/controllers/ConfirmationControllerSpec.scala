@@ -79,7 +79,7 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
       when(mockSicSearchService.retrieveChoices(any())(any()))
         .thenReturn(Future.successful(Some(List(sicCodeChoice))))
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
       AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), getRequestWithSessionId) {
         result =>
@@ -90,7 +90,7 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
       when(mockSicSearchService.retrieveChoices(any())(any()))
         .thenReturn(Future.successful(Some(List(sicCodeChoice))))
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyDataWithCustomMessages)
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyDataWithCustomMessages)
 
       AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), getRequestWithSessionId) {
         result =>
@@ -103,7 +103,7 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
       when(mockSicSearchService.retrieveChoices(any())(any()))
         .thenReturn(Future.successful(Some(List(sicCodeChoice))))
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyDataWithCustomMessages)
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyDataWithCustomMessages)
 
       val requestWithWelshLangCookie = getRequestWithSessionId.withCookies(Cookie("PLAY_LANG", "cy"))
       AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), requestWithWelshLangCookie) {
@@ -118,7 +118,7 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
       when(mockSicSearchService.retrieveChoices(any())(any()))
         .thenReturn(Future.successful(None))
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
       AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), getRequestWithSessionId) {
         result =>
@@ -132,9 +132,9 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
       when(mockSicSearchService.retrieveChoices(eqTo(journeyId))(any()))
         .thenReturn(Future.successful(Some(List(sicCodeChoice, sicCodeChoice, sicCodeChoice, sicCodeChoice))))
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
-      when(mockJourneyService.getRedirectUrl(any())) thenReturn Future.successful("redirect-url")
+      when(mockJourneyService.getRedirectUrl(any())(any())) thenReturn Future.successful("redirect-url")
 
       AuthHelpers.submitWithAuthorisedUser(controller.submit(journeyId), postRequestWithSessionId.withFormUrlEncodedBody()) { result =>
         status(result) mustBe 303
@@ -146,7 +146,7 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
       when(mockSicSearchService.retrieveChoices(eqTo(journeyId))(any()))
         .thenReturn(Future.successful(Some(List(sicCodeChoice, sicCodeChoice, sicCodeChoice, sicCodeChoice, sicCodeChoice))))
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
       val request: FakeRequest[AnyContentAsFormUrlEncoded] = postRequestWithSessionId.withFormUrlEncodedBody()
 

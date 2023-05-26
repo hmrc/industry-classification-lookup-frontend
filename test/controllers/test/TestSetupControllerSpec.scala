@@ -74,7 +74,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
 
     "return a 200 and render the SetupJourneyView page when a journey has already been initialised" in new Setup {
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
       AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), getRequestWithSessionId) { result =>
         status(result) mustBe 200
@@ -83,7 +83,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
 
     "return a 200 and render the SetupJourneyView page when a journey has not been initialised" in new Setup {
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
       AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), getRequestWithSessionId) { result =>
         status(result) mustBe 200
@@ -98,7 +98,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
         "journey" -> ""
       )
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
       AuthHelpers.submitWithAuthorisedUser(controller.submit(journeyId), request) { result =>
         status(result) mustBe 400
@@ -113,8 +113,8 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
         "amountOfResults" -> "5"
       )
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
-      when(mockJourneyService.updateJourneyWithJourneySetup(any(), any())).thenReturn(Future.successful(journeySetup))
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.updateJourneyWithJourneySetup(any(), any())(any())).thenReturn(Future.successful(journeySetup))
 
       AuthHelpers.submitWithAuthorisedUser(controller.submit(journeyId), request) { result =>
         status(result) mustBe SEE_OTHER
@@ -125,7 +125,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
 
   "testSetup" must {
     "redirect to the test setup show page" in new Setup {
-      when(mockJourneyService.initialiseJourney(any(), eqTo(lang))(any())) thenReturn Future.successful(Json.parse("""{}"""))
+      when(mockJourneyService.initialiseJourney(any(), eqTo(lang))(any(), any())) thenReturn Future.successful(Json.parse("""{}"""))
 
       AuthHelpers.showWithAuthorisedUser(controller.testSetup, postRequestWithSessionId) { result =>
         status(result) mustBe SEE_OTHER
@@ -145,7 +145,7 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
 
       val sicCodeChoices = Some(List(SicCodeChoice(SicCode("12345", "test description", "test description"))))
 
-      when(mockJourneyService.getJourney(any())) thenReturn Future.successful(journeyData)
+      when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
       when(mockSicSearchService.retrieveChoices(any())(any()))
         .thenReturn(Future.successful(sicCodeChoices))
