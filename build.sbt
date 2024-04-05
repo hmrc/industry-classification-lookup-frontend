@@ -1,11 +1,17 @@
 
+import play.sbt.PlayImport.PlayKeys
+import play.twirl.sbt.Import.TwirlKeys
+import sbt.plugins.JUnitXmlReportPlugin
 import scoverage.ScoverageKeys
 import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
+import uk.gov.hmrc.SbtAutoBuildPlugin
+import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
+import uk.gov.hmrc.versioning.SbtGitVersioning
+import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName: String = "industry-classification-lookup-frontend"
 
-val silencerVersion = "1.7.0"
+val silencerVersion      = "1.7.14"
 
 lazy val scoverageSettings: Seq[Setting[_]] = Seq(
   ScoverageKeys.coverageExcludedPackages  := "<empty>;Reverse.*;models.*;models/.data/..*;view.*;featureswitch.*;config.*;.*(AuthService|BuildInfo|Routes).*",
@@ -19,25 +25,24 @@ lazy val microservice = Project(appName, file("."))
   .settings(scalaSettings: _*)
   .settings(majorVersion := 0)
   .settings(PlayKeys.playDefaultPort := 9874)
-  .settings(publishingSettings: _*)
   .settings(scoverageSettings: _*)
   .settings(defaultSettings(): _*)
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
   .settings(
-    fork                       in IntegrationTest := false,
-    testForkedParallel         in IntegrationTest := false,
-    parallelExecution          in IntegrationTest := false,
-    logBuffered                in IntegrationTest := false,
-    unmanagedSourceDirectories in IntegrationTest := (baseDirectory in IntegrationTest) (base => Seq(base / "it")).value,
-    fork                       in Test            := true,
-    testForkedParallel         in Test            := false,
-    parallelExecution          in Test            := true,
-    logBuffered                in Test            := false,
+    IntegrationTest / fork := false,
+    IntegrationTest / testForkedParallel := false,
+    IntegrationTest / parallelExecution := false,
+    IntegrationTest / logBuffered := false,
+    IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory) (base => Seq(base / "it")).value,
+    Test / fork            := true,
+    Test / testForkedParallel           := false,
+    Test / parallelExecution            := true,
+    Test / logBuffered            := false,
     addTestReportOption(IntegrationTest, "int-test-reports")
   )
   .settings(
-    scalaVersion                                  := "2.12.12",
+    scalaVersion                                  := "2.13.12",
     libraryDependencies                           ++= AppDependencies(),
     retrieveManaged                               := true,
     cancelable                 in Global          := true,
@@ -68,4 +73,4 @@ lazy val microservice = Project(appName, file("."))
   )
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
 
-javaOptions in IntegrationTest += "-Dlogger.resource=logback-test.xml"
+ IntegrationTest / javaOptions += "-Dlogger.resource=logback-test.xml"

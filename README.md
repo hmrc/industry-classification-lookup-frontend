@@ -11,7 +11,7 @@ This code is open source software licensed under the [Apache 2.0 License]("http:
 ### With Service Manager
 To start all the dependent services required by Industry Classification Lookup Frontend in service manager, run `sm --start ICL_ALL -r` or `sm2 --start ICL_ALL -r` if you are using sm2.
 
-If you want to run the service individually, run `sm --start ICL_FE -r` or `sm2 --start ICL_FE -r` if you are using to sm2.
+If you want to run the service individually, run `sm2 --start ICL_FE`.
 
 Prior to starting the service locally, make sure the instance running in service manager is stopped by running either `sm --stop ICL_FE`, or `sm2 --stop ICL_FE` if you are using sm2.
 
