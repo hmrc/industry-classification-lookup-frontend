@@ -26,15 +26,15 @@ class RemoveSicCodeFormSpec extends UnitTestSpec {
   "Binding BusinessActivityFormSpec to a model" should {
     "bind successfully with full data" in {
 
-      val data = Map("removeCode" -> "yes")
+      val data      = Map("removeCode" -> "yes")
       val boundForm = testForm.bind(data).fold(errors => errors, success => success)
 
       boundForm mustBe "yes"
     }
 
     "provide the correct error when nothing was selected" in {
-      val data = Map("removeCode" -> "")
-      val model = Seq(FormError("removeCode", "errors.invalid.sic.remove", Seq("description")))
+      val data      = Map("removeCode" -> "")
+      val model     = Seq(FormError("removeCode", "errors.invalid.sic.remove", Seq("description")))
       val boundForm = testForm.bind(data).fold(errors => errors, success => testForm.fill(success))
 
       boundForm.errors mustBe model

@@ -25,18 +25,17 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SignInOutController @Inject()(mcc: MessagesControllerComponents,
-                                    val authConnector: AuthConnector,
-                                    val journeyService: JourneyService,
-                                    val sicSearchService: SicSearchService
-                                   )(implicit ec: ExecutionContext,
-                                     val appConfig: AppConfig) extends ICLController(mcc) {
+class SignInOutController @Inject() (
+  mcc: MessagesControllerComponents,
+  val authConnector: AuthConnector,
+  val journeyService: JourneyService,
+  val sicSearchService: SicSearchService
+)(implicit ec: ExecutionContext, val appConfig: AppConfig)
+    extends ICLController(mcc) {
 
-  def signOut: Action[AnyContent] = Action.async {
-    implicit request =>
-      userAuthorised() {
-        Future.successful(Redirect(appConfig.signOutUrl).withNewSession)
-      }
+  def signOut: Action[AnyContent] = Action.async { implicit request =>
+    userAuthorised() {
+      Future.successful(Redirect(appConfig.signOutUrl).withNewSession)
+    }
   }
 }
-

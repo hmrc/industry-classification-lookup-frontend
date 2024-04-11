@@ -27,7 +27,7 @@ import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded}
 import play.api.test.FakeRequest
 import views.html.pages.removeActivityConfirmation
 
-import java.time.LocalDateTime
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -51,26 +51,29 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
     }
   }
 
-  val journeyId = "testJourneyId"
-  val sessionId = "session-12345"
+  val journeyId   = "testJourneyId"
+  val sessionId   = "session-12345"
   val identifiers = Identifiers(journeyId, sessionId)
-  val journeyData = JourneyData(identifiers, "redirectUrl", JourneySetup(), LocalDateTime.now())
+  val journeyData = JourneyData(identifiers, "redirectUrl", JourneySetup(), Instant.now())
 
-  val getRequestWithSessionId: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withMethod("GET").withSessionId(sessionId)
+  val getRequestWithSessionId: FakeRequest[AnyContentAsEmpty.type] =
+    FakeRequest().withMethod("GET").withSessionId(sessionId)
   val postRequestWithSessionId: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId)
 
-  def formRequestWithSessionId(answer: String): FakeRequest[AnyContentAsFormUrlEncoded] = postRequestWithSessionId.withMethod("POST").withFormUrlEncodedBody("removeCode" -> answer)
+  def formRequestWithSessionId(answer: String): FakeRequest[AnyContentAsFormUrlEncoded] =
+    postRequestWithSessionId.withMethod("POST").withFormUrlEncodedBody("removeCode" -> answer)
 
-  val sicCodeCode = "12345"
+  val sicCodeCode        = "12345"
   val sicCodeDescription = "some description"
-  val sicCode = SicCode(sicCodeCode, sicCodeDescription, sicCodeDescription)
-  val sicCodeChoice = SicCodeChoice(sicCode, List("fake item"), List("fake item"))
-  val searchResults = SearchResults("testQuery", 1, List(sicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
+  val sicCode            = SicCode(sicCodeCode, sicCodeDescription, sicCodeDescription)
+  val sicCodeChoice      = SicCodeChoice(sicCode, List("fake item"), List("fake item"))
+  val searchResults =
+    SearchResults("testQuery", 1, List(sicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
 
   "show" should {
     "return a 200 when the page is rendered" in new Setup {
 
-      when(mockSicSearchService.removeChoice(any(), any())(any(), any()))
+      when(mockSicSearchService.removeChoice(any(), any())(any()))
         .thenReturn(Future.successful(true))
 
       when(mockSicSearchService.retrieveChoices(any())(any()))
@@ -78,9 +81,8 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
 
       when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
-      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId, sicCodeCode), getRequestWithSessionId) {
-        result =>
-          status(result) mustBe OK
+      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId, sicCodeCode), getRequestWithSessionId) { result =>
+        status(result) mustBe OK
       }
     }
 
@@ -91,10 +93,11 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
 
       when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
-      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId, "Unknown"), getRequestWithSessionId) {
-        result =>
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result) mustBe Some(controllers.routes.ChooseActivityController.show(journeyId, Some(true)).url)
+      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId, "Unknown"), getRequestWithSessionId) { result =>
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result) mustBe Some(
+          controllers.routes.ChooseActivityController.show(journeyId, Some(true)).url
+        )
       }
     }
   }
@@ -110,7 +113,7 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
       AuthHelpers.submitWithAuthorisedUser(controller.submit(journeyId, sicCodeCode), formRequestWithSessionId("")) {
         result =>
           status(result) mustBe BAD_REQUEST
-          verify(mockSicSearchService, times(0)).removeChoice(any(), any())(any(), any())
+          verify(mockSicSearchService, times(0)).removeChoice(any(), any())(any())
       }
     }
     "remove choice and redirect to the confirmation page if yes is selected" in new Setup {
@@ -118,7 +121,7 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
       when(mockSicSearchService.retrieveChoices(any())(any()))
         .thenReturn(Future.successful(Some(List(sicCodeChoice))))
 
-      when(mockSicSearchService.removeChoice(any(), any())(any(), any()))
+      when(mockSicSearchService.removeChoice(any(), any())(any()))
         .thenReturn(Future.successful(true))
 
       when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
@@ -127,7 +130,7 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
         result =>
           status(result) mustBe SEE_OTHER
           redirectLocation(result) mustBe Some(controllers.routes.ConfirmationController.show(journeyId).url)
-          verify(mockSicSearchService, times(1)).removeChoice(any(), any())(any(), any())
+          verify(mockSicSearchService, times(1)).removeChoice(any(), any())(any())
       }
     }
     "redirect to the confirmation page if no is selected" in new Setup {
@@ -141,7 +144,7 @@ class RemoveSicCodeControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite 
         result =>
           status(result) mustBe SEE_OTHER
           redirectLocation(result) mustBe Some(controllers.routes.ConfirmationController.show(journeyId).url)
-          verify(mockSicSearchService, times(0)).removeChoice(any(), any())(any(), any())
+          verify(mockSicSearchService, times(0)).removeChoice(any(), any())(any())
       }
     }
   }

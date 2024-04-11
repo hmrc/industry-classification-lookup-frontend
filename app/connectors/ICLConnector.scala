@@ -31,7 +31,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ICLConnector @Inject()(appConfig: AppConfig, http: HttpClientV2)(implicit ec: ExecutionContext) extends Logging {
+class ICLConnector @Inject() (appConfig: AppConfig, http: HttpClientV2)(implicit ec: ExecutionContext) extends Logging {
 
   lazy val ICLUrl: String = appConfig.industryClassificationLookupBackend
 
@@ -40,30 +40,33 @@ class ICLConnector @Inject()(appConfig: AppConfig, http: HttpClientV2)(implicit 
       .execute
       .map { resp =>
         resp.status match {
-          case OK => Json.fromJson[List[SicCode]](resp.json).getOrElse(Nil)
+          case OK         => Json.fromJson[List[SicCode]](resp.json).getOrElse(Nil)
           case NO_CONTENT => Nil
           case status =>
             errorLog(s"[Lookup] Looking up sic code: $sicCode returned a $status")
             throw new InternalServerException(s"[Lookup] Looking up sic code: $sicCode returned a $status")
         }
-      } recover {
-        case e: Throwable =>
-          errorLog(s"[Lookup] Looking up sic code: $sicCode has thrown a non-http exception")
-          throw e
-      }
+      } recover { case e: Throwable =>
+      errorLog(s"[Lookup] Looking up sic code: $sicCode has thrown a non-http exception")
+      throw e
     }
+  }
 
-  def search(query: String, journeySetup: JourneySetup, sector: Option[String] = None, lang: String)(implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Future[SearchResults] = {
+  def search(query: String, journeySetup: JourneySetup, sector: Option[String] = None, lang: String)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext,
+    request: Request[_]
+  ): Future[SearchResults] = {
     implicit val reads: Reads[SearchResults] = SearchResults.readsWithQuery(query)
-    val sectorFilter = sector.map(s => List("sector" -> s)).getOrElse(Nil)
+    val sectorFilter                         = sector.map(s => List("sector" -> s)).getOrElse(Nil)
 
     val filters = Seq(
-      "query" -> query,
-      "queryParser" -> s"${journeySetup.queryParser.getOrElse(false)}",
-      "pageResults" -> s"${journeySetup.amountOfResults}",
+      "query"               -> query,
+      "queryParser"         -> s"${journeySetup.queryParser.getOrElse(false)}",
+      "pageResults"         -> s"${journeySetup.amountOfResults}",
       "queryBoostFirstTerm" -> s"${journeySetup.queryBooster.getOrElse(false)}",
-      "indexName" -> journeySetup.dataSet,
-      "lang" -> lang
+      "indexName"           -> journeySetup.dataSet,
+      "lang"                -> lang
     ) ++ sectorFilter
 
     http.get(url"$ICLUrl/industry-classification-lookup/search")

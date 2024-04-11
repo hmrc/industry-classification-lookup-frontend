@@ -16,6 +16,4 @@
 
 package featureswitch.frontend.models
 
-case class FeatureSwitchProvider(id: String,
-                                 appName: String,
-                                 url: String)
+case class FeatureSwitchProvider(id: String, appName: String, url: String)

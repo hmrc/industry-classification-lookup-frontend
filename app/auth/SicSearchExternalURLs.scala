@@ -21,7 +21,8 @@ import config.AppConfig
 trait SicSearchExternalURLs {
   val appConfig: AppConfig
 
-  private[SicSearchExternalURLs] lazy val companyAuthHost = appConfig.loadConfig("microservice.services.auth.company-auth.url")
+  private[SicSearchExternalURLs] lazy val companyAuthHost =
+    appConfig.loadConfig("microservice.services.auth.company-auth.url")
   private[SicSearchExternalURLs] lazy val loginPath = appConfig.loadConfig("microservice.services.auth.login_path")
 
   lazy val loginURL = s"$companyAuthHost$loginPath"

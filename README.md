@@ -9,11 +9,11 @@ This code is open source software licensed under the [Apache 2.0 License]("http:
 ## 1. Starting the service
 
 ### With Service Manager
-To start all the dependent services required by Industry Classification Lookup Frontend in service manager, run `sm --start ICL_ALL -r` or `sm2 --start ICL_ALL -r` if you are using sm2.
+To start all the dependent services required by Industry Classification Lookup Frontend in service manager, run `sm2 --start ICL_ALL`.
 
 If you want to run the service individually, run `sm2 --start ICL_FE`.
 
-Prior to starting the service locally, make sure the instance running in service manager is stopped by running either `sm --stop ICL_FE`, or `sm2 --stop ICL_FE` if you are using sm2.
+Prior to starting the service locally, make sure the instance running in service manager is stopped by running `sm2 --stop ICL_FE`.
 
 ### From source code on your local machine
 > The below instructions are for Mac/Linux only. Windows users will have to use SBT to run the service on port `9874`.
@@ -25,7 +25,7 @@ Prior to starting the service locally, make sure the instance running in service
 ### Test the application
 
 #### Unit and Integration tests
-To run the unit and integration tests, you can either use ```sbt test it:test``` or ```sbt clean coverage test it:test scalastyle coverageReport```.
+To run the unit and integration tests, you can either use ```sbt test it/test``` or ```sbt clean coverage test it/test scalastyle coverageReport```.
 
 #### Accessibility tests
 To run the accessibility tests, use ```sbt a11y:test```.
@@ -111,3 +111,18 @@ The **GET Ok** response json body will look like:
 ```
 
 The indexes list in the json can be empty on the **GET** 
+
+### Formatting code
+This library uses [Scalafmt](https://scalameta.org/scalafmt/), a code formatter for Scala. The formatting rules configured for this repository are defined within [.scalafmt.conf](.scalafmt.conf). Prior to checking in any changes to this repository, please make sure all files are formatted correctly.
+
+To apply formatting to this repository using the configured rules in [.scalafmt.conf](.scalafmt.conf) execute:
+
+```
+sbt scalafmtAll
+```
+
+To check files have been formatted as expected execute:
+
+```
+sbt scalafmtCheckAll scalafmtSbtCheck
+```

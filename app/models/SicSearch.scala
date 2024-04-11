@@ -16,10 +16,10 @@
 
 package models
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class SicSearch(sicSearch: String)
 
 object SicSearch {
-  implicit val format = Json.format[SicSearch]
+  implicit val format: OFormat[SicSearch] = Json.format[SicSearch]
 }

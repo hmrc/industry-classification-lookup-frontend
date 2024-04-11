@@ -24,7 +24,7 @@ import play.api.{Configuration, Environment}
 trait MockAppConfig extends GuiceOneAppPerSuite {
   self: UnitTestSpec =>
 
-  val env: Environment = Environment.simple()
+  val env: Environment          = Environment.simple()
   val fakeConfig: Configuration = Configuration.load(env)
 
   implicit val mockConfig: AppConfig = app.injector.instanceOf[AppConfig]

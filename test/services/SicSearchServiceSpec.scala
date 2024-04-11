@@ -23,7 +23,7 @@ import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito._
 import uk.gov.hmrc.http.NotFoundException
 
-import java.time.LocalDateTime
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -36,10 +36,10 @@ class SicSearchServiceSpec extends UnitTestSpec {
     )
   }
 
-  val lang = "en"
-  val sessionId = "session-id-12345"
-  val journeyId = "testJourneyId"
-  val query = "testQuery"
+  val lang            = "en"
+  val sessionId       = "session-id-12345"
+  val journeyId       = "testJourneyId"
+  val query           = "testQuery"
   val journey: String = JourneyData.QUERY_BUILDER
   val dataSet: String = JourneyData.ONS
   val identifier = Identifiers(
@@ -47,21 +47,26 @@ class SicSearchServiceSpec extends UnitTestSpec {
     sessionId = sessionId
   )
   val sicCodeCode = "12345"
-  val sicCode = SicCode(sicCodeCode, "some sic code description", "some sic code description")
-  val oneSearchResult = SearchResults(query, 1, List(sicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
-  val threeSearchResults = SearchResults(query, 3, List(sicCode, sicCode, sicCode), List(Sector("A", "Fake Sector A", "Cy business sector", 2), Sector("B", "Fake Sector B", "Cy business sector", 1)))
+  val sicCode     = SicCode(sicCodeCode, "some sic code description", "some sic code description")
+  val oneSearchResult =
+    SearchResults(query, 1, List(sicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
+  val threeSearchResults = SearchResults(
+    query,
+    3,
+    List(sicCode, sicCode, sicCode),
+    List(Sector("A", "Fake Sector A", "Cy business sector", 2), Sector("B", "Fake Sector B", "Cy business sector", 1))
+  )
   val searchResultsEmpty = SearchResults(query, 0, List(), List())
-  val choices = List(SicCodeChoice(sicCode, Nil, Nil))
-  val sicStore = SicStore(sessionId, Some(oneSearchResult), Some(choices))
-  val sicStoreNoChoices = SicStore(sessionId, Some(oneSearchResult), None)
+  val choices            = List(SicCodeChoice(sicCode, Nil, Nil))
+  val sicStore           = SicStore(sessionId, Some(oneSearchResult), Some(choices))
+  val sicStoreNoChoices  = SicStore(sessionId, Some(oneSearchResult), None)
 
   val testJourneyData = JourneyData(
     identifiers = identifier,
     redirectUrl = "/test/uri",
     journeySetupDetails = JourneySetup(),
-    lastUpdated = LocalDateTime.now
+    lastUpdated = Instant.now
   )
-
 
   "lookupSicCodes" should {
     "return true when a sic code is found in ICL and successfully saved" in new Setup {
@@ -77,7 +82,12 @@ class SicSearchServiceSpec extends UnitTestSpec {
       when(mockSicStoreRepository.upsertSearchResults(eqTo(journeyId), any()))
         .thenReturn(Future.successful(true))
 
-      awaitAndAssert(service.lookupSicCodes(testJourneyData, List(sicCode, SicCode(sicCodeCode, "Some Description", "Some Description")))) {
+      awaitAndAssert(
+        service.lookupSicCodes(
+          testJourneyData,
+          List(sicCode, SicCode(sicCodeCode, "Some Description", "Some Description"))
+        )
+      ) {
         _ mustBe 1
       }
     }

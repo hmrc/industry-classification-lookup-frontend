@@ -26,16 +26,16 @@ class SicSearchFormSpec extends UnitTestSpec {
 
   "Binding SicSearchFormSpec to a model" should {
     "Bind successfully with full data" in {
-      val data = Map("sicSearch" -> "12345")
-      val model = SicSearch(sicSearch = "12345")
+      val data      = Map("sicSearch" -> "12345")
+      val model     = SicSearch(sicSearch = "12345")
       val boundForm = testForm.bind(data).fold(errors => errors, success => success)
 
       boundForm mustBe model
     }
 
     "Provide the correct error when nothing was entered" in {
-      val data = Map("sicSearch" -> "")
-      val model = Seq(FormError("sicSearch", "errors.invalid.sic.noEntry"))
+      val data      = Map("sicSearch" -> "")
+      val model     = Seq(FormError("sicSearch", "errors.invalid.sic.noEntry"))
       val boundForm = testForm.bind(data).fold(errors => errors, success => testForm.fill(success))
 
       boundForm.errors mustBe model
@@ -43,8 +43,10 @@ class SicSearchFormSpec extends UnitTestSpec {
     }
 
     "Provide the correct error when the search entered is more than 100 characters" in {
-      val data = Map("sicSearch" -> "qwertyuio qwertyuio qwertyuio qwertyuio qwertyuio qwertyuio qwertyuio qwertyuio qwertyuio qwertyuio q")
-      val model = Seq(FormError("sicSearch", "errors.invalid.sic.noEntry"))
+      val data = Map(
+        "sicSearch" -> "qwertyuio qwertyuio qwertyuio qwertyuio qwertyuio qwertyuio qwertyuio qwertyuio qwertyuio qwertyuio q"
+      )
+      val model     = Seq(FormError("sicSearch", "errors.invalid.sic.noEntry"))
       val boundForm = testForm.bind(data).fold(errors => errors, success => testForm.fill(success))
 
       boundForm.errors mustBe model

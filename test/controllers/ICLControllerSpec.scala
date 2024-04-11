@@ -28,17 +28,16 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-
 class ICLControllerSpec extends UnitTestSpec with MockAppConfig with MockMessages {
 
   trait Setup {
 
     object TestICLController extends ICLController(mockMessasgesControllerComponents) {
-      implicit val appConfig: AppConfig = app.injector.instanceOf[AppConfig]
-      val authConnector: AuthConnector = mockAuthConnector
-      val journeyService: JourneyService = mockJourneyService
+      implicit val appConfig: AppConfig      = app.injector.instanceOf[AppConfig]
+      val authConnector: AuthConnector       = mockAuthConnector
+      val journeyService: JourneyService     = mockJourneyService
       val sicSearchService: SicSearchService = mockSicSearchService
-      val servicesConfig: ServicesConfig = mockServicesConfig
+      val servicesConfig: ServicesConfig     = mockServicesConfig
 
       override lazy val loginURL = "/test/login"
     }
@@ -51,7 +50,9 @@ class ICLControllerSpec extends UnitTestSpec with MockAppConfig with MockMessage
     "supply the sessionId to the function parameter and return the supplied result" in new Setup {
       val suppliedFunction: String => Future[Result] = sessionId => Future.successful(Results.Ok(sessionId))
 
-      assertFutureResult(TestICLController.withSessionId(suppliedFunction)(hc.copy(sessionId = Some(SessionId(sessionId))))) { res =>
+      assertFutureResult(
+        TestICLController.withSessionId(suppliedFunction)(hc.copy(sessionId = Some(SessionId(sessionId))))
+      ) { res =>
         status(res) mustBe OK
         contentAsString(res) mustBe sessionId
       }

@@ -28,13 +28,17 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SicSearchService @Inject()(val iCLConnector: ICLConnector,
-                                 sicStoreRepository: SicStoreRepository) extends Logging {
+class SicSearchService @Inject() (val iCLConnector: ICLConnector, sicStoreRepository: SicStoreRepository)
+    extends Logging {
 
-  def search(journeyData: JourneyData, query: String, sector: Option[String] = None, lang: String)(implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Future[Int] = {
+  def search(journeyData: JourneyData, query: String, sector: Option[String] = None, lang: String)(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext,
+    request: Request[_]
+  ): Future[Int] = {
     if (isLookup(query)) {
       lookupSicCodes(journeyData, List(SicCode(query, ""))).flatMap {
-        case 0 => searchQuery(journeyData, query, sector, lang)
+        case 0   => searchQuery(journeyData, query, sector, lang)
         case res => Future.successful(res)
       }
     } else {
@@ -42,30 +46,34 @@ class SicSearchService @Inject()(val iCLConnector: ICLConnector,
     }
   }
 
-  def retrieveSearchResults(journeyId: String)(implicit ec: ExecutionContext): Future[Option[SearchResults]] = {
+  def retrieveSearchResults(journeyId: String)(implicit ec: ExecutionContext): Future[Option[SearchResults]] =
     sicStoreRepository.retrieveSicStore(journeyId).map(_.flatMap(_.searchResults))
-  }
 
-  def retrieveChoices(journeyId: String)(implicit ec: ExecutionContext): Future[Option[List[SicCodeChoice]]] = {
+  def retrieveChoices(journeyId: String)(implicit ec: ExecutionContext): Future[Option[List[SicCodeChoice]]] =
     sicStoreRepository.retrieveSicStore(journeyId).map(_.flatMap(_.choices))
-  }
 
-  def insertChoices(journeyId: String, sicCodes: List[SicCodeChoice])(implicit ec: ExecutionContext, request: Request[_]): Future[Boolean] =
+  def insertChoices(journeyId: String, sicCodes: List[SicCodeChoice])(implicit request: Request[_]): Future[Boolean] =
     sicStoreRepository.insertChoices(journeyId, sicCodes)
 
-  def removeChoice(journeyId: String, sicCodeToRemove: String)(implicit ec: ExecutionContext, request: Request[_]): Future[Boolean] = {
+  def removeChoice(journeyId: String, sicCodeToRemove: String)(implicit request: Request[_]): Future[Boolean] =
     sicStoreRepository.removeChoice(journeyId, sicCodeToRemove)
-  }
 
-  def lookupSicCodes(journeyData: JourneyData, selectedCodes: List[SicCode])(implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Future[Int] = {
-    def fiteredListOfSicCodeChoice(sicCodesUnfiltered: List[SicCode], groups: Map[String, List[SicCode]]): List[SicCodeChoice] = {
+  def lookupSicCodes(journeyData: JourneyData, selectedCodes: List[SicCode])(implicit
+    hc: HeaderCarrier,
+    ec: ExecutionContext,
+    request: Request[_]
+  ): Future[Int] = {
+    def fiteredListOfSicCodeChoice(
+      sicCodesUnfiltered: List[SicCode],
+      groups: Map[String, List[SicCode]]
+    ): List[SicCodeChoice] = {
       sicCodesUnfiltered map { sic =>
         val maybeSicCodes = groups.get(sic.sicCode)
 
-        val indexes: (SicCode => String) => List[String] = descrFn => {
+        val indexes: (SicCode => String) => List[String] = descrFn =>
           maybeSicCodes.fold(List.empty[String])(nSicCodes =>
-            nSicCodes.filterNot(sicCode => sicCode == sic || descrFn(sicCode).isEmpty).map(sicCode => descrFn(sicCode)))
-        }
+            nSicCodes.filterNot(sicCode => sicCode == sic || descrFn(sicCode).isEmpty).map(sicCode => descrFn(sicCode))
+          )
 
         SicCodeChoice(sic, indexes(_.description), indexes(_.descriptionCy))
       }
@@ -76,34 +84,39 @@ class SicSearchService @Inject()(val iCLConnector: ICLConnector,
     } else {
       for {
         oSicCode <- iCLConnector.lookup(getCommaSeparatedCodes(selectedCodes))
-        groups = selectedCodes.groupBy(_.sicCode)
+        groups        = selectedCodes.groupBy(_.sicCode)
         filteredCodes = fiteredListOfSicCodeChoice(oSicCode, groups)
-        res <- if (oSicCode.nonEmpty) {
-          insertChoices(journeyData.identifiers.journeyId, filteredCodes) map (_ => 1)
-        } else {
-          Future.successful(0)
-        }
+        res <-
+          if (oSicCode.nonEmpty) {
+            insertChoices(journeyData.identifiers.journeyId, filteredCodes) map (_ => 1)
+          } else {
+            Future.successful(0)
+          }
       } yield res
     }
   }
 
-  private[services] def getCommaSeparatedCodes(sicCodes: List[SicCode]): String = {
+  private[services] def getCommaSeparatedCodes(sicCodes: List[SicCode]): String =
     sicCodes.groupBy(_.sicCode).keys.mkString(",")
-  }
 
-  private[services] def searchQuery(journeyData: JourneyData, query: String, sector: Option[String] = None, lang: String)
-                                   (implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Future[Int] = {
+  private[services] def searchQuery(
+    journeyData: JourneyData,
+    query: String,
+    sector: Option[String] = None,
+    lang: String
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_]): Future[Int] = {
     (for {
       oSearchResults <- iCLConnector.search(query, journeyData.journeySetupDetails, sector, lang)
-      sectorObject = sector.flatMap(sicCode => oSearchResults.sectors.find(_.code == sicCode))
+      sectorObject  = sector.flatMap(sicCode => oSearchResults.sectors.find(_.code == sicCode))
       searchResults = sectorObject.fold(oSearchResults)(s => oSearchResults.copy(currentSector = Some(s)))
       _ <- sicStoreRepository.upsertSearchResults(journeyData.identifiers.journeyId, searchResults) flatMap { res =>
         if (searchResults.numFound == 1) lookupSicCodes(journeyData, searchResults.results) else Future.successful(res)
       }
-    } yield searchResults.numFound) recover {
-      case e =>
-        errorLog(s"[SicSearchService] [searchQuery] Exception encountered when attempting to fetch results from ICL ${e.getMessage}")
-        0
+    } yield searchResults.numFound) recover { case e =>
+      errorLog(
+        s"[SicSearchService] [searchQuery] Exception encountered when attempting to fetch results from ICL ${e.getMessage}"
+      )
+      0
     }
   }
 

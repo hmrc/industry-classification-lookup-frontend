@@ -20,14 +20,13 @@ import helpers.UnitTestSpec
 import play.api.libs.json.{JsSuccess, JsValue, Json}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import java.time.Instant
 
 class SicStoreSpec extends UnitTestSpec with MongoJavatimeFormats {
 
-  val query = "testQuery"
-  val dateTime: LocalDateTime = LocalDateTime.parse("2017-06-15T10:06:28.434Z", DateTimeFormatter.ISO_DATE_TIME)
-  val now: JsValue = Json.toJson(dateTime)(Implicits.jatLocalDateTimeFormat)
+  val query             = "testQuery"
+  val dateTime: Instant = Instant.parse("2017-06-15T10:06:28.434Z")
+  val now               = Json.toJson(dateTime)(Implicits.jatInstantFormat)
 
   val sicStoreWithChoicesJson: JsValue = Json.parse(
     s"""
@@ -75,29 +74,47 @@ class SicStoreSpec extends UnitTestSpec with MongoJavatimeFormats {
 
   val sicStoreWithChoices = SicStore(
     "12345",
-    Some(SearchResults(
-      query,
-      1,
-      List(SicCode("19283", "Search Sic Code Result Description", "Search Sic Code Result Description")),
-      List(Sector("A", "Clearly fake business sector", "Cy business sector", 22))
-    )),
-    Some(List(
-      SicCodeChoice(SicCode("57384", "Sic Code Test Description 1", "Sic Code Test Description 1"), List("someIndex 1"), List("someIndex 1")),
-      SicCodeChoice(SicCode("11920", "Sic Code Test Description 2", "Sic Code Test Description 2"), List("someIndex 2"), List("someIndex 2")),
-      SicCodeChoice(SicCode("12994", "Sic Code Test Description 3", "Sic Code Test Description 3"), List("someIndex 3"), List("someIndex 3")),
-      SicCodeChoice(SicCode("39387", "Sic Code Test Description 4", "Sic Code Test Description 4"), List(), List())
-    )),
+    Some(
+      SearchResults(
+        query,
+        1,
+        List(SicCode("19283", "Search Sic Code Result Description", "Search Sic Code Result Description")),
+        List(Sector("A", "Clearly fake business sector", "Cy business sector", 22))
+      )
+    ),
+    Some(
+      List(
+        SicCodeChoice(
+          SicCode("57384", "Sic Code Test Description 1", "Sic Code Test Description 1"),
+          List("someIndex 1"),
+          List("someIndex 1")
+        ),
+        SicCodeChoice(
+          SicCode("11920", "Sic Code Test Description 2", "Sic Code Test Description 2"),
+          List("someIndex 2"),
+          List("someIndex 2")
+        ),
+        SicCodeChoice(
+          SicCode("12994", "Sic Code Test Description 3", "Sic Code Test Description 3"),
+          List("someIndex 3"),
+          List("someIndex 3")
+        ),
+        SicCodeChoice(SicCode("39387", "Sic Code Test Description 4", "Sic Code Test Description 4"), List(), List())
+      )
+    ),
     dateTime
   )
 
   val sicStoreNoChoices = SicStore(
     "12345",
-    Some(SearchResults(
-      query,
-      1,
-      List(SicCode("19283", "Search Sic Code Result Description", "Search Sic Code Result Description")),
-      List(Sector("A", "Clearly fake business sector", "Cy business sector", 22))
-    )),
+    Some(
+      SearchResults(
+        query,
+        1,
+        List(SicCode("19283", "Search Sic Code Result Description", "Search Sic Code Result Description")),
+        List(Sector("A", "Clearly fake business sector", "Cy business sector", 22))
+      )
+    ),
     None,
     dateTime
   )

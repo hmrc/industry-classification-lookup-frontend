@@ -27,7 +27,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.{JourneyDataRepository, SicStoreRepository}
 
-import java.time.LocalDateTime
+import java.time.Instant
 
 class ApiControllerISpec extends ClientSpec {
 
@@ -236,7 +236,7 @@ class ApiControllerISpec extends ClientSpec {
         val sicStore: SicStore = SicStore(journeyId, None, Some(sicCodeChoices))
         insertSicStore(sicStore)
 
-        val journey: JourneyData = JourneyData(Identifiers(journeyId, sessionIdValue), "redirect-url", JourneySetup(queryBooster = Some(true)), LocalDateTime.now())
+        val journey: JourneyData = JourneyData(Identifiers(journeyId, sessionIdValue), "redirect-url", JourneySetup(queryBooster = Some(true)), Instant.now())
         insertJourney(journey)
 
         assertFutureResponse(buildClient(fetchResultsUrl).withHttpHeaders(
@@ -270,7 +270,7 @@ class ApiControllerISpec extends ClientSpec {
         val sessionIdValue = "test-session-id"
         val sessionId: String = CookieBaker.getSessionCookie(sessionID = Some(sessionIdValue))
 
-        val journey: JourneyData = JourneyData(Identifiers(journeyId, sessionIdValue), "redirect-url", JourneySetup(queryBooster = Some(true)), LocalDateTime.now())
+        val journey: JourneyData = JourneyData(Identifiers(journeyId, sessionIdValue), "redirect-url", JourneySetup(queryBooster = Some(true)), Instant.now())
         insertJourney(journey)
 
         assertFutureResponse(buildClient(fetchResultsUrl).withHttpHeaders(

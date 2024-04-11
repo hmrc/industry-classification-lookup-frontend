@@ -2,26 +2,26 @@
 import sbt._
 
 private object AppDependencies {
-  val bootstrapVersion = "8.3.0"
-  val hmrcMongoVersion = "1.8.0"
+  private val playVersion = "play-30"
+  val mongoDbVersion   = "1.8.0"
+  val bootstrapVersion = "8.5.0"
 
-  val compile = Seq(
-    "uk.gov.hmrc" %% "bootstrap-frontend-play-30" % bootstrapVersion,
-    "uk.gov.hmrc" %% "play-frontend-hmrc-play-30" % "8.5.0",
+  val compile: Seq[ModuleID] = Seq(
+    "uk.gov.hmrc" %% s"bootstrap-frontend-$playVersion" % bootstrapVersion,
+    "uk.gov.hmrc" %% s"play-frontend-hmrc-$playVersion" % "8.5.0",
     "uk.gov.hmrc" %% "play-allowlist-filter" % "1.1.0",
-    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-30" % hmrcMongoVersion,
+    "uk.gov.hmrc.mongo" %% s"hmrc-mongo-$playVersion" % mongoDbVersion,
     "uk.gov.hmrc" %% "play-conditional-form-mapping-play-30" % "2.0.0"
   )
 
-  def test(scope: String = "test,it") = Seq(
-    "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % scope,
-    "com.github.tomakehurst" % "wiremock-jre8" % "2.27.2" % scope,
-    "org.jsoup" % "jsoup" % "1.13.1" % scope,
-    "org.scalatestplus" %% "mockito-3-4" % "3.2.9.0" % scope,
-    "org.mockito" % "mockito-core" % "3.3.0" % scope,
-    "uk.gov.hmrc.mongo" %% "hmrc-mongo-test-play-28" % "0.74.0" % scope,
-    "com.vladsch.flexmark" % "flexmark-all" % "0.36.8" % scope
+  def test: Seq[ModuleID] = Seq(
+    "uk.gov.hmrc" %% s"bootstrap-test-$playVersion" % bootstrapVersion % Test,
+    "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test,
+    "org.jsoup" % "jsoup" % "1.17.2" % Test,
+    "org.scalatestplus" %% "mockito-3-4" % "3.2.10.0" % Test,
+    "org.mockito" % "mockito-core" % "5.11.0" % Test,
+    "com.vladsch.flexmark" % "flexmark-all" % "0.64.8" % Test
   )
 
-  def apply() = compile ++ test()
+  def apply(): Seq[sbt.ModuleID] = compile ++ test
 }

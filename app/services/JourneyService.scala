@@ -27,11 +27,14 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class JourneyService @Inject()(journeyDataRepository: JourneyDataRepository,
-                               val sicSearchService: SicSearchService)
-                              (implicit executionContext: ExecutionContext) {
+class JourneyService @Inject() (journeyDataRepository: JourneyDataRepository, val sicSearchService: SicSearchService)(
+  implicit executionContext: ExecutionContext
+) {
 
-  def initialiseJourney(journeyData: JourneyData, lang: String)(implicit hc: HeaderCarrier, request: Request[_]): Future[JsValue] = {
+  def initialiseJourney(journeyData: JourneyData, lang: String)(implicit
+    hc: HeaderCarrier,
+    request: Request[_]
+  ): Future[JsValue] = {
     for {
       res <- journeyDataRepository.upsertJourney(journeyData) map { _ =>
         Json.obj(
@@ -44,15 +47,14 @@ class JourneyService @Inject()(journeyDataRepository: JourneyDataRepository,
     } yield res
   }
 
-  def updateJourneyWithJourneySetup(identifiers: Identifiers, journeySetupDetails: JourneySetup)(implicit request: Request[_]): Future[JourneySetup] = {
+  def updateJourneyWithJourneySetup(identifiers: Identifiers, journeySetupDetails: JourneySetup)(implicit
+    request: Request[_]
+  ): Future[JourneySetup] =
     journeyDataRepository.updateJourneySetup(identifiers, journeySetupDetails)
-  }
 
-  def getJourney(identifiers: Identifiers)(implicit request: Request[_]): Future[JourneyData] = {
+  def getJourney(identifiers: Identifiers)(implicit request: Request[_]): Future[JourneyData] =
     journeyDataRepository.retrieveJourneyData(identifiers)
-  }
 
-  def getRedirectUrl(identifiers: Identifiers)(implicit request: Request[_]): Future[String] = {
+  def getRedirectUrl(identifiers: Identifiers)(implicit request: Request[_]): Future[String] =
     journeyDataRepository.retrieveJourneyData(identifiers) map (_.redirectUrl)
-  }
 }

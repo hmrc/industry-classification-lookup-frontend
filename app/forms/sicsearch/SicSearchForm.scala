@@ -27,15 +27,14 @@ object SicSearchForm {
 
     def validate(entry: String): Either[Seq[FormError], String] = {
       entry match {
-        case ""  => Left(Seq(FormError("sicSearch", "errors.invalid.sic.noEntry")))
+        case ""                    => Left(Seq(FormError("sicSearch", "errors.invalid.sic.noEntry")))
         case ss if ss.length > 100 => Left(Seq(FormError("sicSearch", "errors.invalid.sic.noEntry")))
-        case ss  => Right(ss)
+        case ss                    => Right(ss)
       }
     }
 
-    override def bind(key: String, data: Map[String, String]) = {
+    override def bind(key: String, data: Map[String, String]) =
       validate(data.getOrElse(key, ""))
-    }
 
     override def unbind(key: String, value: String) = Map(key -> value)
   }

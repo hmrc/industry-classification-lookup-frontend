@@ -26,7 +26,7 @@ import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AuthConnector
 
-import java.time.LocalDateTime
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -47,8 +47,8 @@ class StartControllerSpec extends UnitTestSpec with MockAppConfig with MockMessa
     }
   }
 
-  val journeyId = "some-journey-Id"
-  val sessionId = "session-12345"
+  val journeyId                                               = "some-journey-Id"
+  val sessionId                                               = "session-12345"
   val requestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId)
 
   val identifiers = Identifiers(journeyId, sessionId)
@@ -56,15 +56,14 @@ class StartControllerSpec extends UnitTestSpec with MockAppConfig with MockMessa
   "startJourney" should {
     "redirect to the search page" when {
       "no sic-codes in journey setup" in new Setup {
-        val journeyData = JourneyData(identifiers, "redirectUrl", JourneySetup(), LocalDateTime.now())
+        val journeyData = JourneyData(identifiers, "redirectUrl", JourneySetup(), Instant.now())
         val url: String = routes.ChooseActivityController.show(journeyId).url
 
         when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
-        AuthHelpers.requestWithAuthorisedUser(controller.startJourney(journeyId), requestWithSession) {
-          result =>
-            status(result) mustBe 303
-            redirectLocation(result) mustBe Some(url)
+        AuthHelpers.requestWithAuthorisedUser(controller.startJourney(journeyId), requestWithSession) { result =>
+          status(result) mustBe 303
+          redirectLocation(result) mustBe Some(url)
         }
       }
     }
@@ -72,15 +71,14 @@ class StartControllerSpec extends UnitTestSpec with MockAppConfig with MockMessa
     "redirect to the confirmation page" when {
       "there are sic-codes in journey setup" in new Setup {
         val journeySetup = JourneySetup(sicCodes = Seq("12345"))
-        val journeyData = JourneyData(identifiers, "redirectUrl", journeySetup, LocalDateTime.now())
-        val url: String = routes.ConfirmationController.show(journeyId).url
+        val journeyData  = JourneyData(identifiers, "redirectUrl", journeySetup, Instant.now())
+        val url: String  = routes.ConfirmationController.show(journeyId).url
 
         when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
-        AuthHelpers.requestWithAuthorisedUser(controller.startJourney(journeyId), requestWithSession) {
-          result =>
-            status(result) mustBe 303
-            redirectLocation(result) mustBe Some(url)
+        AuthHelpers.requestWithAuthorisedUser(controller.startJourney(journeyId), requestWithSession) { result =>
+          status(result) mustBe 303
+          redirectLocation(result) mustBe Some(url)
         }
       }
     }

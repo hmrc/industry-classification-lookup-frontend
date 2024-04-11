@@ -23,7 +23,6 @@ trait ICLLanguageSupport extends I18nSupport {
 
   implicit val english: Lang = Lang("en")
 
-  override implicit def request2Messages(implicit request: RequestHeader): Messages = {
-      messagesApi.preferred(request)
-  }
+  override implicit def request2Messages(implicit request: RequestHeader): Messages =
+    messagesApi.preferred(request)
 }
