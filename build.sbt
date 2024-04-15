@@ -1,7 +1,7 @@
 
 import scoverage.ScoverageKeys
 import uk.gov.hmrc.DefaultBuildSettings
-import uk.gov.hmrc.DefaultBuildSettings.{defaultSettings, itSettings, scalaSettings}
+import uk.gov.hmrc.DefaultBuildSettings.{defaultSettings, scalaSettings}
 
 val appName: String = "industry-classification-lookup-frontend"
 val silencerVersion = "1.7.0"
@@ -17,7 +17,7 @@ lazy val scoverageSettings: Seq[Setting[_]] = Seq(
 )
 
 lazy val microservice = (project in file("."))
-  .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin): _*)
+  .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning): _*)
   .settings(defaultSettings(): _*)
   .settings(scalaSettings: _*)
   .settings(scoverageSettings: _*)
@@ -28,7 +28,6 @@ lazy val microservice = (project in file("."))
     Test / parallelExecution := true,
     Test / logBuffered := false,
     libraryDependencies ++= AppDependencies.apply()
-//    addTestReportOption(Test, "test-reports")
   )
   .settings(
     TwirlKeys.templateImports ++= Seq(
