@@ -4,7 +4,7 @@ import uk.gov.hmrc.DefaultBuildSettings
 import uk.gov.hmrc.DefaultBuildSettings.{defaultSettings, scalaSettings}
 
 val appName: String = "industry-classification-lookup-frontend"
-val silencerVersion = "1.7.0"
+val silencerVersion = "1.7.16"
 
 ThisBuild / majorVersion := 0
 ThisBuild / scalaVersion := "2.13.12"
