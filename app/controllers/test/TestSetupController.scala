@@ -51,7 +51,7 @@ class TestSetupController @Inject() (
     ): JourneySetup = new JourneySetup(dataSet, queryParser, queryBooster, amountOfResults, None)
 
     def journeySetupUnapply(arg: JourneySetup): Option[(String, Option[Boolean], Option[Boolean], Int)] =
-      Some(arg.dataSet, arg.queryParser, arg.queryBooster, arg.amountOfResults)
+      Some((arg.dataSet, arg.queryParser, arg.queryBooster, arg.amountOfResults))
 
     Form(
       mapping(
@@ -77,7 +77,7 @@ class TestSetupController @Inject() (
     userAuthorised() {
       withSessionId { sessionId =>
         hasJourney(Identifiers(journeyId, sessionId)) { journeyData =>
-          journeySetupForm.bindFromRequest.fold(
+          journeySetupForm.bindFromRequest().fold(
             errors => Future.successful(BadRequest(view(journeyId, errors))),
             validJourney =>
               journeyService.updateJourneyWithJourneySetup(journeyData.identifiers, validJourney).map(_ =>

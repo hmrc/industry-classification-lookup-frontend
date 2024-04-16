@@ -16,7 +16,6 @@
 
 package models
 
-import config.AppConfig
 import play.api.i18n.Messages
 import play.api.libs.json.{Json, OFormat}
 

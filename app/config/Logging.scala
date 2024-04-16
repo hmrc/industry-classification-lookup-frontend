@@ -17,9 +17,8 @@
 package config
 
 import org.slf4j.{Logger, LoggerFactory}
-import play.api.MarkerContext
 import play.api.mvc.Request
-import uk.gov.hmrc.http.{HeaderNames, HttpResponse, SessionKeys}
+import uk.gov.hmrc.http.{HeaderNames, SessionKeys}
 
 trait Logging {
   val logger: Logger = LoggerFactory.getLogger(getClass)
@@ -33,19 +32,19 @@ trait Logging {
   lazy val identifiers: Request[_] => String = request =>
     Seq(trueClientIp(request), sessionId(request)).flatten.foldLeft("")(_ + _)
 
-  def infoLog(message: => String)(implicit mc: MarkerContext, request: Request[_]): Unit =
+  def infoLog(message: => String)(implicit request: Request[_]): Unit =
     logger.info(s"$message (${identifiers(request)})")
 
-  def warnLog(message: => String)(implicit mc: MarkerContext, request: Request[_]): Unit =
+  def warnLog(message: => String)(implicit request: Request[_]): Unit =
     logger.warn(s"$message (${identifiers(request)})")
 
-  def warnLog(message: => String, throwable: Throwable)(implicit mc: MarkerContext, request: Request[_]): Unit =
+  def warnLog(message: => String, throwable: Throwable)(implicit request: Request[_]): Unit =
     logger.warn(s"$message (${identifiers(request)})", throwable)
 
-  def errorLog(message: => String, error: Throwable)(implicit mc: MarkerContext, request: Request[_]): Unit =
+  def errorLog(message: => String, error: Throwable)(implicit request: Request[_]): Unit =
     logger.error(s"$message (${identifiers(request)})", error)
 
-  def errorLog(message: => String)(implicit mc: MarkerContext, request: Request[_]): Unit =
+  def errorLog(message: => String)(implicit request: Request[_]): Unit =
     logger.error(s"$message (${identifiers(request)})")
 
 }

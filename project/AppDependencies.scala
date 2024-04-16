@@ -11,7 +11,8 @@ private object AppDependencies {
     "uk.gov.hmrc" %% s"play-frontend-hmrc-$playVersion" % "8.5.0",
     "uk.gov.hmrc" %% "play-allowlist-filter" % "1.1.0",
     "uk.gov.hmrc.mongo" %% s"hmrc-mongo-$playVersion" % mongoDbVersion,
-    "uk.gov.hmrc" %% "play-conditional-form-mapping-play-30" % "2.0.0"
+    "uk.gov.hmrc" %% "play-conditional-form-mapping-play-30" % "2.0.0",
+    "org.apache.commons" % "commons-text" % "1.9"
   )
 
   def test: Seq[ModuleID] = Seq(

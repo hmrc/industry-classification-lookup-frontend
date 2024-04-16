@@ -16,7 +16,6 @@
 
 package featureswitch.core.config
 
-import featureswitch.core.models.FeatureSwitch
 import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment}
 

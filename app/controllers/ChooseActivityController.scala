@@ -86,7 +86,7 @@ class ChooseActivityController @Inject() (
   private[controllers] def performSearch(journeyId: String, journeyData: JourneyData)(implicit
     request: Request[_]
   ): Future[Result] = {
-    SicSearchForm.form.bindFromRequest.fold(
+    SicSearchForm.form.bindFromRequest().fold(
       errors => Future.successful(BadRequest(view(journeyId, errors, chooseActivityForm, None))),
       form =>
         sicSearchService.search(journeyData, form.sicSearch, None, getLang).map {

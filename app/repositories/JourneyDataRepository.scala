@@ -62,7 +62,7 @@ class JourneyDataRepository @Inject() (config: Configuration, mongo: MongoCompon
 
   private[repositories] def renewJourney[T](
     identifiers: Identifiers
-  )(f: => T)(implicit request: Request[_]): Future[T] =
+  )(f: => T): Future[T] =
     collection.updateOne(
       filter = identifiersSelector(identifiers),
       update = currentDate("lastUpdated")
