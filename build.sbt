@@ -16,7 +16,7 @@ lazy val scoverageSettings: Seq[Setting[_]] = Seq(
   ScoverageKeys.coverageHighlighting := true
 )
 
-lazy val microservice = (project in file("."))
+lazy val microservice = Project(appName, file("."))
   .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin): _*)
   .settings(defaultSettings(): _*)
   .settings(scalaSettings: _*)
