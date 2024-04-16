@@ -45,12 +45,11 @@ class SignInOutControllerSpec extends UnitTestSpec with MockMessages with MockAp
   "signOut" should {
     "return a 303 and redirect to questionnaire" in new Setup {
       val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
-      val signOutUrl = "http://localhost:9514/feedback/vat-registration"
+      val signOutUrl                                   = "http://localhost:9514/feedback/vat-registration"
 
-      AuthHelpers.showWithAuthorisedUser(controller.signOut, request) {
-        result =>
-          status(result) mustBe 303
-          redirectLocation(result) mustBe Some(signOutUrl)
+      AuthHelpers.showWithAuthorisedUser(controller.signOut, request) { result =>
+        status(result) mustBe 303
+        redirectLocation(result) mustBe Some(signOutUrl)
       }
     }
   }

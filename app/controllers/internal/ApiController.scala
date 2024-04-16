@@ -30,11 +30,13 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class ApiController @Inject()(mcc: MessagesControllerComponents,
-                              val journeyService: JourneyService,
-                              val sicSearchService: SicSearchService,
-                              val authConnector: AuthConnector
-                             )(implicit ec: ExecutionContext, val appConfig: AppConfig) extends ICLController(mcc) {
+class ApiController @Inject() (
+  mcc: MessagesControllerComponents,
+  val journeyService: JourneyService,
+  val sicSearchService: SicSearchService,
+  val authConnector: AuthConnector
+)(implicit ec: ExecutionContext, val appConfig: AppConfig)
+    extends ICLController(mcc) {
 
   def journeyInitialisation(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
@@ -54,7 +56,7 @@ class ApiController @Inject()(mcc: MessagesControllerComponents,
         hasJourney(Identifiers(journeyId, sessionId)) { _ =>
           sicSearchService.retrieveChoices(journeyId) map {
             case Some(choices) => Ok(Json.obj("sicCodes" -> Json.toJson(choices)))
-            case None => NotFound
+            case None          => NotFound
           }
         }
       }

@@ -35,7 +35,7 @@ class VatRegLanguageSupportSpec extends UnitTestSpec {
     .build()
 
   object ExpectedMessages {
-    val welshHeading = "Gwirio a chadarnhau codau Dosbarthiad Diwydiannol Safonol (SIC) y busnes"
+    val welshHeading   = "Gwirio a chadarnhau codau Dosbarthiad Diwydiannol Safonol (SIC) y busnes"
     val englishHeading = "Check and confirm the business's Standard Industry Classification (SIC) codes"
   }
 
@@ -63,9 +63,10 @@ class VatRegLanguageSupportSpec extends UnitTestSpec {
   }
 }
 
-class WelshTestController @Inject()(page: confirmation,
-                                    val controllerComponents: ControllerComponents)
-                                   (implicit appConfig: AppConfig) extends BaseController with ICLLanguageSupport {
+class WelshTestController @Inject() (page: confirmation, val controllerComponents: ControllerComponents)(implicit
+  appConfig: AppConfig
+) extends BaseController
+    with ICLLanguageSupport {
 
   def getPage: Action[AnyContent] = Action { request =>
     implicit val cacheRequest: WrappedRequest[AnyContent] = new WrappedRequest[AnyContent](request)

@@ -25,23 +25,23 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class StartController @Inject()(mcc: MessagesControllerComponents,
-                                val authConnector: AuthConnector,
-                                val sicSearchService: SicSearchService,
-                                val journeyService: JourneyService
-                               )(implicit ec: ExecutionContext,
-                                 val appConfig: AppConfig) extends ICLController(mcc) {
+class StartController @Inject() (
+  mcc: MessagesControllerComponents,
+  val authConnector: AuthConnector,
+  val sicSearchService: SicSearchService,
+  val journeyService: JourneyService
+)(implicit ec: ExecutionContext, val appConfig: AppConfig)
+    extends ICLController(mcc) {
 
-  def startJourney(jId: String): Action[AnyContent] = Action.async {
-    implicit request =>
-      userAuthorised() {
-        withJourney(jId) { journeyData =>
-          if (journeyData.journeySetupDetails.sicCodes.isEmpty) {
-            Future.successful(Redirect(routes.ChooseActivityController.show(jId)))
-          } else {
-            Future.successful(Redirect(routes.ConfirmationController.show(jId)))
-          }
+  def startJourney(jId: String): Action[AnyContent] = Action.async { implicit request =>
+    userAuthorised() {
+      withJourney(jId) { journeyData =>
+        if (journeyData.journeySetupDetails.sicCodes.isEmpty) {
+          Future.successful(Redirect(routes.ChooseActivityController.show(jId)))
+        } else {
+          Future.successful(Redirect(routes.ConfirmationController.show(jId)))
         }
       }
+    }
   }
 }

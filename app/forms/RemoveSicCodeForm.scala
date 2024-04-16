@@ -24,8 +24,8 @@ object RemoveSicCodeForm {
 
   def confirmationField(description: String): Mapping[String] = {
     val textConstraint: Constraint[String] = Constraint {
-      case "yes" | "no"   => Valid
-      case _              => Invalid(ValidationError("errors.invalid.sic.remove", description))
+      case "yes" | "no" => Valid
+      case _            => Invalid(ValidationError("errors.invalid.sic.remove", description))
     }
     default(text, "").verifying(textConstraint)
   }

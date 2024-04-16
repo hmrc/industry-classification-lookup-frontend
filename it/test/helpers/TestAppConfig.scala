@@ -1,5 +1,5 @@
-@*
- * Copyright 2023 HM Revenue & Customs
+/*
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,18 +12,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import config.AppConfig
+package helpers
 
-@this(
-        govukButton: GovukButton
-)
+trait TestAppConfig {
+  this: Wiremock =>
 
-@(msg: String, id: Option[String] = None)(implicit messages: Messages)
+  val testAppConfig = Map(
+    "microservice.services.auth.host" -> wiremockHost,
+    "microservice.services.auth.port" -> wiremockPort,
+    "microservice.services.auth.login_path" -> "/auth-login-path"
+  )
 
-@govukButton(Button(
-    content = Text(messages(msg)),
-    preventDoubleClick = Some(true),
-    attributes = id.map("id" -> _).toMap
-))
+  def testAppConfig(extraConfig: (String, Any)*): Map[String, Any] = testAppConfig ++ extraConfig
+}

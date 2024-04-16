@@ -28,7 +28,7 @@ import play.api.mvc._
 import play.api.test.{FakeRequest, Helpers}
 import views.html.pages.confirmation
 
-import java.time.LocalDateTime
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -52,27 +52,31 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
     }
   }
 
-  val journeyId = "testJourneyId"
-  val sessionId = "session-12345"
+  val journeyId   = "testJourneyId"
+  val sessionId   = "session-12345"
   val identifiers = Identifiers(journeyId, sessionId)
-  val journeyData = JourneyData(identifiers, "redirectUrl", JourneySetup(), LocalDateTime.now())
+  val journeyData = JourneyData(identifiers, "redirectUrl", JourneySetup(), Instant.now())
 
   val englishSummary: Summary = Summary(Some("En heading"), Some("En lead"), Some("En hint"))
-  val welshSummary: Summary = Summary(Some("Cy heading"), Some("Cy lead"), Some("Cy hint"))
+  val welshSummary: Summary   = Summary(Some("Cy heading"), Some("Cy lead"), Some("Cy hint"))
   val journeyDataWithCustomMessages = JourneyData(
-    identifiers, "redirectUrl",
+    identifiers,
+    "redirectUrl",
     JourneySetup(customMessages = Some(CustomMessages(summary = Some(englishSummary), summaryCy = Some(welshSummary)))),
-    LocalDateTime.now()
+    Instant.now()
   )
 
-  val getRequestWithSessionId: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withMethod("GET").withSessionId(sessionId)
-  val postRequestWithSessionId: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withMethod("POST").withSessionId(sessionId)
+  val getRequestWithSessionId: FakeRequest[AnyContentAsEmpty.type] =
+    FakeRequest().withMethod("GET").withSessionId(sessionId)
+  val postRequestWithSessionId: FakeRequest[AnyContentAsEmpty.type] =
+    FakeRequest().withMethod("POST").withSessionId(sessionId)
 
-  val sicCodeCode = "12345"
+  val sicCodeCode        = "12345"
   val sicCodeDescription = "some description"
-  val sicCode = SicCode(sicCodeCode, sicCodeDescription, sicCodeDescription)
-  val sicCodeChoice = SicCodeChoice(sicCode, List("fake item"), List("fake item"))
-  val searchResults = SearchResults("testQuery", 1, List(sicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
+  val sicCode            = SicCode(sicCodeCode, sicCodeDescription, sicCodeDescription)
+  val sicCodeChoice      = SicCodeChoice(sicCode, List("fake item"), List("fake item"))
+  val searchResults =
+    SearchResults("testQuery", 1, List(sicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
 
   "show" should {
     "return a 200 when a SicStore is returned from mongo" in new Setup {
@@ -81,9 +85,8 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
 
       when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
-      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), getRequestWithSessionId) {
-        result =>
-          status(result) mustBe 200
+      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), getRequestWithSessionId) { result =>
+        status(result) mustBe 200
       }
     }
     "return a 200 with EN heading when no language cookie set and both en/cy custom messages available in journey data" in new Setup {
@@ -92,11 +95,10 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
 
       when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyDataWithCustomMessages)
 
-      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), getRequestWithSessionId) {
-        result =>
-          status(result) mustBe 200
-          Jsoup.parse(Helpers.contentAsString(result))
-            .select("h1").text() mustBe englishSummary.heading.get
+      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), getRequestWithSessionId) { result =>
+        status(result) mustBe 200
+        Jsoup.parse(Helpers.contentAsString(result))
+          .select("h1").text() mustBe englishSummary.heading.get
       }
     }
     "return a 200 and CY heading welsh language cookie is set" in new Setup {
@@ -106,11 +108,10 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
       when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyDataWithCustomMessages)
 
       val requestWithWelshLangCookie = getRequestWithSessionId.withCookies(Cookie("PLAY_LANG", "cy"))
-      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), requestWithWelshLangCookie) {
-        result =>
-          status(result) mustBe 200
-          Jsoup.parse(Helpers.contentAsString(result))
-            .select("h1").text() mustBe welshSummary.heading.get
+      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), requestWithWelshLangCookie) { result =>
+        status(result) mustBe 200
+        Jsoup.parse(Helpers.contentAsString(result))
+          .select("h1").text() mustBe welshSummary.heading.get
       }
     }
     "return a 303 when previous choices are not found in mongo" in new Setup {
@@ -120,9 +121,8 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
 
       when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
-      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), getRequestWithSessionId) {
-        result =>
-          status(result) mustBe 303
+      AuthHelpers.showWithAuthorisedUser(controller.show(journeyId), getRequestWithSessionId) { result =>
+        status(result) mustBe 303
       }
     }
   }
@@ -136,7 +136,10 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
 
       when(mockJourneyService.getRedirectUrl(any())(any())) thenReturn Future.successful("redirect-url")
 
-      AuthHelpers.submitWithAuthorisedUser(controller.submit(journeyId), postRequestWithSessionId.withFormUrlEncodedBody()) { result =>
+      AuthHelpers.submitWithAuthorisedUser(
+        controller.submit(journeyId),
+        postRequestWithSessionId.withFormUrlEncodedBody()
+      ) { result =>
         status(result) mustBe 303
         redirectLocation(result) mustBe Some("redirect-url")
       }
@@ -144,7 +147,9 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
 
     "return a 400 when more than 4 choices have been made" in new Setup {
       when(mockSicSearchService.retrieveChoices(eqTo(journeyId))(any()))
-        .thenReturn(Future.successful(Some(List(sicCodeChoice, sicCodeChoice, sicCodeChoice, sicCodeChoice, sicCodeChoice))))
+        .thenReturn(
+          Future.successful(Some(List(sicCodeChoice, sicCodeChoice, sicCodeChoice, sicCodeChoice, sicCodeChoice)))
+        )
 
       when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
 
@@ -162,7 +167,7 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
         .thenReturn(Future.successful(None))
 
       val f: List[SicCodeChoice] => Future[Result] = _ => Future.successful(Results.Ok)
-      val result: Future[Result] = controller.withCurrentUsersChoices(identifiers)(f)
+      val result: Future[Result]                   = controller.withCurrentUsersChoices(identifiers)(f)
 
       status(result) mustBe SEE_OTHER
       redirectLocation(result) mustBe Some(routes.ChooseActivityController.show(journeyId).url)
@@ -172,7 +177,7 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
         .thenReturn(Future.successful(Some(List())))
 
       val f: List[SicCodeChoice] => Future[Result] = _ => Future.successful(Results.Ok)
-      val result: Future[Result] = controller.withCurrentUsersChoices(identifiers)(f)
+      val result: Future[Result]                   = controller.withCurrentUsersChoices(identifiers)(f)
 
       status(result) mustBe SEE_OTHER
       redirectLocation(result) mustBe Some(routes.ChooseActivityController.show(journeyId).url)
@@ -182,7 +187,7 @@ class ConfirmationControllerSpec extends UnitTestSpec with MockAppConfig with Mo
         .thenReturn(Future.successful(Some(List(sicCodeChoice))))
 
       val f: List[SicCodeChoice] => Future[Result] = _ => Future.successful(Results.Ok)
-      val result: Future[Result] = controller.withCurrentUsersChoices(identifiers)(f)
+      val result: Future[Result]                   = controller.withCurrentUsersChoices(identifiers)(f)
 
       status(result) mustBe OK
     }

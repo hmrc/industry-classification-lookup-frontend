@@ -30,16 +30,16 @@ trait MockedComponents {
 
   val mockWSHttp: HttpClient = mock[HttpClient]
 
-  //Connector mocks
-  val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  // Connector mocks
+  val mockAuthConnector: AuthConnector   = mock[AuthConnector]
   val mockAuditConnector: AuditConnector = mock[AuditConnector]
-  val mockICLConnector: ICLConnector = mock[ICLConnector]
+  val mockICLConnector: ICLConnector     = mock[ICLConnector]
 
-  //Service mocks
-  val mockJourneyService: JourneyService = mock[JourneyService]
+  // Service mocks
+  val mockJourneyService: JourneyService     = mock[JourneyService]
   val mockSicSearchService: SicSearchService = mock[SicSearchService]
-  val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
+  val mockServicesConfig: ServicesConfig     = mock[ServicesConfig]
 
-  //Repo mocks
+  // Repo mocks
   val mockSicStoreRepository: SicStoreRepository = mock[SicStoreRepository]
 }

@@ -18,5 +18,5 @@ package models
 
 object Confirmation {
   final val YES = "yes"
-  final val NO = "no"
+  final val NO  = "no"
 }

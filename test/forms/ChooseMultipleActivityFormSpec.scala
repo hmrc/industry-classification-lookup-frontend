@@ -34,7 +34,8 @@ class ChooseMultipleActivityFormSpec extends PlaySpec {
     "code[4]" -> "testCode4-testDescription4"
   )
 
-  implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] = FakeRequest().withFormUrlEncodedBody(inputMap.toSeq: _*)
+  implicit val request: FakeRequest[AnyContentAsFormUrlEncoded] =
+    FakeRequest().withFormUrlEncodedBody(inputMap.toSeq: _*)
 
   val inputMap2: Map[String, String] = Map(
     "code[0]" -> "testCode0-testDescription0",
@@ -44,11 +45,13 @@ class ChooseMultipleActivityFormSpec extends PlaySpec {
     "code[4]" -> "testCode4-testDescription4"
   )
 
-  val expectedSicCodeList = List(SicCode("testCode0", "testDescription0", "testDescription0"),
+  val expectedSicCodeList = List(
+    SicCode("testCode0", "testDescription0", "testDescription0"),
     SicCode("testCode1", "testDescription1", "testDescription1"),
     SicCode("testCode2", "testDescription2", "testDescription2"),
     SicCode("testCode3", "testDescription3", "testDescription3"),
-    SicCode("testCode4", "testDescription4", "testDescription4"))
+    SicCode("testCode4", "testDescription4", "testDescription4")
+  )
 
   val searchResults = SearchResults("test-query", 1, expectedSicCodeList, List())
 
@@ -71,7 +74,8 @@ class ChooseMultipleActivityFormSpec extends PlaySpec {
           SicCode("testCode0", "testDescription0", "testDescription0"),
           SicCode("testCode1", "testDescription1", "testDescription1"),
           SicCode("testCode3", "testDescription3", "testDescription3"),
-          SicCode("testCode4", "testDescription4", "testDescription4"))
+          SicCode("testCode4", "testDescription4", "testDescription4")
+        )
       }
     }
 

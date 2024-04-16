@@ -24,20 +24,17 @@ import play.api.libs.json.{JsError, JsPath, JsResult, JsSuccess}
 trait JsonFormValidation {
   this: PlaySpec =>
 
-  def mustBeSuccess[T](expected: T, result: JsResult[T]): Assertion = {
+  def mustBeSuccess[T](expected: T, result: JsResult[T]): Assertion =
     result match {
       case JsSuccess(value, _) => value mustBe expected
-      case JsError(errors) => fail(s"Test produced errors - $errors")
+      case JsError(errors)     => fail(s"Test produced errors - $errors")
     }
-  }
 
-  def shouldHaveErrors[T](result: JsResult[T], errorPath: JsPath, expectedError: ValidationError): Unit = {
+  def shouldHaveErrors[T](result: JsResult[T], errorPath: JsPath, expectedError: ValidationError): Unit =
     shouldHaveErrors[T](result, Map(errorPath -> Seq(expectedError)))
-  }
 
-  def shouldHaveErrors[T](result: JsResult[T], errorPath: JsPath, expectedErrors: Seq[ValidationError]): Unit = {
+  def shouldHaveErrors[T](result: JsResult[T], errorPath: JsPath, expectedErrors: Seq[ValidationError]): Unit =
     shouldHaveErrors[T](result, Map(errorPath -> expectedErrors))
-  }
 
   def shouldHaveErrors[T](result: JsResult[T], expectedErrors: Map[JsPath, Seq[ValidationError]]): Unit = {
     result match {

@@ -24,7 +24,8 @@ import play.api.mvc.MessagesControllerComponents
 trait MockMessages extends GuiceOneAppPerSuite {
   self: UnitTestSpec =>
 
-  implicit lazy val mockMessasgesControllerComponents: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
+  implicit lazy val mockMessasgesControllerComponents: MessagesControllerComponents =
+    app.injector.instanceOf[MessagesControllerComponents]
 
   implicit lazy val mockMessagesApi: MessagesApi = mockMessasgesControllerComponents.messagesApi
 

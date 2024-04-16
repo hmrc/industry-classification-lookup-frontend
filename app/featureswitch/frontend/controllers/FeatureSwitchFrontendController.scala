@@ -28,24 +28,25 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class FeatureSwitchFrontendController @Inject()(featureSwitchService: FeatureSwitchRetrievalService,
-                                                featureSwitchView: feature_switch,
-                                                mcc: MessagesControllerComponents
-                                               )(implicit ec: ExecutionContext,
-                                                 config: AppConfig) extends FrontendController(mcc) with FeatureSwitching with I18nSupport {
+class FeatureSwitchFrontendController @Inject() (
+  featureSwitchService: FeatureSwitchRetrievalService,
+  featureSwitchView: feature_switch,
+  mcc: MessagesControllerComponents
+)(implicit ec: ExecutionContext, config: AppConfig)
+    extends FrontendController(mcc)
+    with FeatureSwitching
+    with I18nSupport {
 
-  def show: Action[AnyContent] = Action.async {
-    implicit req =>
-      featureSwitchService.retrieveFeatureSwitches.map { featureSwitches =>
-        Ok(featureSwitchView(featureSwitches, routes.FeatureSwitchFrontendController.submit))
-      }
+  def show: Action[AnyContent] = Action.async { implicit req =>
+    featureSwitchService.retrieveFeatureSwitches.map { featureSwitches =>
+      Ok(featureSwitchView(featureSwitches, routes.FeatureSwitchFrontendController.submit))
+    }
   }
 
-  def submit: Action[Map[String, Seq[String]]] = Action.async(parse.formUrlEncoded) {
-    implicit req =>
-      featureSwitchService.updateFeatureSwitches(req.body.keys).map { featureSwitches =>
-        Ok(featureSwitchView(featureSwitches, routes.FeatureSwitchFrontendController.submit))
-      }
+  def submit: Action[Map[String, Seq[String]]] = Action.async(parse.formUrlEncoded) { implicit req =>
+    featureSwitchService.updateFeatureSwitches(req.body.keys).map { featureSwitches =>
+      Ok(featureSwitchView(featureSwitches, routes.FeatureSwitchFrontendController.submit))
+    }
   }
 
 }

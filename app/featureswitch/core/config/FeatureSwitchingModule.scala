@@ -16,7 +16,6 @@
 
 package featureswitch.core.config
 
-import featureswitch.core.models.FeatureSwitch
 import play.api.inject.{Binding, Module}
 import play.api.{Configuration, Environment}
 
@@ -28,9 +27,8 @@ class FeatureSwitchingModule extends Module with FeatureSwitchRegistry {
   val switches = Seq(
   )
 
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] =
     Seq(
       bind[FeatureSwitchRegistry].to(this).eagerly()
     )
-  }
 }

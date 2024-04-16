@@ -16,26 +16,24 @@
 
 package models
 
-
-import config.AppConfig
 import play.api.i18n.Messages
 import play.api.libs.json.{Json, OFormat}
 
 case class SicCodeChoice(
-                          code: String,
-                          desc: String,
-                          descCy: String = "",
-                          indexes: List[String],
-                          indexesCy: List[String] = List.empty[String]
-                        ) {
-  def getDescription(implicit messages: Messages, appConfig: AppConfig): String = messages.lang.code match {
+  code: String,
+  desc: String,
+  descCy: String = "",
+  indexes: List[String],
+  indexesCy: List[String] = List.empty[String]
+) {
+  def getDescription(implicit messages: Messages): String = messages.lang.code match {
     case "cy" => descCy
-    case _ => desc
+    case _    => desc
   }
 
-  def getIndexes(implicit messages: Messages, appConfig: AppConfig): List[String] = messages.lang.code match {
+  def getIndexes(implicit messages: Messages): List[String] = messages.lang.code match {
     case "cy" => indexesCy
-    case _ => indexes
+    case _    => indexes
   }
 }
 

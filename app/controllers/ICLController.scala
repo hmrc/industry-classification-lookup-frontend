@@ -32,18 +32,22 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-abstract class ICLController @Inject()(mcc: MessagesControllerComponents
-                                      )(implicit ec: ExecutionContext)
-  extends FrontendController(mcc) with AuthorisedFunctions with ICLLanguageSupport with SicSearchExternalURLs with Logging {
+abstract class ICLController @Inject() (mcc: MessagesControllerComponents)(implicit ec: ExecutionContext)
+    extends FrontendController(mcc)
+    with AuthorisedFunctions
+    with ICLLanguageSupport
+    with SicSearchExternalURLs
+    with Logging {
 
   val journeyService: JourneyService
   val sicSearchService: SicSearchService
 
-  def userAuthorised(api: Boolean = false)(body: => Future[Result])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] = {
+  def userAuthorised(
+    api: Boolean = false
+  )(body: => Future[Result])(implicit hc: HeaderCarrier, request: Request[_]): Future[Result] =
     authorised() {
       body
     }.recover(if (api) apiAuthErrorHandling() else authErrorHandling())
-  }
 
   def authErrorHandling()(implicit request: Request[_]): PartialFunction[Throwable, Result] = {
     case _: NoActiveSession =>
@@ -66,9 +70,10 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
       InternalServerError
   }
 
-  def withSessionId(f: => String => Future[Result])(implicit hc: HeaderCarrier): Future[Result] = {
-    hc.sessionId.fold[Future[Result]](Future.successful(BadRequest("SessionId is missing from request")))(sessionId => f(sessionId.value))
-  }
+  def withSessionId(f: => String => Future[Result])(implicit hc: HeaderCarrier): Future[Result] =
+    hc.sessionId.fold[Future[Result]](Future.successful(BadRequest("SessionId is missing from request")))(sessionId =>
+      f(sessionId.value)
+    )
 
   def withJsBody[T](reads: Reads[T])(f: T => Future[Result])(implicit request: Request[JsValue]): Future[Result] = {
     Try(request.body.validate[T](reads)) match {
@@ -76,7 +81,7 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
         infoLog("[ICLController][withJsBody] Journey initialisation successful")
         f(payload)
       case Success(JsError(errs)) =>
-        warnLog("[ICLController][withJsBody] Bad request" )
+        warnLog("[ICLController][withJsBody] Bad request")
         Future(BadRequest(Json.prettyPrint(JsError.toJson(errs))))
       case Failure(e) =>
         errorLog("[ICLController][withJsBody] Request failed", e)
@@ -84,13 +89,14 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
     }
   }
 
-  def hasJourney(identifiers: Identifiers)(f: => JourneyData => Future[Result])(implicit request: Request[_]): Future[Result] = {
+  def hasJourney(
+    identifiers: Identifiers
+  )(f: => JourneyData => Future[Result])(implicit request: Request[_]): Future[Result] = {
     journeyService.getJourney(identifiers) flatMap { journeyData =>
       f(journeyData)
-    } recoverWith {
-      case err =>
-        errorLog(s"[ICLController][hasJourney] - msg: $err ${err.getMessage}", err)
-        throw err
+    } recoverWith { case err =>
+      errorLog(s"[ICLController][hasJourney] - msg: $err ${err.getMessage}", err)
+      throw err
     }
   }
 
@@ -98,26 +104,29 @@ abstract class ICLController @Inject()(mcc: MessagesControllerComponents
     withSessionId { sessionId =>
       hasJourney(Identifiers(journeyId, sessionId)) { journeyData =>
         f(journeyData)
-      }.recoverWith {
-        case _ => Future.successful(Redirect(controllers.test.routes.TestSetupController.show(journeyId)))
+      }.recoverWith { case _ =>
+        Future.successful(Redirect(controllers.test.routes.TestSetupController.show(journeyId)))
       }
     }
   }
 
-  private[controllers] def withCurrentUsersChoices(identifiers: Identifiers)(f: List[SicCodeChoice] => Future[Result])(implicit ec: ExecutionContext): Future[Result] = {
+  private[controllers] def withCurrentUsersChoices(
+    identifiers: Identifiers
+  )(f: List[SicCodeChoice] => Future[Result])(implicit ec: ExecutionContext): Future[Result] = {
     sicSearchService.retrieveChoices(identifiers.journeyId) flatMap {
-      case Some(choices) => choices match {
-        case Nil => Future.successful(Redirect(controllers.routes.ChooseActivityController.show(identifiers.journeyId)))
-        case listOfChoices => f(listOfChoices)
-      }
+      case Some(choices) =>
+        choices match {
+          case Nil =>
+            Future.successful(Redirect(controllers.routes.ChooseActivityController.show(identifiers.journeyId)))
+          case listOfChoices => f(listOfChoices)
+        }
       case None => Future.successful(Redirect(controllers.routes.ChooseActivityController.show(identifiers.journeyId)))
     }
   }
 
-  private[controllers] def getLang(implicit request: Request[_]) = {
+  private[controllers] def getLang(implicit request: Request[_]) =
     request.cookies.get(messagesApi.langCookieName) match {
       case Some(langCookie) => langCookie.value
-      case _ => "en"
+      case _                => "en"
     }
-  }
 }

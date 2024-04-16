@@ -27,52 +27,58 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ConfirmationController @Inject()(mcc: MessagesControllerComponents,
-                                       val sicSearchService: SicSearchService,
-                                       val journeyService: JourneyService,
-                                       val authConnector: AuthConnector,
-                                       view: confirmation)
-                                      (implicit ec: ExecutionContext, val appConfig: AppConfig) extends ICLController(mcc) {
+class ConfirmationController @Inject() (
+  mcc: MessagesControllerComponents,
+  val sicSearchService: SicSearchService,
+  val journeyService: JourneyService,
+  val authConnector: AuthConnector,
+  view: confirmation
+)(implicit ec: ExecutionContext, val appConfig: AppConfig)
+    extends ICLController(mcc) {
 
   private val maxChoices = 4
 
-  def show(journeyId: String): Action[AnyContent] = Action.async {
-    implicit request =>
-      userAuthorised() {
-        withJourney(journeyId) { journeyData =>
-          withCurrentUsersChoices(journeyData.identifiers) { choices =>
-            val customMessages = journeyData.journeySetupDetails.customMessages
+  def show(journeyId: String): Action[AnyContent] = Action.async { implicit request =>
+    userAuthorised() {
+      withJourney(journeyId) { journeyData =>
+        withCurrentUsersChoices(journeyData.identifiers) { choices =>
+          val customMessages = journeyData.journeySetupDetails.customMessages
 
-            val langCookieValue = request.cookies.get(messagesApi.langCookieName).map(_.value)
-            val maybeSummaryContent = langCookieValue match {
-              case Some("cy") => customMessages.flatMap(_.summaryCy)
-              case _ => customMessages.flatMap(_.summary)
-            }
-
-            Future.successful(Ok(view(
-              journeyId, choices, summaryContent = maybeSummaryContent.getOrElse(Summary(None, None, None))
-            )))
+          val langCookieValue = request.cookies.get(messagesApi.langCookieName).map(_.value)
+          val maybeSummaryContent = langCookieValue match {
+            case Some("cy") => customMessages.flatMap(_.summaryCy)
+            case _          => customMessages.flatMap(_.summary)
           }
+
+          Future.successful(
+            Ok(
+              view(
+                journeyId,
+                choices,
+                summaryContent = maybeSummaryContent.getOrElse(Summary(None, None, None))
+              )
+            )
+          )
         }
       }
+    }
   }
 
-  def submit(journeyId: String): Action[AnyContent] = Action.async {
-    implicit request =>
-      userAuthorised() {
-        withJourney(journeyId) { journeyData =>
-          withCurrentUsersChoices(journeyData.identifiers) { choices =>
-            if (choices.size <= maxChoices) {
-              journeyService.getRedirectUrl(journeyData.identifiers) map { url =>
-                Redirect(url)
-              }
-            } else {
-              // Used to tell the user how many choices they must remove to proceed
-              val amountToRemove = (choices.size - maxChoices).toString
-              Future.successful(BadRequest(view(journeyId, choices, errorArgs = Some(Seq(amountToRemove)))))
+  def submit(journeyId: String): Action[AnyContent] = Action.async { implicit request =>
+    userAuthorised() {
+      withJourney(journeyId) { journeyData =>
+        withCurrentUsersChoices(journeyData.identifiers) { choices =>
+          if (choices.size <= maxChoices) {
+            journeyService.getRedirectUrl(journeyData.identifiers) map { url =>
+              Redirect(url)
             }
+          } else {
+            // Used to tell the user how many choices they must remove to proceed
+            val amountToRemove = (choices.size - maxChoices).toString
+            Future.successful(BadRequest(view(journeyId, choices, errorArgs = Some(Seq(amountToRemove)))))
           }
         }
       }
+    }
   }
 }

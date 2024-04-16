@@ -58,7 +58,7 @@ class JourneyDataSpec extends PlaySpec {
             "customMessages" -> Json.obj(
               "summary" -> Json.obj(
                 "heading" -> "testMessage",
-                "lead" -> "testMessage"
+                "lead"    -> "testMessage"
               )
             )
           )
@@ -70,10 +70,12 @@ class JourneyDataSpec extends PlaySpec {
         result.identifiers.sessionId mustBe sessionId
 
         result.redirectUrl mustBe "/test/uri"
-        result.journeySetupDetails.customMessages mustBe Some(CustomMessages(
-          summary = Some(Summary(heading = Some("testMessage"), lead = Some("testMessage"), hint = None)),
-          summaryCy = None
-        ))
+        result.journeySetupDetails.customMessages mustBe Some(
+          CustomMessages(
+            summary = Some(Summary(heading = Some("testMessage"), lead = Some("testMessage"), hint = None)),
+            summaryCy = None
+          )
+        )
       }
 
       "given a redirect url and journeySetupDetails with queryBooster" in {
@@ -131,8 +133,7 @@ class JourneyDataSpec extends PlaySpec {
   "journeySetup mongoWrites" should {
     "produce valid json with minimum data" in {
       val journeySetup = JourneySetup()
-      val expectedJson = Json.parse(
-        """
+      val expectedJson = Json.parse("""
           |{
           |  "dataSet" : "ons-supplement-sic5",
           |  "amountOfResults" : 50,
@@ -148,14 +149,15 @@ class JourneyDataSpec extends PlaySpec {
         queryParser = Some(true),
         queryBooster = Some(true),
         amountOfResults = 200,
-        customMessages = Some(CustomMessages(
-          summary = Some(Summary(heading = Some("heading text"), lead = Some("lead text"), hint = Some("hint text"))),
-          summaryCy = None
-        )),
+        customMessages = Some(
+          CustomMessages(
+            summary = Some(Summary(heading = Some("heading text"), lead = Some("lead text"), hint = Some("hint text"))),
+            summaryCy = None
+          )
+        ),
         sicCodes = Seq("12345", "67890")
       )
-      val expectedJson = Json.parse(
-        """
+      val expectedJson = Json.parse("""
           |{
           |  "dataSet" : "foo",
           |  "queryParser" : true,

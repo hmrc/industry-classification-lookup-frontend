@@ -23,13 +23,13 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import play.api.libs.json.Json
 
-import java.time.LocalDateTime
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class JourneySetupServiceSpec extends UnitTestSpec with MockJourneyDataRepo {
 
-  val now = LocalDateTime.now
+  val now = Instant.now
 
   class Setup {
     val testService = new JourneyService(
@@ -80,11 +80,15 @@ class JourneySetupServiceSpec extends UnitTestSpec with MockJourneyDataRepo {
   "updateJourneyWithJourneySetup" should {
     val journeySetup = JourneySetup("foo", queryParser = None, None, 5)
     "return updated Journey Setup" in new Setup {
-      when(mockJourneyDataRepository.updateJourneySetup(any(), any())(any())).thenReturn(Future.successful(journeySetup))
+      when(mockJourneyDataRepository.updateJourneySetup(any(), any())(any())).thenReturn(
+        Future.successful(journeySetup)
+      )
       await(testService.updateJourneyWithJourneySetup(journeyData.identifiers, journeySetup)) mustBe journeySetup
     }
     "return an Exception" in new Setup {
-      when(mockJourneyDataRepository.updateJourneySetup(any(), any())(any())).thenReturn(Future.failed(new Exception("foo bar wizz bang")))
+      when(mockJourneyDataRepository.updateJourneySetup(any(), any())(any())).thenReturn(
+        Future.failed(new Exception("foo bar wizz bang"))
+      )
       intercept[Exception](await(testService.updateJourneyWithJourneySetup(journeyData.identifiers, journeySetup)))
     }
   }
@@ -94,7 +98,9 @@ class JourneySetupServiceSpec extends UnitTestSpec with MockJourneyDataRepo {
       await(testService.getJourney(journeyData.identifiers)) mustBe journeyData
     }
     "return an Exception" in new Setup {
-      when(mockJourneyDataRepository.retrieveJourneyData(any())(any())).thenReturn(Future.failed(new Exception("foo bar wizz bang")))
+      when(mockJourneyDataRepository.retrieveJourneyData(any())(any())).thenReturn(
+        Future.failed(new Exception("foo bar wizz bang"))
+      )
       intercept[Exception](await(testService.getJourney(journeyData.identifiers)))
     }
   }

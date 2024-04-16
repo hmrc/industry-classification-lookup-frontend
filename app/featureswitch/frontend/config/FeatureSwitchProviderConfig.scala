@@ -22,7 +22,7 @@ import featureswitch.frontend.models.FeatureSwitchProvider
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class FeatureSwitchProviderConfig @Inject()(config: AppConfig) {
+class FeatureSwitchProviderConfig @Inject() (config: AppConfig) {
 
   lazy val frontendFeatureSwitchUrl = s"${config.baseUrl}/sic-search/test-only/api/feature-switches"
   lazy val frontendFeatureSwitchProvider: FeatureSwitchProvider = FeatureSwitchProvider(

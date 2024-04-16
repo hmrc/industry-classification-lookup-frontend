@@ -29,7 +29,8 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
 import java.time.format.DateTimeFormatter
-import java.time.{LocalDateTime, ZoneOffset}
+import java.time.temporal.ChronoUnit
+import java.time.{Instant, LocalDateTime, ZoneOffset}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class JourneyDataRepositoryISpec extends PlaySpec with BeforeAndAfterEach with GuiceOneServerPerSuite {
@@ -48,9 +49,9 @@ class JourneyDataRepositoryISpec extends PlaySpec with BeforeAndAfterEach with G
     def fetchAll: List[JourneyData] = await(repository.collection.find().toFuture().map(_.toList))
   }
 
-  def dateHasAdvanced(futureTime: LocalDateTime): Assertion = assert(futureTime.isAfter(now))
+  def dateHasAdvanced(futureTime: Instant): Assertion = assert(futureTime.isAfter(now))
 
-  val now: LocalDateTime = LocalDateTime.parse(LocalDateTime.now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")))
+  val now: Instant = Instant.now().truncatedTo(ChronoUnit.MILLIS)
 
   val customMsgs = CustomMessages(
     summary = Some(Summary(
@@ -147,10 +148,10 @@ class JourneyDataRepositoryISpec extends PlaySpec with BeforeAndAfterEach with G
 
   "renewJourney" must {
     "update the lastUpdated value in the document to the current time" in new Setup {
-      val beforeDateTime: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC).minusSeconds(5)
-      val afterDateTime: LocalDateTime = LocalDateTime.now(ZoneOffset.UTC).plusSeconds(5)
+      val beforeDateTime: Instant = Instant.now().minusSeconds(5)
+      val afterDateTime: Instant = Instant.now().plusSeconds(5)
 
-      insert(journeyData.copy(lastUpdated = LocalDateTime.of(2000, 1, 1, 12, 0, 0)))
+      insert(journeyData.copy(lastUpdated = Instant.parse("2000-01-01T12:00:00Z")))
 
       await(repository.renewJourney(journeyData.identifiers) {})
 

@@ -29,7 +29,12 @@ trait AuthHelpers {
   val authConnector: AuthConnector
 
   def mockAuthorisedUser(future: Future[Unit]) {
-    when(authConnector.authorise[Unit](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+    when(
+      authConnector.authorise[Unit](ArgumentMatchers.any(), ArgumentMatchers.any())(
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any()
+      )
+    )
       .thenReturn(future)
   }
 
@@ -39,22 +44,26 @@ trait AuthHelpers {
   }
 
   def showWithAuthorisedUser(action: Action[AnyContent], request: Request[AnyContent])(test: Future[Result] => Any) {
-    mockAuthorisedUser(Future.successful({}))
+    mockAuthorisedUser(Future.successful {})
     test(action(request))
   }
 
-  def submitWithUnauthorisedUser(action: Action[AnyContent], request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
+  def submitWithUnauthorisedUser(action: Action[AnyContent], request: FakeRequest[AnyContentAsFormUrlEncoded])(
+    test: Future[Result] => Any
+  ) {
     mockAuthorisedUser(Future.failed(MissingBearerToken("")))
     test(action(request))
   }
 
-  def submitWithAuthorisedUser(action: Action[AnyContent], request: FakeRequest[AnyContentAsFormUrlEncoded])(test: Future[Result] => Any) {
-    mockAuthorisedUser(Future.successful({}))
+  def submitWithAuthorisedUser(action: Action[AnyContent], request: FakeRequest[AnyContentAsFormUrlEncoded])(
+    test: Future[Result] => Any
+  ) {
+    mockAuthorisedUser(Future.successful {})
     test(action(request))
   }
 
   def postWithAuthorisedUser(action: Action[JsValue], request: FakeRequest[JsValue])(test: Future[Result] => Any) {
-    mockAuthorisedUser(Future.successful({}))
+    mockAuthorisedUser(Future.successful {})
     test(action(request))
   }
 
@@ -63,8 +72,15 @@ trait AuthHelpers {
     test(action(request))
   }
 
-  def requestWithAuthorisedUser[T <: AnyContent](action: Action[AnyContent], request: FakeRequest[T])(test: Future[Result] => Any) {
-    when(authConnector.authorise[Unit](ArgumentMatchers.any(), ArgumentMatchers.any())(ArgumentMatchers.any(), ArgumentMatchers.any()))
+  def requestWithAuthorisedUser[T <: AnyContent](action: Action[AnyContent], request: FakeRequest[T])(
+    test: Future[Result] => Any
+  ) {
+    when(
+      authConnector.authorise[Unit](ArgumentMatchers.any(), ArgumentMatchers.any())(
+        ArgumentMatchers.any(),
+        ArgumentMatchers.any()
+      )
+    )
       .thenReturn(Future.successful(()))
     test(action(request))
   }

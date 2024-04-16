@@ -33,45 +33,43 @@ import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
-import java.time.{LocalDateTime, ZoneOffset}
+import java.time.Instant
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SicStoreRepository @Inject()(config: Configuration,
-                                   mongo: MongoComponent
-                                  )(implicit val ec: ExecutionContext)
-  extends PlayMongoRepository[SicStore] (
-    mongoComponent = mongo,
-    collectionName = "sic-store",
-    domainFormat = SicStore.format,
-    indexes = Seq(
-      model.IndexModel(
-        keys = ascending("lastUpdated"),
-        indexOptions = IndexOptions()
-          .name("lastUpdatedIndex")
-          .expireAfter(config.get[Int]("mongodb.timeToLiveInSeconds"), TimeUnit.SECONDS)
+class SicStoreRepository @Inject() (config: Configuration, mongo: MongoComponent)(implicit val ec: ExecutionContext)
+    extends PlayMongoRepository[SicStore](
+      mongoComponent = mongo,
+      collectionName = "sic-store",
+      domainFormat = SicStore.format,
+      indexes = Seq(
+        model.IndexModel(
+          keys = ascending("lastUpdated"),
+          indexOptions = IndexOptions()
+            .name("lastUpdatedIndex")
+            .expireAfter(config.get[Int]("mongodb.timeToLiveInSeconds"), TimeUnit.SECONDS)
+        )
       )
     )
-  ) with MongoJavatimeFormats with Logging {
+    with MongoJavatimeFormats
+    with Logging {
 
   collection.find[Document](or(equal("journeyId", null), exists("journeyId", exists = false)))
-    .subscribe(
-      found => {
-        val id = found.getObjectId("_id")
-        logger.info(s"[SicStore] Found record missing journeyId field: $id. Attempting to delete...")
-        collection.deleteOne(equal("_id", id)).subscribe(
-          delete => if (delete.wasAcknowledged() && delete.getDeletedCount > 0) {
-            logger.info(s"[SicStore] Deleted record $id")
-          }
-        )
-      }
-    )
+    .subscribe { found =>
+      val id = found.getObjectId("_id")
+      logger.info(s"[SicStore] Found record missing journeyId field: $id. Attempting to delete...")
+      collection.deleteOne(equal("_id", id)).subscribe(delete =>
+        if (delete.wasAcknowledged() && delete.getDeletedCount > 0) {
+          logger.info(s"[SicStore] Deleted record $id")
+        }
+      )
+    }
 
   private def journeyIdSelector(journeyId: String): Bson = equal("journeyId", journeyId)
 
-  private[repositories] def now: Long = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli
+  private[repositories] def now: Long = Instant.now().toEpochMilli
 
   def retrieveSicStore(journeyId: String): Future[Option[SicStore]] =
     collection.find[SicStore](journeyIdSelector(journeyId))
@@ -83,8 +81,8 @@ class SicStoreRepository @Inject()(config: Configuration,
       update = combine(currentDate("lastUpdated"), set("search", Codecs.toBson(searchResults))),
       options = UpdateOptions().upsert(true)
     )
-    .toFuture()
-    .map(_.wasAcknowledged)
+      .toFuture()
+      .map(_.wasAcknowledged)
 
   def insertChoices(journeyId: String, sicCodes: List[SicCodeChoice])(implicit request: Request[_]): Future[Boolean] = {
     def addChoices(journeyId: String, choices: List[SicCodeChoice]): Future[Boolean] = {
@@ -97,8 +95,8 @@ class SicStoreRepository @Inject()(config: Configuration,
           update = combine(currentDate("lastUpdated"), addEachToSet("choices", choices.map(Codecs.toBson(_)): _*)),
           options = UpdateOptions().upsert(true)
         )
-        .toFuture()
-        .map(_.wasAcknowledged())
+          .toFuture()
+          .map(_.wasAcknowledged())
       }
     }
 
@@ -107,7 +105,7 @@ class SicStoreRepository @Inject()(config: Configuration,
         val (codesToUpdate, newCodes) = sicStore.choices match {
           case Some(choices) =>
             val indexedChoices = choices.map(_.code).zipWithIndex.toMap
-            val parts = sicCodes.partition(choice => choices.exists(_.code == choice.code))
+            val parts          = sicCodes.partition(choice => choices.exists(_.code == choice.code))
             (parts._1.map(sic => (sic, indexedChoices(sic.code))), parts._2)
           case None => (Nil, sicCodes)
         }
@@ -120,8 +118,8 @@ class SicStoreRepository @Inject()(config: Configuration,
           def combineIndexes(indexes: SicCodeChoice => List[String]): List[String] =
             sicStore.choices match {
               case Some(list) =>
-                list.find(_.code == sicCodeChoice.code).fold(indexes(sicCodeChoice)) (
-                  choice => (indexes(choice) ++ indexes(sicCodeChoice)).distinct
+                list.find(_.code == sicCodeChoice.code).fold(indexes(sicCodeChoice))(choice =>
+                  (indexes(choice) ++ indexes(sicCodeChoice)).distinct
                 )
               case None => indexes(sicCodeChoice)
             }
@@ -143,8 +141,8 @@ class SicStoreRepository @Inject()(config: Configuration,
             update = combine(currentDate("lastUpdated"), combine(updateIndexes: _*)),
             options = UpdateOptions().upsert(true)
           )
-          .toFuture()
-          .flatMap(_ => addChoices(journeyId, newCodes))
+            .toFuture()
+            .flatMap(_ => addChoices(journeyId, newCodes))
         }
       }
     }

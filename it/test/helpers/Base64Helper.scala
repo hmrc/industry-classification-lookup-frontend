@@ -1,5 +1,5 @@
-@*
- * Copyright 2023 HM Revenue & Customs
+/*
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,18 +12,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import config.AppConfig
+package helpers
 
-@this(
-        govukButton: GovukButton
-)
+import java.util.Base64
 
-@(msg: String, id: Option[String] = None)(implicit messages: Messages)
-
-@govukButton(Button(
-    content = Text(messages(msg)),
-    preventDoubleClick = Some(true),
-    attributes = id.map("id" -> _).toMap
-))
+object Base64Helper {
+  implicit class StringToBase64(s: String){
+    def toBase64: String = Base64.getEncoder.encodeToString(s.getBytes)
+  }
+}

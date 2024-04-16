@@ -37,9 +37,8 @@ trait MockJourneyDataRepo extends MockitoSugar with BeforeAndAfterEach {
     reset(mockJourneyDataRepository)
   }
 
-  def mockInitialiseJourney(journeyData: JourneyData): OngoingStubbing[Future[JourneyData]] = {
+  def mockInitialiseJourney(journeyData: JourneyData): OngoingStubbing[Future[JourneyData]] =
     when(mockJourneyDataRepository.upsertJourney(any())(any()))
       .thenReturn(Future.successful(journeyData))
-  }
 
 }

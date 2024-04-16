@@ -25,8 +25,7 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class SicStoreRepoISpec extends PlaySpec with GuiceOneServerPerSuite with Eventually {
@@ -45,7 +44,7 @@ class SicStoreRepoISpec extends PlaySpec with GuiceOneServerPerSuite with Eventu
 
   implicit val request = FakeRequest()
 
-  val dateTime = LocalDateTime.parse("2017-06-15T10:06:28.434Z", DateTimeFormatter.ISO_DATE_TIME)
+  val dateTime = Instant.parse("2017-06-15T10:06:28.434Z")
 
   val sessionId = "session-id-12345"
   val journeyId = "testJourneyId"

@@ -24,10 +24,14 @@ import models.{SearchResults, Sector, SicCode, SicSearch}
 import org.jsoup.Jsoup
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.i18n.{I18nSupport, Lang, MessagesApi}
-import play.api.test.FakeRequest
 import views.html.pages.chooseActivity
 
-class ChooseActivityViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with MockAppConfig with MockMessages with I18nSupport {
+class ChooseActivityViewSpec
+    extends UnitTestSpec
+    with GuiceOneAppPerSuite
+    with MockAppConfig
+    with MockMessages
+    with I18nSupport {
 
   override def messagesApi: MessagesApi = mockMessagesApi
 
@@ -37,16 +41,22 @@ class ChooseActivityViewSpec extends UnitTestSpec with GuiceOneAppPerSuite with 
 
   val testSicCode = SicCode("12345", "Testing", "Testing")
 
-  val searchResults = SearchResults(query, 1, List(testSicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
+  val searchResults =
+    SearchResults(query, 1, List(testSicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
 
   val journeyId = "testJourneyId"
 
   val pageHeading = "Standard Industry Classifications (SIC) codes"
-  val pageTitle = s"$pageHeading - Register for VAT - GOV.UK"
-  val back = "Back"
+  val pageTitle   = s"$pageHeading - Register for VAT - GOV.UK"
+  val back        = "Back"
 
   "The choose activity screen" should {
-    lazy val view = app.injector.instanceOf[chooseActivity].apply(journeyId, SicSearchForm.form.fill(SicSearch(query)), ChooseMultipleActivitiesForm.form(None), Some(searchResults))
+    lazy val view = app.injector.instanceOf[chooseActivity].apply(
+      journeyId,
+      SicSearchForm.form.fill(SicSearch(query)),
+      ChooseMultipleActivitiesForm.form(None),
+      Some(searchResults)
+    )
     lazy val document = Jsoup.parse(view.body)
 
     "have the correct title" in {

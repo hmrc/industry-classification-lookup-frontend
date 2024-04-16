@@ -35,39 +35,40 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class JourneyDataRepository @Inject()(config: Configuration,
-                                      mongo: MongoComponent
-                                     )(implicit val ec: ExecutionContext)
-  extends PlayMongoRepository[JourneyData](
-    mongoComponent = mongo,
-    collectionName = "journey-data",
-    domainFormat = JourneyData.format,
-    indexes = Seq(
-      model.IndexModel(
-        keys = ascending("identifiers.journeyId", "identifiers.sessionId"),
-        indexOptions = IndexOptions()
-          .name("SessionIdAndJourneyId")
-          .unique(true)
-      ),
-      model.IndexModel(
-        keys = ascending("lastUpdated"),
-        indexOptions = IndexOptions()
-          .name("lastUpdatedIndex")
-          .expireAfter(config.get[Int]("mongodb.timeToLiveInSeconds"), TimeUnit.SECONDS)
+class JourneyDataRepository @Inject() (config: Configuration, mongo: MongoComponent)(implicit val ec: ExecutionContext)
+    extends PlayMongoRepository[JourneyData](
+      mongoComponent = mongo,
+      collectionName = "journey-data",
+      domainFormat = JourneyData.format,
+      indexes = Seq(
+        model.IndexModel(
+          keys = ascending("identifiers.journeyId", "identifiers.sessionId"),
+          indexOptions = IndexOptions()
+            .name("SessionIdAndJourneyId")
+            .unique(true)
+        ),
+        model.IndexModel(
+          keys = ascending("lastUpdated"),
+          indexOptions = IndexOptions()
+            .name("lastUpdatedIndex")
+            .expireAfter(config.get[Int]("mongodb.timeToLiveInSeconds"), TimeUnit.SECONDS)
+        )
       )
     )
-  ) with Logging {
+    with Logging {
 
   private def identifiersSelector(identifiers: Identifiers): Bson =
     and(equal("identifiers.journeyId", identifiers.journeyId), equal("identifiers.sessionId", identifiers.sessionId))
 
-  private[repositories] def renewJourney[T](identifiers: Identifiers)(f: => T)(implicit request: Request[_]): Future[T] =
+  private[repositories] def renewJourney[T](
+    identifiers: Identifiers
+  )(f: => T): Future[T] =
     collection.updateOne(
       filter = identifiersSelector(identifiers),
       update = currentDate("lastUpdated")
     )
-    .toFuture()
-    .map( _ => f)
+      .toFuture()
+      .map(_ => f)
 
   def upsertJourney(journeyData: JourneyData)(implicit request: Request[_]): Future[JourneyData] =
     collection.replaceOne(
@@ -75,33 +76,38 @@ class JourneyDataRepository @Inject()(config: Configuration,
       replacement = journeyData,
       options = ReplaceOptions().upsert(true)
     )
-    .toFuture()
-    .map(_ => journeyData)
-    .recover { case e =>
-      warnLog(s"""[JourneyDataRepository][upsertJourney] failed with message ${e.getMessage}
+      .toFuture()
+      .map(_ => journeyData)
+      .recover { case e =>
+        warnLog(s"""[JourneyDataRepository][upsertJourney] failed with message ${e.getMessage}
         for journeyId: ${journeyData.identifiers.journeyId}""")
-      throw e
-    }
+        throw e
+      }
 
-  def updateJourneySetup(identifiers: Identifiers, journeySetup: JourneySetup)(implicit request: Request[_]): Future[JourneySetup] = {
+  def updateJourneySetup(identifiers: Identifiers, journeySetup: JourneySetup)(implicit
+    request: Request[_]
+  ): Future[JourneySetup] = {
     collection.updateOne(
       filter = identifiersSelector(identifiers),
       update = set("journeySetupDetails", Codecs.toBson(journeySetup)(JourneySetup.mongoWrites))
     )
-    .toFuture()
-    .map(res =>
-      if (res.getMatchedCount > 0) {
-        journeySetup
-      } else {
-        warnLog(s"[JourneyDataMongoRepository][updateJourneySetup] completed an update but no document was modified for journeyId: ${identifiers.journeyId}")
-        throw new RuntimeException("Exception thrown because expected update did not succeed")
-      }
-    )
-    .recover {
-      case e =>
-        warnLog(s"[JourneyDataMongoRepository][updateJourneySetup] failed with message: ${e.getMessage} journeyId: ${identifiers.journeyId} sessionId: ${identifiers.sessionId}")
+      .toFuture()
+      .map(res =>
+        if (res.getMatchedCount > 0) {
+          journeySetup
+        } else {
+          warnLog(
+            s"[JourneyDataMongoRepository][updateJourneySetup] completed an update but no document was modified for journeyId: ${identifiers.journeyId}"
+          )
+          throw new RuntimeException("Exception thrown because expected update did not succeed")
+        }
+      )
+      .recover { case e =>
+        warnLog(
+          s"[JourneyDataMongoRepository][updateJourneySetup] failed with message: ${e.getMessage} journeyId: ${identifiers.journeyId} sessionId: ${identifiers.sessionId}"
+        )
         throw e
-    }
+      }
   }
 
   def retrieveJourneyData(identifiers: Identifiers)(implicit request: Request[_]): Future[JourneyData] =
@@ -112,7 +118,9 @@ class JourneyDataRepository @Inject()(config: Configuration,
           renewJourney(identifiers)(data)
         case _ =>
           warnLog("[JourneyDataRepository][retrieveJourneyData] Could not find JourneyId")
-          throw new RuntimeException(s"Missing document for journeyId: ${identifiers.journeyId} sessionId: ${identifiers.sessionId}")
+          throw new RuntimeException(
+            s"Missing document for journeyId: ${identifiers.journeyId} sessionId: ${identifiers.sessionId}"
+          )
       }
 
 }

@@ -28,7 +28,7 @@ import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded}
 import play.api.test.FakeRequest
 import views.html.test.SetupJourneyView
 
-import java.time.LocalDateTime
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -51,23 +51,32 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
       override lazy val loginURL = "/test/login"
     }
 
-    val getRequestWithSessionId: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId).withMethod("GET")
-    val postRequestWithSessionId: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId).withMethod("POST")
+    val getRequestWithSessionId: FakeRequest[AnyContentAsEmpty.type] =
+      FakeRequest().withSessionId(sessionId).withMethod("GET")
+    val postRequestWithSessionId: FakeRequest[AnyContentAsEmpty.type] =
+      FakeRequest().withSessionId(sessionId).withMethod("POST")
   }
 
-  val lang = "en"
-  val journeyId = "testJourneyId"
-  val sessionId = "session-12345"
+  val lang        = "en"
+  val journeyId   = "testJourneyId"
+  val sessionId   = "session-12345"
   val identifiers = Identifiers(journeyId, sessionId)
-  val journeyData = JourneyData(identifiers, "redirectUrl", JourneySetup(), LocalDateTime.now())
+  val journeyData = JourneyData(identifiers, "redirectUrl", JourneySetup(), Instant.now())
 
   val journeyName: String = JourneyData.QUERY_BUILDER
-  val dataSet: String = JourneyData.ONS
-  val journeySetup = JourneySetup("foo", queryParser = None, queryBooster = None, 1)
+  val dataSet: String     = JourneyData.ONS
+  val journeySetup        = JourneySetup("foo", queryParser = None, queryBooster = None, 1)
 
   val sicStore = SicStore(
     sessionId,
-    Some(SearchResults("test-query", 1, List(SicCode("19283", "Search Sic Code Result Description", "Search Sic Code Result Description")), List()))
+    Some(
+      SearchResults(
+        "test-query",
+        1,
+        List(SicCode("19283", "Search Sic Code Result Description", "Search Sic Code Result Description")),
+        List()
+      )
+    )
   )
 
   "show" should {
@@ -108,13 +117,15 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
     s"return a 303 and redirect to ${controllers.routes.ChooseActivityController.show(journeyId)} when a journey is initialised" in new Setup {
 
       val request: FakeRequest[AnyContentAsFormUrlEncoded] = postRequestWithSessionId.withFormUrlEncodedBody(
-        "queryParser" -> "false",
-        "dataSet" -> dataSet,
+        "queryParser"     -> "false",
+        "dataSet"         -> dataSet,
         "amountOfResults" -> "5"
       )
 
       when(mockJourneyService.getJourney(any())(any())) thenReturn Future.successful(journeyData)
-      when(mockJourneyService.updateJourneyWithJourneySetup(any(), any())(any())).thenReturn(Future.successful(journeySetup))
+      when(mockJourneyService.updateJourneyWithJourneySetup(any(), any())(any())).thenReturn(
+        Future.successful(journeySetup)
+      )
 
       AuthHelpers.submitWithAuthorisedUser(controller.submit(journeyId), request) { result =>
         status(result) mustBe SEE_OTHER
@@ -125,7 +136,9 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
 
   "testSetup" must {
     "redirect to the test setup show page" in new Setup {
-      when(mockJourneyService.initialiseJourney(any(), eqTo(lang))(any(), any())) thenReturn Future.successful(Json.parse("""{}"""))
+      when(mockJourneyService.initialiseJourney(any(), eqTo(lang))(any(), any())) thenReturn Future.successful(
+        Json.parse("""{}""")
+      )
 
       AuthHelpers.showWithAuthorisedUser(controller.testSetup, postRequestWithSessionId) { result =>
         status(result) mustBe SEE_OTHER
@@ -164,9 +177,11 @@ class TestSetupControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite with
     }
 
     "return a Exception when there is no journey setup" in new Setup {
-      intercept[Exception](AuthHelpers.showWithAuthorisedUser(controller.endOfJourney(journeyId), postRequestWithSessionId) { result =>
-        status(result) mustBe "this will never run so test will pass"
-      })
+      intercept[Exception](
+        AuthHelpers.showWithAuthorisedUser(controller.endOfJourney(journeyId), postRequestWithSessionId) { result =>
+          status(result) mustBe "this will never run so test will pass"
+        }
+      )
     }
   }
 }

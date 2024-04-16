@@ -31,7 +31,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.AuthConnector
 import views.html.pages.chooseActivity
 
-import java.time.LocalDateTime
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -55,31 +55,38 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
       override lazy val loginURL = "/test/login"
     }
 
-    val getRequestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId).withMethod("GET").withCookies(Cookie("PLAY_LANG", "en"))
-    val postRequestWithSession: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSessionId(sessionId).withMethod("POST").withCookies(Cookie("PLAY_LANG", "en"))
+    val getRequestWithSession: FakeRequest[AnyContentAsEmpty.type] =
+      FakeRequest().withSessionId(sessionId).withMethod("GET").withCookies(Cookie("PLAY_LANG", "en"))
+    val postRequestWithSession: FakeRequest[AnyContentAsEmpty.type] =
+      FakeRequest().withSessionId(sessionId).withMethod("POST").withCookies(Cookie("PLAY_LANG", "en"))
   }
 
-  val lang = "en"
-  val journeyId = "testJourneyId"
-  val sessionId = "session-12345"
+  val lang        = "en"
+  val journeyId   = "testJourneyId"
+  val sessionId   = "session-12345"
   val identifiers = Identifiers(journeyId, sessionId)
 
-  val journeyData = JourneyData(identifiers, "redirectUrl", JourneySetup(), LocalDateTime.now())
+  val journeyData = JourneyData(identifiers, "redirectUrl", JourneySetup(), Instant.now())
 
   val SECTOR_A = "A"
-  val query = "testQuery"
-  val sicCode = SicCode("12345", "Test Description", "Test Description")
+  val query    = "testQuery"
+  val sicCode  = SicCode("12345", "Test Description", "Test Description")
   val sicCode2 = SicCode("12345", "Test Description2", "Test Description2")
 
-  val searchResults = SearchResults(query, 1, List(sicCode), List(Sector(SECTOR_A, "Fake Sector", "Cy business sector", 1)))
+  val searchResults =
+    SearchResults(query, 1, List(sicCode), List(Sector(SECTOR_A, "Fake Sector", "Cy business sector", 1)))
   val noSearchResults = SearchResults(query, 0, List(), List())
-  val multipleSearchResults = SearchResults(query, 2, List(sicCode, sicCode2), List(Sector("A", "Fake Sector", "Cy business sector", 1), Sector("B", "Faker sector", "Cy business sector", 1)))
+  val multipleSearchResults = SearchResults(
+    query,
+    2,
+    List(sicCode, sicCode2),
+    List(Sector("A", "Fake Sector", "Cy business sector", 1), Sector("B", "Faker sector", "Cy business sector", 1))
+  )
 
   "show without results" should {
     "return a 303 for an unauthorised user" in new Setup {
-      showWithUnauthorisedUser(controller.show(journeyId), FakeRequest()) {
-        response =>
-          status(response) mustBe SEE_OTHER
+      showWithUnauthorisedUser(controller.show(journeyId), FakeRequest()) { response =>
+        status(response) mustBe SEE_OTHER
       }
     }
 
@@ -87,14 +94,13 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
-      requestWithAuthorisedUser(controller.show(journeyId), getRequestWithSession) {
-        response: Future[Result] =>
-          status(response) mustBe OK
-          val document = Jsoup.parse(contentAsString(response))
-          document.getElementById("sicSearch").attr("name") mustBe "sicSearch"
-          document.getElementById("sicSearch").attr("value") mustBe ""
-          an[Exception] mustBe thrownBy(document.getElementById("result-count").text)
-          an[Exception] mustBe thrownBy(document.getElementById("no-result").text)
+      requestWithAuthorisedUser(controller.show(journeyId), getRequestWithSession) { response: Future[Result] =>
+        status(response) mustBe OK
+        val document = Jsoup.parse(contentAsString(response))
+        document.getElementById("sicSearch").attr("name") mustBe "sicSearch"
+        document.getElementById("sicSearch").attr("value") mustBe ""
+        an[Exception] mustBe thrownBy(document.getElementById("result-count").text)
+        an[Exception] mustBe thrownBy(document.getElementById("no-result").text)
       }
     }
   }
@@ -170,7 +176,7 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
   "Submit a search" should {
     "return a 303 with the search results page" in new Setup {
 
-      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any(),any()))
+      when(mockSicSearchService.search(any(), eqTo(query), any(), eqTo(lang))(any(), any(), any()))
         .thenReturn(Future.successful(multipleSearchResults.numFound))
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
@@ -179,10 +185,9 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
         "sicSearch" -> query
       )
 
-      requestWithAuthorisedUser(controller.submit(journeyId, Some("test")), request) {
-        result =>
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result) mustBe Some(routes.ChooseActivityController.show(journeyId, Some(true)).url)
+      requestWithAuthorisedUser(controller.submit(journeyId, Some("test")), request) { result =>
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result) mustBe Some(routes.ChooseActivityController.show(journeyId, Some(true)).url)
       }
     }
 
@@ -197,10 +202,9 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
         "sicSearch" -> query
       )
 
-      requestWithAuthorisedUser(controller.submit(journeyId, Some("test")), request) {
-        result =>
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result) mustBe Some(routes.ConfirmationController.show(journeyId).url)
+      requestWithAuthorisedUser(controller.submit(journeyId, Some("test")), request) { result =>
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result) mustBe Some(routes.ConfirmationController.show(journeyId).url)
       }
     }
 
@@ -238,10 +242,9 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
         "code[0]" -> "12345-test description-test description"
       )
 
-      requestWithAuthorisedUser(controller.submit(journeyId), request) {
-        result =>
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result) mustBe Some(routes.ConfirmationController.show(journeyId).url)
+      requestWithAuthorisedUser(controller.submit(journeyId), request) { result =>
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result) mustBe Some(routes.ConfirmationController.show(journeyId).url)
       }
     }
 
@@ -273,10 +276,9 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
-      requestWithAuthorisedUser(controller.filter(journeyId, SECTOR_A), postRequestWithSession) {
-        result =>
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result) mustBe Some(routes.ChooseActivityController.show(journeyId, Some(true)).url)
+      requestWithAuthorisedUser(controller.filter(journeyId, SECTOR_A), postRequestWithSession) { result =>
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result) mustBe Some(routes.ChooseActivityController.show(journeyId, Some(true)).url)
       }
     }
 
@@ -289,10 +291,9 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
-      requestWithAuthorisedUser(controller.filter(journeyId, SECTOR_A), postRequestWithSession) {
-        result =>
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result) mustBe Some(routes.ChooseActivityController.show(journeyId, Some(true)).url)
+      requestWithAuthorisedUser(controller.filter(journeyId, SECTOR_A), postRequestWithSession) { result =>
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result) mustBe Some(routes.ChooseActivityController.show(journeyId, Some(true)).url)
       }
     }
   }
@@ -307,10 +308,9 @@ class ChooseActivityControllerSpec extends UnitTestSpec with GuiceOneAppPerSuite
 
       when(mockJourneyService.getJourney(ArgumentMatchers.any())(any())) thenReturn Future.successful(journeyData)
 
-      requestWithAuthorisedUser(controller.clearFilter(journeyId), postRequestWithSession) {
-        result =>
-          status(result) mustBe SEE_OTHER
-          redirectLocation(result) mustBe Some(routes.ChooseActivityController.show(journeyId, Some(true)).url)
+      requestWithAuthorisedUser(controller.clearFilter(journeyId), postRequestWithSession) { result =>
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result) mustBe Some(routes.ChooseActivityController.show(journeyId, Some(true)).url)
       }
     }
   }

@@ -16,7 +16,7 @@
 
 package helpers
 
-import akka.util.Timeout
+import org.apache.pekko.util.Timeout
 import helpers.auth.AuthHelpers
 import helpers.mocks.WSHTTPMock
 import org.mockito.Mockito.reset
@@ -34,7 +34,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 
 trait UnitTestSpec
-  extends PlaySpec
+    extends PlaySpec
     with MockitoSugar
     with BeforeAndAfterEach
     with BeforeAndAfterAll
@@ -85,33 +85,26 @@ trait UnitTestSpec
     override val authConnector: AuthConnector = mockAuthConnector
   }
 
-  def awaitAndAssert[T](func: => Future[T])(assertions: T => Assertion): Assertion = {
+  def awaitAndAssert[T](func: => Future[T])(assertions: T => Assertion): Assertion =
     assertions(await(func))
-  }
 
-  def assertFutureResult(func: => Future[Result])(assertions: Future[Result] => Assertion): Assertion = {
+  def assertFutureResult(func: => Future[Result])(assertions: Future[Result] => Assertion): Assertion =
     assertions(func)
-  }
 
   implicit class FakeRequestImps[T <: AnyContent](fakeRequest: FakeRequest[T]) {
 
     import uk.gov.hmrc.http.HeaderNames
 
-    def withSessionId(sessionId: String): FakeRequest[T] = {
+    def withSessionId(sessionId: String): FakeRequest[T] =
       fakeRequest.withHeaders(SessionKeys.sessionId -> sessionId, HeaderNames.xSessionId -> sessionId)
-    }
   }
 
-  trait CodeMocks
-    extends WSHTTPMock
-      with MockedComponents
-      with MockitoSugar
+  trait CodeMocks extends WSHTTPMock with MockedComponents with MockitoSugar
 
   object MockAuthRedirects {
     val loginURL = "/test/login"
   }
 
-  def assertAndAwait[T](testMethod: => Future[T])(assertions: T => Assertion): Assertion = {
+  def assertAndAwait[T](testMethod: => Future[T])(assertions: T => Assertion): Assertion =
     assertions(await(testMethod))
-  }
 }

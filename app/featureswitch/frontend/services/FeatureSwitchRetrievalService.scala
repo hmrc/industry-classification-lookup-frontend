@@ -25,43 +25,44 @@ import uk.gov.hmrc.http.HeaderCarrier
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class FeatureSwitchRetrievalService @Inject()(featureSwitchConfig: FeatureSwitchProviderConfig,
-                                              featureSwitchApiConnector: FeatureSwitchApiConnector)
-                                             (implicit ec: ExecutionContext) {
+class FeatureSwitchRetrievalService @Inject() (
+  featureSwitchConfig: FeatureSwitchProviderConfig,
+  featureSwitchApiConnector: FeatureSwitchApiConnector
+)(implicit ec: ExecutionContext) {
 
   type MicroserviceSwitchSettings = Seq[(FeatureSwitchProvider, Seq[FeatureSwitchSetting])]
 
   def retrieveFeatureSwitches(implicit hc: HeaderCarrier): Future[MicroserviceSwitchSettings] = {
 
     val featureSwitchSeq: Seq[(FeatureSwitchProvider, Future[Seq[FeatureSwitchSetting]])] =
-      featureSwitchConfig.featureSwitchProviders.map {
-        featureSwitchProvider =>
-          featureSwitchProvider -> featureSwitchApiConnector.retrieveFeatureSwitches(featureSwitchProvider.url)
+      featureSwitchConfig.featureSwitchProviders.map { featureSwitchProvider =>
+        featureSwitchProvider -> featureSwitchApiConnector.retrieveFeatureSwitches(featureSwitchProvider.url)
       }
 
-    Future.traverse(featureSwitchSeq) {
-      case (featureSwitchProvider, futureSeqFeatureSwitchSetting) =>
-        futureSeqFeatureSwitchSetting.map {
-          featureSwitchSettingSeq => featureSwitchProvider -> featureSwitchSettingSeq
-        }
+    Future.traverse(featureSwitchSeq) { case (featureSwitchProvider, futureSeqFeatureSwitchSetting) =>
+      futureSeqFeatureSwitchSetting.map { featureSwitchSettingSeq =>
+        featureSwitchProvider -> featureSwitchSettingSeq
+      }
     }
   }
 
-  def updateFeatureSwitches(switchesToEnable: Iterable[String]
-                           )(implicit hc: HeaderCarrier): Future[MicroserviceSwitchSettings] =
-   retrieveFeatureSwitches
-     .map(currentSettings => updateSwitchSettings(currentSettings, switchesToEnable))
-     .flatMap {
-      Future.traverse(_) {
-        case (featureSwitchProvider, featureSwitchSettings) =>
+  def updateFeatureSwitches(switchesToEnable: Iterable[String])(implicit
+    hc: HeaderCarrier
+  ): Future[MicroserviceSwitchSettings] =
+    retrieveFeatureSwitches
+      .map(currentSettings => updateSwitchSettings(currentSettings, switchesToEnable))
+      .flatMap {
+        Future.traverse(_) { case (featureSwitchProvider, featureSwitchSettings) =>
           featureSwitchApiConnector.updateFeatureSwitches(featureSwitchProvider.url, featureSwitchSettings).map {
             updatedFeatureSwitches => featureSwitchProvider -> updatedFeatureSwitches
           }
+        }
       }
-    }
 
-
-  private def updateSwitchSettings(currentSettings: MicroserviceSwitchSettings, switchesToEnable: Iterable[String]): MicroserviceSwitchSettings =
+  private def updateSwitchSettings(
+    currentSettings: MicroserviceSwitchSettings,
+    switchesToEnable: Iterable[String]
+  ): MicroserviceSwitchSettings =
     for {
       (microservice, switchSettings) <- currentSettings
       updatedSettings = switchSettings.map(switch =>
