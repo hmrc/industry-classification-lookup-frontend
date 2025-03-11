@@ -28,7 +28,7 @@ import scala.concurrent.Future
 trait AuthHelpers {
   val authConnector: AuthConnector
 
-  def mockAuthorisedUser(future: Future[Unit]) {
+  def mockAuthorisedUser(future: Future[Unit]): Unit = {
     when(
       authConnector.authorise[Unit](ArgumentMatchers.any(), ArgumentMatchers.any())(
         ArgumentMatchers.any(),
@@ -38,43 +38,43 @@ trait AuthHelpers {
       .thenReturn(future)
   }
 
-  def showWithUnauthorisedUser(action: Action[AnyContent], request: Request[AnyContent])(test: Future[Result] => Any) {
+  def showWithUnauthorisedUser(action: Action[AnyContent], request: Request[AnyContent])(test: Future[Result] => Any): Unit = {
     mockAuthorisedUser(Future.failed(MissingBearerToken("")))
     test(action(request))
   }
 
-  def showWithAuthorisedUser(action: Action[AnyContent], request: Request[AnyContent])(test: Future[Result] => Any) {
+  def showWithAuthorisedUser(action: Action[AnyContent], request: Request[AnyContent])(test: Future[Result] => Any): Unit = {
     mockAuthorisedUser(Future.successful {})
     test(action(request))
   }
 
   def submitWithUnauthorisedUser(action: Action[AnyContent], request: FakeRequest[AnyContentAsFormUrlEncoded])(
     test: Future[Result] => Any
-  ) {
+  ): Unit = {
     mockAuthorisedUser(Future.failed(MissingBearerToken("")))
     test(action(request))
   }
 
   def submitWithAuthorisedUser(action: Action[AnyContent], request: FakeRequest[AnyContentAsFormUrlEncoded])(
     test: Future[Result] => Any
-  ) {
+  ): Unit = {
     mockAuthorisedUser(Future.successful {})
     test(action(request))
   }
 
-  def postWithAuthorisedUser(action: Action[JsValue], request: FakeRequest[JsValue])(test: Future[Result] => Any) {
+  def postWithAuthorisedUser(action: Action[JsValue], request: FakeRequest[JsValue])(test: Future[Result] => Any): Unit = {
     mockAuthorisedUser(Future.successful {})
     test(action(request))
   }
 
-  def postWithUnauthorisedUser(action: Action[JsValue], request: FakeRequest[JsValue])(test: Future[Result] => Any) {
+  def postWithUnauthorisedUser(action: Action[JsValue], request: FakeRequest[JsValue])(test: Future[Result] => Any): Unit = {
     mockAuthorisedUser(Future.failed(MissingBearerToken("")))
     test(action(request))
   }
 
   def requestWithAuthorisedUser[T <: AnyContent](action: Action[AnyContent], request: FakeRequest[T])(
     test: Future[Result] => Any
-  ) {
+  ): Unit = {
     when(
       authConnector.authorise[Unit](ArgumentMatchers.any(), ArgumentMatchers.any())(
         ArgumentMatchers.any(),

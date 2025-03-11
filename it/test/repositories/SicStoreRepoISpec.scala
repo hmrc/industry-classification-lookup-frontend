@@ -22,6 +22,7 @@ import org.mongodb.scala.result.InsertOneResult
 import org.scalatest.concurrent.Eventually
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
@@ -42,9 +43,9 @@ class SicStoreRepoISpec extends PlaySpec with GuiceOneServerPerSuite with Eventu
     def fetchAll: List[SicStore] = await(repository.collection.find.toFuture().map(_.toList))
   }
 
-  implicit val request = FakeRequest()
+  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
-  val dateTime = Instant.parse("2017-06-15T10:06:28.434Z")
+  val dateTime: Instant = Instant.parse("2017-06-15T10:06:28.434Z")
 
   val sessionId = "session-id-12345"
   val journeyId = "testJourneyId"
@@ -52,21 +53,21 @@ class SicStoreRepoISpec extends PlaySpec with GuiceOneServerPerSuite with Eventu
   val dataSet: String = JourneyData.ONS
 
   val sicCodeCode = "12345"
-  val sicCode = SicCode(sicCodeCode, "Test sic code description", "Test sic code description")
-  val sicCodeGroup = SicCodeChoice(sicCode, Nil, Nil)
-  val sicCode2 = SicCode("87654", "Another test sic code description", "Another test sic code description")
-  val sicCodeGroup2 = SicCodeChoice(sicCode2, Nil, Nil)
+  val sicCode: SicCode = SicCode(sicCodeCode, "Test sic code description", "Test sic code description")
+  val sicCodeGroup: SicCodeChoice = SicCodeChoice(sicCode, Nil, Nil)
+  val sicCode2: SicCode = SicCode("87654", "Another test sic code description", "Another test sic code description")
+  val sicCodeGroup2: SicCodeChoice = SicCodeChoice(sicCode2, Nil, Nil)
 
-  val searchResults = SearchResults("testQuery", 1, List(sicCode), List(Sector("A", "Example", "Cy business sector", 1)))
-  val searchResults2 = SearchResults("testQuery", 1, List(sicCode2), List(Sector("B", "Alternative", "Cy business sector", 1)))
+  val searchResults: SearchResults = SearchResults("testQuery", 1, List(sicCode), List(Sector("A", "Example", "Cy business sector", 1)))
+  val searchResults2: SearchResults = SearchResults("testQuery", 1, List(sicCode2), List(Sector("B", "Alternative", "Cy business sector", 1)))
 
-  def generateSicStoreWithIndexes(indexes: List[String]) =
+  def generateSicStoreWithIndexes(indexes: List[String]): SicStore =
     SicStore(sessionId, Some(searchResults), Some(List(sicCodeGroup.copy(indexes = indexes, indexesCy = indexes))), dateTime)
 
-  val sicStoreNoChoices = SicStore(journeyId, Some(searchResults), None, dateTime)
-  val sicStore1Choice = SicStore(journeyId, Some(searchResults), Some(List(sicCodeGroup)), dateTime)
-  val sicStore2Choices = SicStore(journeyId, Some(searchResults2), Some(List(sicCodeGroup, sicCodeGroup2)), dateTime)
-  val journeySetup = JourneySetup(dataSet, Some(false), Some(true), 50, None)
+  val sicStoreNoChoices: SicStore = SicStore(journeyId, Some(searchResults), None, dateTime)
+  val sicStore1Choice: SicStore = SicStore(journeyId, Some(searchResults), Some(List(sicCodeGroup)), dateTime)
+  val sicStore2Choices: SicStore = SicStore(journeyId, Some(searchResults2), Some(List(sicCodeGroup, sicCodeGroup2)), dateTime)
+  val journeySetup: JourneySetup = JourneySetup(dataSet, Some(false), Some(true), 50, None)
 
   "retrieveSicStore" should {
     "return a sic store when it is present" in new Setup {
@@ -87,7 +88,7 @@ class SicStoreRepoISpec extends PlaySpec with GuiceOneServerPerSuite with Eventu
       count mustBe 1
     }
     "update a document with the new sic code if the document already exists for a given session id" in new Setup {
-      val otherSearchResults = SearchResults(
+      val otherSearchResults: SearchResults = SearchResults(
         "other query", 1,
         List(SicCode("87654", "Another test sic code description", "Another test sic code description")),
         List(Sector("A", "Fake", "Cy business sector", 1))
@@ -113,7 +114,7 @@ class SicStoreRepoISpec extends PlaySpec with GuiceOneServerPerSuite with Eventu
     "insert new sic codes into empty sic store" in new Setup {
       count mustBe 0
 
-      val sicCode2 = SicCodeChoice(SicCode("67891", "some description", "some description"))
+      val sicCode2: SicCodeChoice = SicCodeChoice(SicCode("67891", "some description", "some description"))
       val insertSuccess: Boolean = await(repository.insertChoices(journeyId, List(sicCodeGroup, sicCode2)))
 
       insertSuccess mustBe true
@@ -138,17 +139,17 @@ class SicStoreRepoISpec extends PlaySpec with GuiceOneServerPerSuite with Eventu
       fetchedDocument.lastUpdated isAfter sicStore1Choice.lastUpdated mustBe true
     }
     "insert a new sic code choice into a choices list with another choice already there" in new Setup {
-      val sicCodeToAdd = SicCode("67891", "some description", "some description")
+      val sicCodeToAdd: SicCode = SicCode("67891", "some description", "some description")
 
-      val searchResults = SearchResults("testQuery", 1, List(sicCodeToAdd), List(Sector("A", "Fake", "Cy business sector", 1)))
-      val sicStoreWithExistingChoice = SicStore(journeyId, Some(searchResults), Some(List(sicCodeGroup)), dateTime)
+      val searchResults: SearchResults = SearchResults("testQuery", 1, List(sicCodeToAdd), List(Sector("A", "Fake", "Cy business sector", 1)))
+      val sicStoreWithExistingChoice: SicStore = SicStore(journeyId, Some(searchResults), Some(List(sicCodeGroup)), dateTime)
 
       insert(sicStoreWithExistingChoice)
 
       await(repository.insertChoices(journeyId, List(SicCodeChoice(sicCodeToAdd))))
 
       val fetchedDocument: SicStore = fetchAll.head
-      val sicStoreWith2Choices = SicStore(journeyId, Some(searchResults), Some(List(sicCodeGroup, SicCodeChoice(sicCodeToAdd))), dateTime)
+      val sicStoreWith2Choices: SicStore = SicStore(journeyId, Some(searchResults), Some(List(sicCodeGroup, SicCodeChoice(sicCodeToAdd))), dateTime)
 
       fetchedDocument.choices mustBe sicStoreWith2Choices.choices
       fetchedDocument.lastUpdated isAfter sicStoreWith2Choices.lastUpdated mustBe true
@@ -174,14 +175,14 @@ class SicStoreRepoISpec extends PlaySpec with GuiceOneServerPerSuite with Eventu
       fetchedDocument.lastUpdated isAfter sicStore1Choice.lastUpdated mustBe true
     }
     "inserting the same sicCode with different indexes will update the correct choice + add a new choice" in new Setup {
-      val sicCode3 = SicCode("67891", "some other description", "some other description")
-      val sicCodeGroup3 = SicCodeChoice(sicCode3, List("some index 1"), List("some index 1"))
-      val sicCode4 = SicCode("11122", "test desc", "test desc")
-      val sicCodeGroup4 = SicCodeChoice(sicCode4, List("index whatever test"), List("index whatever test"))
-      val sicStore3Choices = SicStore(journeyId, Some(searchResults2), Some(List(sicCodeGroup, sicCodeGroup2, sicCodeGroup3)), dateTime)
+      val sicCode3: SicCode = SicCode("67891", "some other description", "some other description")
+      val sicCodeGroup3: SicCodeChoice = SicCodeChoice(sicCode3, List("some index 1"), List("some index 1"))
+      val sicCode4: SicCode = SicCode("11122", "test desc", "test desc")
+      val sicCodeGroup4: SicCodeChoice = SicCodeChoice(sicCode4, List("index whatever test"), List("index whatever test"))
+      val sicStore3Choices: SicStore = SicStore(journeyId, Some(searchResults2), Some(List(sicCodeGroup, sicCodeGroup2, sicCodeGroup3)), dateTime)
       insert(sicStore3Choices)
 
-      val expected = Some(List(sicCodeGroup.copy(indexes = List("some description")), sicCodeGroup2, sicCodeGroup3.copy(indexes = List("some index 1", "new test other desc"), indexesCy = List("some index 1", "new test other desc")), sicCodeGroup4))
+      val expected: Option[List[SicCodeChoice]] = Some(List(sicCodeGroup.copy(indexes = List("some description")), sicCodeGroup2, sicCodeGroup3.copy(indexes = List("some index 1", "new test other desc"), indexesCy = List("some index 1", "new test other desc")), sicCodeGroup4))
 
       await(repository.insertChoices(journeyId, List(sicCodeGroup.copy(indexes = List("some description")), SicCodeChoice(sicCode3, List("new test other desc"), List("new test other desc")), sicCodeGroup4)))
 

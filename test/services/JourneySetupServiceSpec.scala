@@ -39,14 +39,14 @@ class JourneySetupServiceSpec extends UnitTestSpec with MockJourneyDataRepo {
   }
 
   val lang = "en"
-  val identifier = Identifiers(
+  val identifier: Identifiers = Identifiers(
     journeyId = "testJourneyId",
     sessionId = "testSessionId"
   )
 
-  val journeyData = JourneyData(identifier, "/test/uri", JourneySetup(), now)
+  val journeyData: JourneyData = JourneyData(identifier, "/test/uri", JourneySetup(), now)
 
-  val testJourneyData = JourneyData(
+  val testJourneyData: JourneyData = JourneyData(
     identifiers = identifier,
     redirectUrl = "/test/uri",
     journeySetupDetails = JourneySetup(),

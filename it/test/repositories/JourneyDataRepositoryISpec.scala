@@ -25,17 +25,17 @@ import org.scalatest.{Assertion, BeforeAndAfterEach}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.libs.json.{Json, OWrites}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-import java.time.format.DateTimeFormatter
+import java.time.Instant
 import java.time.temporal.ChronoUnit
-import java.time.{Instant, LocalDateTime, ZoneOffset}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class JourneyDataRepositoryISpec extends PlaySpec with BeforeAndAfterEach with GuiceOneServerPerSuite {
 
-  implicit val request = FakeRequest()
+  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
   class Setup {
 
@@ -53,7 +53,7 @@ class JourneyDataRepositoryISpec extends PlaySpec with BeforeAndAfterEach with G
 
   val now: Instant = Instant.now().truncatedTo(ChronoUnit.MILLIS)
 
-  val customMsgs = CustomMessages(
+  val customMsgs: CustomMessages = CustomMessages(
     summary = Some(Summary(
       heading = Some("testMessage1"),
       lead = Some("testMessage2"),
@@ -62,7 +62,7 @@ class JourneyDataRepositoryISpec extends PlaySpec with BeforeAndAfterEach with G
     summaryCy = None
   )
 
-  val journeyData = JourneyData(
+  val journeyData: JourneyData = JourneyData(
     identifiers = Identifiers(
       journeyId = "testJourneyId",
       sessionId = "testSessionId"
@@ -108,7 +108,7 @@ class JourneyDataRepositoryISpec extends PlaySpec with BeforeAndAfterEach with G
   }
   "updateJourneySetup" should {
     "updateJourneySetup model within JourneyData Model successfully" in new Setup {
-      val updatedJourneySetup = JourneySetup("foo", Some(true), None, 10)
+      val updatedJourneySetup: JourneySetup = JourneySetup("foo", Some(true), None, 10)
       await(repository.upsertJourney(journeyData)) mustBe journeyData
       count mustBe 1
       await(repository.updateJourneySetup(journeyData.identifiers, updatedJourneySetup)) mustBe updatedJourneySetup
@@ -116,7 +116,7 @@ class JourneyDataRepositoryISpec extends PlaySpec with BeforeAndAfterEach with G
       await(repository.retrieveJourneyData(journeyData.identifiers)) mustBe journeyData.copy(journeySetupDetails = updatedJourneySetup)
     }
     "fail to update journeySetup and throw exception if no document exists" in new Setup {
-      val validJourneySetup = JourneySetup("foo", Some(true), None, 10)
+      val validJourneySetup: JourneySetup = JourneySetup("foo", Some(true), None, 10)
       count mustBe 0
       intercept[Exception](await(repository.updateJourneySetup(journeyData.identifiers, validJourneySetup)))
       count mustBe 0

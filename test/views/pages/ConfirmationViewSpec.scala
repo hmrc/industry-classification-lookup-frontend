@@ -34,7 +34,7 @@ class ConfirmationViewSpec
 
   override def messagesApi: MessagesApi = mockMessagesApi
 
-  val sicCodeChoices = List(
+  val sicCodeChoices: List[SicCodeChoice] = List(
     SicCodeChoice("12345", "my fake description", "my fake description", List("this is the index")),
     SicCodeChoice(
       "67892",
