@@ -26,7 +26,7 @@ class SicStoreSpec extends UnitTestSpec with MongoJavatimeFormats {
 
   val query             = "testQuery"
   val dateTime: Instant = Instant.parse("2017-06-15T10:06:28.434Z")
-  val now               = Json.toJson(dateTime)(Implicits.jatInstantFormat)
+  val now: JsValue = Json.toJson(dateTime)(Implicits.jatInstantFormat)
 
   val sicStoreWithChoicesJson: JsValue = Json.parse(
     s"""
@@ -72,7 +72,7 @@ class SicStoreSpec extends UnitTestSpec with MongoJavatimeFormats {
     """.stripMargin
   )
 
-  val sicStoreWithChoices = SicStore(
+  val sicStoreWithChoices: SicStore = SicStore(
     "12345",
     Some(
       SearchResults(
@@ -105,7 +105,7 @@ class SicStoreSpec extends UnitTestSpec with MongoJavatimeFormats {
     dateTime
   )
 
-  val sicStoreNoChoices = SicStore(
+  val sicStoreNoChoices: SicStore = SicStore(
     "12345",
     Some(
       SearchResults(

@@ -22,7 +22,8 @@ import models.setup.{Identifiers, JourneyData, JourneySetup}
 import models.{SicCode, SicCodeChoice, SicStore}
 import org.mongodb.scala.result.InsertOneResult
 import play.api.http.HeaderNames
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import repositories.{JourneyDataRepository, SicStoreRepository}
@@ -31,7 +32,7 @@ import java.time.Instant
 
 class ApiControllerISpec extends ClientSpec {
 
-  implicit val request = FakeRequest()
+  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
   trait Setup {
     val sicStoreRepo: SicStoreRepository = app.injector.instanceOf[SicStoreRepository]
@@ -39,7 +40,7 @@ class ApiControllerISpec extends ClientSpec {
 
     def insertSicStore(sicStore: SicStore): InsertOneResult = await(sicStoreRepo.collection.insertOne(sicStore).toFuture())
 
-    def insertJourney(journeyData: JourneyData) = await(journeyRepo.upsertJourney(journeyData))
+    def insertJourney(journeyData: JourneyData): JourneyData = await(journeyRepo.upsertJourney(journeyData))
 
     await(sicStoreRepo.collection.drop.toFuture())
     await(journeyRepo.collection.drop.toFuture())
@@ -50,7 +51,7 @@ class ApiControllerISpec extends ClientSpec {
   val initialiseJourneyUrl = "/internal/initialise-journey"
   val fetchResultsUrl = s"/internal/$journeyId/fetch-results"
 
-  val setupJson = Json.parse(
+  val setupJson: JsValue = Json.parse(
     """
       |{
       |   "redirectUrl" : "/test/uri"
@@ -96,7 +97,7 @@ class ApiControllerISpec extends ClientSpec {
       }
 
       "the json has been validated and the journey has been setup with sic store data (with journey setup details)" in new Setup {
-        val setupJsonWithDetails = Json.parse(
+        val setupJsonWithDetails: JsValue = Json.parse(
           """
             |{
             |   "redirectUrl" : "/test/uri",
@@ -122,7 +123,7 @@ class ApiControllerISpec extends ClientSpec {
         )
 
         setupSimpleAuthMocks()
-        val responseBody = Json.toJson(List(SicCode("12345", "desc one", "desc one"), SicCode("67890", "desc 2", "desc 2"))).toString()
+        val responseBody: String = Json.toJson(List(SicCode("12345", "desc one", "desc one"), SicCode("67890", "desc 2", "desc 2"))).toString()
 
         stubGet(s"/industry-classification-lookup/lookup/67890,12345", 200, Some(responseBody))
         await(journeyRepo.collection.countDocuments().toFuture()) mustBe 0
@@ -188,7 +189,7 @@ class ApiControllerISpec extends ClientSpec {
   }
   "After initialising journey and user hits search /search-standard-industry-classification-codes" should {
     "return a 200 and user can post on page to search for results which also creates an entry in sicStore repo no exceptions occur" in new Setup {
-      val sessionIdFullFlow = CookieBaker.getSessionCookie(Some("stubbed-123"))
+      val sessionIdFullFlow: String = CookieBaker.getSessionCookie(Some("stubbed-123"))
       setupSimpleAuthMocks()
       await(journeyRepo.collection.countDocuments().toFuture()) mustBe 0
       await(sicStoreRepo.collection.countDocuments().toFuture()) mustBe 0
@@ -205,21 +206,26 @@ class ApiControllerISpec extends ClientSpec {
         await(sicStoreRepo.collection.countDocuments().toFuture()) mustBe 0
 
       }
-      val identifiers = await(journeyRepo.collection.find().toFuture()).head.identifiers
+      val identifiers: Identifiers = await(journeyRepo.collection.find().toFuture()).head.identifiers
 
-      val journeyDataFromInitialisation = await(journeyRepo.retrieveJourneyData(identifiers))
+      val journeyDataFromInitialisation: JourneyData = await(journeyRepo.retrieveJourneyData(identifiers))
 
-      assertFutureResponse(buildClient(s"/sic-search/${identifiers.journeyId}/search-standard-industry-classification-codes").withHeaders(HeaderNames.COOKIE -> sessionIdFullFlow).get()) { res =>
-        res.status mustBe OK
-        await(journeyRepo.collection.countDocuments().toFuture()) mustBe 1
-        await(sicStoreRepo.collection.countDocuments().toFuture()) mustBe 0
+      assertFutureResponse(buildClient(s"/sic-search/${identifiers.journeyId}/search-standard-industry-classification-codes")
+        .withHttpHeaders(HeaderNames.COOKIE -> sessionIdFullFlow).get())
+      {
+        res =>
+            res.status mustBe OK
+            await(journeyRepo.collection.countDocuments().toFuture()) mustBe 1
+            await(sicStoreRepo.collection.countDocuments().toFuture()) mustBe 0
       }
       stubGETICLSearchResults
-      assertFutureResponse(buildClient(s"/sic-search/${identifiers.journeyId}/search-standard-industry-classification-codes?doSearch=true").withHeaders(HeaderNames.COOKIE -> sessionIdFullFlow, "Csrf-Token" -> "nocheck").post(Map("sicSearch" -> Seq("dairy")))) { res =>
-        res.status mustBe 303
-        await(journeyRepo.collection.countDocuments().toFuture()) mustBe 1
-        await(sicStoreRepo.collection.countDocuments().toFuture()) mustBe 1
-      }
+      assertFutureResponse(buildClient(s"/sic-search/${identifiers.journeyId}/search-standard-industry-classification-codes?doSearch=true")
+          .withHttpHeaders(HeaderNames.COOKIE -> sessionIdFullFlow, "Csrf-Token" -> "nocheck").post(Map("sicSearch" -> Seq("dairy"))))
+        { res =>
+              res.status mustBe 303
+              await(journeyRepo.collection.countDocuments().toFuture()) mustBe 1
+              await(sicStoreRepo.collection.countDocuments().toFuture()) mustBe 1
+        }
 
     }
   }

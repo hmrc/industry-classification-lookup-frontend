@@ -42,24 +42,24 @@ class SicSearchServiceSpec extends UnitTestSpec {
   val query           = "testQuery"
   val journey: String = JourneyData.QUERY_BUILDER
   val dataSet: String = JourneyData.ONS
-  val identifier = Identifiers(
+  val identifier: Identifiers = Identifiers(
     journeyId = journeyId,
     sessionId = sessionId
   )
   val sicCodeCode = "12345"
-  val sicCode     = SicCode(sicCodeCode, "some sic code description", "some sic code description")
-  val oneSearchResult =
+  val sicCode: SicCode = SicCode(sicCodeCode, "some sic code description", "some sic code description")
+  val oneSearchResult: SearchResults =
     SearchResults(query, 1, List(sicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
-  val threeSearchResults = SearchResults(
+  val threeSearchResults: SearchResults = SearchResults(
     query,
     3,
     List(sicCode, sicCode, sicCode),
     List(Sector("A", "Fake Sector A", "Cy business sector", 2), Sector("B", "Fake Sector B", "Cy business sector", 1))
   )
-  val searchResultsEmpty = SearchResults(query, 0, List(), List())
+  val searchResultsEmpty: SearchResults = SearchResults(query, 0, List(), List())
   val choices            = List(SicCodeChoice(sicCode, Nil, Nil))
-  val sicStore           = SicStore(sessionId, Some(oneSearchResult), Some(choices))
-  val sicStoreNoChoices  = SicStore(sessionId, Some(oneSearchResult), None)
+  val sicStore: SicStore = SicStore(sessionId, Some(oneSearchResult), Some(choices))
+  val sicStoreNoChoices: SicStore = SicStore(sessionId, Some(oneSearchResult), None)
 
   val testJourneyData = JourneyData(
     identifiers = identifier,
@@ -104,7 +104,7 @@ class SicSearchServiceSpec extends UnitTestSpec {
       when(mockSicStoreRepository.upsertSearchResults(eqTo(journeyId), any()))
         .thenReturn(Future.successful(true))
 
-      awaitAndAssert(service.lookupSicCodes(testJourneyData, List(SicCode(sicCodeCode, "", "")))) {
+      awaitAndAssert(service.lookupSicCodes(testJourneyData, List(SicCode(sicCodeCode, "")))) {
         _ mustBe 1
       }
     }
@@ -154,7 +154,7 @@ class SicSearchServiceSpec extends UnitTestSpec {
         .thenReturn(Future.successful(true))
 
       when(mockICLConnector.lookup(any())(any(), any()))
-        .thenReturn(Future.successful(List(SicCode("", "", ""))))
+        .thenReturn(Future.successful(List(SicCode("", ""))))
 
       awaitAndAssert(service.searchQuery(testJourneyData, query, lang = lang)) {
         _ mustBe 1
@@ -228,7 +228,7 @@ class SicSearchServiceSpec extends UnitTestSpec {
         .thenReturn(Future.successful(true))
 
       when(mockICLConnector.lookup(any())(any(), any()))
-        .thenReturn(Future.successful(List(SicCode("", "", ""))))
+        .thenReturn(Future.successful(List(SicCode("", ""))))
 
       awaitAndAssert(service.search(testJourneyData, query, lang = lang)) {
         _ mustBe 1
@@ -247,7 +247,7 @@ class SicSearchServiceSpec extends UnitTestSpec {
         .thenReturn(Future.successful(true))
 
       when(mockICLConnector.lookup(any())(any(), any()))
-        .thenReturn(Future.successful(List(SicCode("", "", ""))))
+        .thenReturn(Future.successful(List(SicCode("", ""))))
 
       awaitAndAssert(service.search(testJourneyData, query, Some("A"), lang)) {
         _ mustBe 1

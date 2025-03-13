@@ -39,9 +39,9 @@ class ChooseActivityViewSpec
 
   val query = "test query"
 
-  val testSicCode = SicCode("12345", "Testing", "Testing")
+  val testSicCode: SicCode = SicCode("12345", "Testing", "Testing")
 
-  val searchResults =
+  val searchResults: SearchResults =
     SearchResults(query, 1, List(testSicCode), List(Sector("A", "Fake Sector", "Cy business sector", 1)))
 
   val journeyId = "testJourneyId"

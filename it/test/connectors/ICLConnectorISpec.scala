@@ -21,6 +21,7 @@ import helpers.ClientSpec
 import models.setup.JourneySetup
 import models.{SearchResults, Sector, SicCode}
 import play.api.libs.json.Json
+import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException}
@@ -30,20 +31,20 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class ICLConnectorISpec extends ClientSpec {
 
   val sicCode = "12345"
-  val sicCodeResult = SicCode(sicCode, "some description", "some description")
-  val lookupUrl = s"/industry-classification-lookup/lookup/$sicCode"
+  val sicCodeResult: SicCode = SicCode(sicCode, "some description", "some description")
+  val lookupUrl: String = s"/industry-classification-lookup/lookup/$sicCode"
 
-  val query = "test query"
-  val zeroResults = SearchResults(query, 0, List(), List())
-  val searchResults = SearchResults(query, 1, List(SicCode("12345", "some description", "some description")), List(Sector("A", "Example of a business sector", "Cy business sector", 1)))
-  val sector = "B"
-  val journeySetup = JourneySetup(dataSet = "foo", queryBooster = None, amountOfResults = 5)
-  val lang = "en"
-  val searchUrl = "/industry-classification-lookup/search*"
+  val query: String = "test query"
+  val zeroResults: SearchResults = SearchResults(query, 0, List(), List())
+  val searchResults: SearchResults = SearchResults(query, 1, List(SicCode("12345", "some description", "some description")), List(Sector("A", "Example of a business sector", "Cy business sector", 1)))
+  val sector: String = "B"
+  val journeySetup: JourneySetup = JourneySetup(dataSet = "foo", queryBooster = None, amountOfResults = 5)
+  val lang: String = "en"
+  val searchUrl: String = "/industry-classification-lookup/search*"
 
-  implicit val request = FakeRequest()
+  implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   implicit val hc: HeaderCarrier = HeaderCarrier()
-  val connector = app.injector.instanceOf[ICLConnector]
+  val connector: ICLConnector = app.injector.instanceOf[ICLConnector]
 
   "lookup" should {
     "return a sic code case class matching the code provided" in {

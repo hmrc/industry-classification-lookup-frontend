@@ -17,7 +17,7 @@ lazy val scoverageSettings: Seq[Setting[_]] = Seq(
 )
 
 lazy val microservice = Project(appName, file("."))
-  .enablePlugins(Seq(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin): _*)
+  .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin): _*)
   .settings(defaultSettings(): _*)
   .settings(scalaSettings: _*)
   .settings(scoverageSettings: _*)
