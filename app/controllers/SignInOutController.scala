@@ -35,7 +35,7 @@ class SignInOutController @Inject() (
 
   def signOut: Action[AnyContent] = Action.async { implicit request =>
     userAuthorised() {
-      Future.successful(Redirect(appConfig.signOutUrl).withNewSession)
+      Future.successful(Redirect(s"${appConfig.signOutUrl}?continue=${appConfig.feedbackUrl}").withNewSession)
     }
   }
 }
