@@ -38,8 +38,11 @@ class AppConfig @Inject() (configuration: ServicesConfig) extends FeatureSwitchi
   private lazy val contactHost             = configuration.getString(s"microservice.services.contact-frontend.host")
   private val contactFormServiceIdentifier = "vrs"
   lazy val betaFeedbackUrl                 = s"$contactHost/contact/beta-feedback?service=$contactFormServiceIdentifier"
+  private lazy val basGatewayUrl: String = loadConfig(s"bas-gateway-frontend.host")
+  private val signOutUri: String = loadConfig("sign-out.uri")
+  lazy val signOutUrl: String = s"$basGatewayUrl$signOutUri"
   lazy val feedbackFrontendUrl             = loadConfig("microservice.services.feedback-frontend.url")
-  lazy val signOutUrl                      = s"$feedbackFrontendUrl/feedback/vat-registration"
+  lazy val feedbackUrl                      = s"$feedbackFrontendUrl/feedback/vat-registration"
   lazy val countdownLength: Int            = configuration.getInt("timeout.countdown")
   lazy val timeoutLength: Int              = configuration.getInt("timeout.length")
   lazy val accessibilityStatementUrl: String = configuration.getString("accessibility-statement.host") +
