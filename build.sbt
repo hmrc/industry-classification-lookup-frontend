@@ -7,7 +7,7 @@ val appName: String = "industry-classification-lookup-frontend"
 val silencerVersion = "1.7.19"
 
 ThisBuild / majorVersion := 0
-ThisBuild / scalaVersion := "2.13.16"
+ThisBuild / scalaVersion := "2.13.18"
 
 lazy val scoverageSettings: Seq[Setting[_]] = Seq(
   ScoverageKeys.coverageExcludedPackages := "<empty>;Reverse.*;models.*;models/.data/..*;view.*;featureswitch.*;config.*;.*(AuthService|BuildInfo|Routes).*",
