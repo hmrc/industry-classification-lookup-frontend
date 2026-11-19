@@ -21,11 +21,14 @@
 @import uk.gov.hmrc.hmrcfrontend.views.html.components._
 @import views.html.helper.CSPNonce
 @import views.html.layouts.fullWidthContentLayout
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.{Banners, HmrcStandardPageParams, ServiceURLs, TemplateOverrides}
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcStandardPage
+@import uk.gov.hmrc.govukfrontend.views.viewmodels.backlink.BackLink
 
 @this(
+        hmrcStandardPage: HmrcStandardPage,
         hmrcTimeoutDialog: HmrcTimeoutDialog,
         hmrcReportTechnicalIssueHelper: HmrcReportTechnicalIssueHelper,
-        hmrcLayout: HmrcLayout,
         standardBetaBanner: StandardBetaBanner,
         fullWidthContentLayout: fullWidthContentLayout,
         twoThirdsMainContent: TwoThirdsMainContent
@@ -60,17 +63,19 @@
 @hmrcReportTechnicalIssueHelper()
 }
 
-@hmrcLayout(
+@hmrcStandardPage(HmrcStandardPageParams(
     pageTitle = pageTitle,
-    additionalHeadBlock = Some(head),
-    beforeContentBlock = beforeContentBlock,
-    displayHmrcBanner = true,
-    phaseBanner = None,
-    signOutUrl = if(signOutLink) Some(controllers.routes.SignInOutController.signOut.url) else None,
-    backLinkUrl = if(backLink) Some("#") else None,
-    accessibilityStatementUrl = Some(appConfig.accessibilityStatementUrl),
-    additionalScriptsBlock = Some(scripts),
-    mainContentLayout = if(fullWidth) Some(fullWidthContentLayout()) else Some(twoThirdsMainContent(_)),
+    banners = Banners(displayHmrcBanner = true),
+    templateOverrides = TemplateOverrides(
+        additionalHeadBlock = Some(head),
+        beforeContentBlock = beforeContentBlock,
+        additionalScriptsBlock = Some(scripts),
+        mainContentLayout = if(fullWidth) Some(fullWidthContentLayout()) else Some(twoThirdsMainContent(_))
+    ),
+    serviceURLs = ServiceURLs(
+        signOutUrl = if(signOutLink) Some(controllers.routes.SignInOutController.signOut.url) else None,
+        accessibilityStatementUrl = Some(appConfig.accessibilityStatementUrl)
+    ),
+    backLink = if(backLink) Some(BackLink.withDefaultText(href = "#")) else None,
     isWelshTranslationAvailable = true
-)(content)
-
+))(content)
